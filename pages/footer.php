@@ -154,26 +154,40 @@
       Lista de Ponentes 
     </a>
   </li>
+
+<li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-diplomado.php">
+    <i class="bi bi-person-vcard"></i>
+      Registrar Diplomado
+    </a>
+  </li>
   <li class="nav-item">
-    <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignar-diplomado.php">
+    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-diplomado.php">
+    <i class="bi bi-person-lines-fill"></i>
+      Lista de Diplomados
+    </a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignar-diplomado-ponente.php">
     <i class="bi bi-piggy-bank-fill"></i>
       Asignar Diplomado
     </a>
   </li>
   <li class="nav-item">
-    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-donaciones.php">
+    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-diplomado-ponente.php">
     <i class="bi bi-card-checklist"></i>
-      Ver Actividades
+      Ver Diplomados Impartidos
     </a>
   </li>
   <li class="nav-item">
-    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-donaciones.php">
+    <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignar-diplomado.php">
     <i class="bi bi-card-checklist"></i>
       Registrar Asistentes
     </a>
   </li>
   <li class="nav-item">
-    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-donaciones.php">
+    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-asistentes.php">
     <i class="bi bi-card-checklist"></i>
       Ver Asistentes
     </a>

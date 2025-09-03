@@ -1,7 +1,7 @@
 <script>
     // Redirigir a otra página del mismo sitio después de un cierto tiempo (por ejemplo, 3 segundos)
 setTimeout(function() {
-    window.location.href = '/SYSGES/sign-in/index.php'; // Reemplaza 'nueva_pagina.html' con la URL de la página a la que deseas redirigir
+    window.location.href = '/ERP/ERP_IRP/sign-in/index.php'; // Reemplaza 'nueva_pagina.html' con la URL de la página a la que deseas redirigir
 }, 1000); // 3000 milisegundos = 3 segundos
 
 </script>
