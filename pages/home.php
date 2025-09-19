@@ -383,6 +383,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['logout'])) {
             </div>
 
             <?php
+            /*
 require_once __DIR__ . '/../db/config.php';
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
@@ -498,7 +499,7 @@ try {
 
 } catch(PDOException $e) {
     echo "Error: " . $e->getMessage();
-}
+}  */
 ?>
 
 

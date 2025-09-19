@@ -1,59 +1,59 @@
-
 <?php
+// Inicia sesión, verifica permisos si es necesario
 session_start();
-
-// Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    // Si el usuario no ha iniciado sesión o no tiene el rol adecuado, redirigirlo a otra página
-    header("Location: ../sign-in/index.php"); // O a una página de acceso denegado
-    exit();
-}
-
-?>
-
-<?php
-
 require_once __DIR__ . '/../db/config.php';
 
+// --- Aquí va todo tu código de consulta de asistentes y secciones ---
 if (!isset($_GET['id_diplomado']) || !is_numeric($_GET['id_diplomado'])) {
     die("ID de diplomado inválido.");
 }
-
 $idDiplomado = (int) $_GET['id_diplomado'];
 
-try {
-    // Paginación
-    $registrosPorPagina = 8;
-    $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
-    $offset = ($pagina - 1) * $registrosPorPagina;
+$registrosPorPagina = 8;
+$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
+$offset = ($pagina - 1) * $registrosPorPagina;
 
-    // Consulta de asistentes por diplomado
-    $query = "
-        SELECT u.Nombre, u.Email, aa.FechaAsignacion
-        FROM asignacionesdiplomado aa
-        INNER JOIN usuario u ON aa.ID_Usuario = u.ID
-        WHERE aa.ID_Diplomado = :idDiplomado
-        ORDER BY aa.FechaAsignacion DESC
-        LIMIT :limit OFFSET :offset
-    ";
-    $stmt = $conn->prepare($query);
-    $stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
-    $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+// 1️⃣ Consulta de asistentes
+$stmt = $conn->prepare("
+    SELECT u.ID, u.Nombre, u.Email, aa.FechaAsignacion
+    FROM asignacionesdiplomado aa
+    INNER JOIN usuario u ON aa.ID_Usuario = u.ID
+    WHERE aa.ID_Diplomado = :idDiplomado
+    ORDER BY aa.FechaAsignacion DESC
+    LIMIT :limit OFFSET :offset
+");
+$stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
+$asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Conteo total
-    $countQuery = "SELECT COUNT(*) FROM asignacionesdiplomado WHERE ID_Diplomado = :idDiplomado";
-    $stmtCount = $conn->prepare($countQuery);
-    $stmtCount->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
-    $stmtCount->execute();
-    $totalRegistros = $stmtCount->fetchColumn();
-    $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
-} catch (PDOException $e) {
-    die("Error en la consulta: " . $e->getMessage());
+// 2️⃣ Traer fechas de secciones de cada participante
+// 2️⃣ Traer fechas de secciones para este diplomado
+foreach ($asistentes as &$asistente) {
+    $stmt2 = $conn->prepare("
+        SELECT fecha 
+        FROM secciones 
+        WHERE DiplomadoID = :idDiplomado
+        ORDER BY fecha ASC
+    ");
+    $stmt2->execute([
+        ':idDiplomado' => $idDiplomado
+    ]);
+    $asistente['fechas_secciones'] = $stmt2->fetchAll(PDO::FETCH_COLUMN);
 }
+
+
+// Conteo total para paginación
+$stmtCount = $conn->prepare("SELECT COUNT(*) FROM asignacionesdiplomado WHERE ID_Diplomado = :idDiplomado");
+$stmtCount->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmtCount->execute();
+$totalRegistros = $stmtCount->fetchColumn();
+$totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 ?>
+
+
+
 
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
@@ -345,35 +345,105 @@ require_once __DIR__ . '/../pages/footer.php';
   </div>
   -->
 
-  <div class="table-responsive small">
-    <table class="table table-striped table-sm">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Nombre</th>
-          <th>Correo</th>
-          <th>Fecha Asignación</th>
-        </tr>
-      </thead>
-      <tbody>
-        <?php if ($asistentes): ?>
-          <?php $contador = $offset + 1; ?>
-          <?php foreach ($asistentes as $a): ?>
+  <?php
+require_once __DIR__ . '/../db/config.php';
+
+// Validar ID de diplomado
+if (!isset($_GET['id_diplomado']) || !is_numeric($_GET['id_diplomado'])) {
+    die("ID de diplomado inválido.");
+}
+$idDiplomado = (int) $_GET['id_diplomado'];
+
+// 1️⃣ Obtener todas las fechas de secciones de este diplomado
+$stmtFechas = $conn->prepare("
+    SELECT fecha, ID 
+    FROM secciones 
+    WHERE DiplomadoID = :idDiplomado
+    ORDER BY fecha ASC
+");
+$stmtFechas->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmtFechas->execute();
+$fechasDiplomado = $stmtFechas->fetchAll(PDO::FETCH_COLUMN);
+
+// 2️⃣ Obtener asistentes
+$stmt = $conn->prepare("
+    SELECT 
+        u.ID AS ID_Usuario, 
+        u.Nombre, 
+        u.Email, 
+        aa.FechaAsignacion
+    FROM asignacionesdiplomado aa
+    INNER JOIN usuario u ON aa.ID_Usuario = u.ID
+    WHERE aa.ID_Diplomado = :idDiplomado
+    ORDER BY aa.FechaAsignacion DESC
+");
+
+$stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmt->execute();
+$asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+// 3️⃣ Traer asistencias si ya las tienes registradas (opcional)
+// Aquí se asumiría que hay una tabla `asistencias` con columnas: ID_Usuario, ID_Seccion, presente
+$asistencias = [];
+$stmtAsis = $conn->prepare("
+    SELECT ID_Seccion, presente, id_usu
+    FROM asistencias
+    WHERE ID_Diplomado = :idDiplomado
+");
+$stmtAsis->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmtAsis->execute();
+foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
+    $asistencias[$a['id_usu']][$a['ID_Seccion']] = $a['presente'];
+}
+
+
+
+
+
+// Ejemplo en PHP al preparar $fechasDiplomado
+$stmt = $conn->prepare("SELECT ID, fecha FROM secciones WHERE DiplomadoID = :idDiplomado ORDER BY fecha ASC");
+$stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmt->execute();
+$fechasDiplomados = [];
+while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+    $fechasDiplomados[$row['ID']] = $row['fecha'];
+}
+
+?>
+<div class="table-responsive small">
+    <table class="table table-striped">
+        <thead>
             <tr>
-              <td><?= $contador++ ?></td>
-              <td><?= htmlspecialchars($a['Nombre']) ?></td>
-              <td><?= htmlspecialchars($a['Email']) ?></td>
-              <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Fecha Asignación</th>
+                <?php foreach ($fechasDiplomado as $fecha): ?>
+                    <th><?= htmlspecialchars($fecha) ?></th>
+                <?php endforeach; ?>
             </tr>
-          <?php endforeach; ?>
-        <?php else: ?>
-          <tr>
-            <td colspan="4" class="text-center">No hay asistentes asignados a este diplomado.</td>
-          </tr>
-        <?php endif; ?>
-      </tbody>
+        </thead>
+        <tbody>
+<?php foreach ($asistentes as $asistente): ?>
+<tr>
+    <td><?= htmlspecialchars($asistente['Nombre']) ?></td>
+    <td><?= htmlspecialchars($asistente['Email']) ?></td>
+    <td><?= htmlspecialchars($asistente['FechaAsignacion']) ?></td>
+    <?php foreach ($fechasDiplomados as $idSeccion => $fecha): ?>
+    <td>
+        <input type="checkbox" class="asistencia-switch"
+               data-usuario="<?= $asistente['ID_Usuario'] ?>"
+               data-seccion="<?= $idSeccion ?>"
+               <?= isset($asistencias[$asistente['ID_Usuario']][$idSeccion]) && $asistencias[$asistente['ID_Usuario']][$idSeccion] ? 'checked' : '' ?>>
+    </td>
+    <?php endforeach; ?>
+</tr>
+<?php endforeach; ?>
+</tbody>
+
     </table>
-  </div>
+</div>
+
 
   <nav aria-label="Paginación">
     <ul class="pagination justify-content-center mt-3">
@@ -397,7 +467,44 @@ require_once __DIR__ . '/../pages/footer.php';
     </ul>
   </nav>
 </main>
+
+
+
 <script>
+document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
+    switchEl.addEventListener('change', () => {
+        const idUsuario = switchEl.dataset.usuario;
+        const idSeccion = switchEl.dataset.seccion;
+        const asistencia = switchEl.checked ? 1 : 0;
+        const idDiplomado = <?= $idDiplomado ?>;
+
+        const datos = `id_usu=${idUsuario}&id_seccion=${idSeccion}&id_diplomado=${idDiplomado}&presente=${asistencia}`;
+
+        fetch('guardar_asistencia.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: datos
+        })
+        .then(res => res.text())
+        .then(res => {
+            alert("Servidor respondió: " + res);
+            console.log("Datos enviados:", datos);
+        })
+        .catch(err => {
+            alert("Error en fetch: " + err);
+            console.error(err);
+        });
+    });
+});
+</script>
+
+
+
+
+<script>
+
+
+
   document.querySelectorAll('.eliminar-asignacion').forEach(btn => {
     btn.addEventListener('click', () => {
       if (confirm('¿Eliminar esta asignación?')) {
@@ -406,6 +513,26 @@ require_once __DIR__ . '/../pages/footer.php';
     });
   });
 </script>
+
+
+<script>
+document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
+    switchEl.addEventListener('change', () => {
+        const idUsuario = switchEl.getAttribute('data-id');
+        const asistencia = switchEl.checked ? 1 : 0;
+
+        fetch('<?= $_SERVER['PHP_SELF'] ?>', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+            body: `action=guardar_asistencia&id_usuario=${idUsuario}&asistencia=${asistencia}&id_diplomado=<?= $idDiplomado ?>`
+        })
+        .then(res => res.text())
+        .then(res => console.log(res))
+        .catch(err => console.error(err));
+    });
+});
+</script>
+
 
 <!-- Aquí tus scripts de Bootstrap y dashboard.js si aplica -->
 

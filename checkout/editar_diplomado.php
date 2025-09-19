@@ -9,52 +9,27 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
 
 require_once __DIR__ . '/../db/config.php';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $nombreDiplomado = $_POST["nombre_diplomado"];
-    $descripcion = $_POST["descripcion"];
-    $fechaInicio = $_POST["fecha_inicio"];
-    $fechaFin = $_POST["fecha_fin"];
-    $numSecciones = $_POST["num_secciones"]; // nuevo campo
+// Verificar ID recibido
+if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
+    die("❌ ID no válido.");
+}
 
-    try {
-        // Insertar diplomado
-        $sql = "INSERT INTO diplomados (NombreDiplomado, Descripcion, Num, FechaInicio, FechaFin ) 
-                VALUES (?, ?, ?, ?, ?)";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([$nombreDiplomado, $descripcion, $numSecciones, $fechaInicio, $fechaFin]);
+$idDiplomado = (int)$_GET['id'];
 
-        // Obtener ID del diplomado insertado
-        $diplomadoID = $conn->lastInsertId();
+// Consultar datos del diplomado
+try {
+    $sql = "SELECT * FROM diplomados WHERE ID_Diplomado = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->execute([$idDiplomado]);
+    $diplomado = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        // Calcular fechas de secciones
-        $inicio = new DateTime($fechaInicio);
-        $fin = new DateTime($fechaFin);
-        $diferencia = $inicio->diff($fin)->days;
-        $intervalo = floor($diferencia / $numSecciones);
-
-        for ($i = 0; $i < $numSecciones; $i++) {
-            $fechaSeccion = clone $inicio;
-            $fechaSeccion->modify("+" . ($i * $intervalo) . " days");
-            if ($i === $numSecciones - 1) $fechaSeccion = $fin; // última sección = fecha fin
-
-            $sqlSec = "INSERT INTO secciones (DiplomadoID, NumSeccion, Fecha) VALUES (?, ?, ?)";
-            $stmtSec = $conn->prepare($sqlSec);
-            $stmtSec->execute([$diplomadoID, $i + 1, $fechaSeccion->format("Y-m-d")]);
-        }
-
-        echo '<script>alert("Diplomado y secciones registrados correctamente.");</script>';
-        echo '<script>window.location.href = "/ERP/ERP_IRP/pages/home.php";</script>';
-
-    } catch (PDOException $e) {
-        echo '<script>alert("Error: ' . $e->getMessage() . '");</script>';
+    if (!$diplomado) {
+        die("❌ Diplomado no encontrado.");
     }
-
-    $conn = null;
+} catch (PDOException $e) {
+    die("Error: " . $e->getMessage());
 }
 ?>
-
-
-
 
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
@@ -128,47 +103,51 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       </ul>
     </div>
 
-      <div class="container">
-      <main>
-        <div class="py-5 text-center">
-          <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
-          <h2>Registro de Diplomados</h2>
+   <div class="container">
+  <main>
+    <div class="py-5 text-center">
+      <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
+      <h2>Editar Diplomado</h2>
+    </div>
+
+    <form action="update-diplomado.php" method="POST" class="needs-validation" novalidate>
+      <input type="hidden" name="id_diplomado" value="<?= htmlspecialchars($diplomado['ID_Diplomado']) ?>">
+
+      <div class="mb-3">
+        <label for="nombre_diplomado" class="form-label">Nombre del Diplomado</label>
+        <input type="text" class="form-control" id="nombre_diplomado" 
+               name="nombre_diplomado" value="<?= htmlspecialchars($diplomado['NombreDiplomado']) ?>" required>
+      </div>
+
+      <div class="mb-3">
+        <label for="descripcion" class="form-label">Descripción</label>
+        <textarea class="form-control" id="descripcion" name="descripcion" rows="3"><?= htmlspecialchars($diplomado['Descripcion']) ?></textarea>
+      </div>
+
+      <div class="row">
+        <div class="col-md-4 mb-3">
+          <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
+          <input type="date" class="form-control" id="fecha_inicio" 
+                 name="fecha_inicio" value="<?= htmlspecialchars($diplomado['FechaInicio']) ?>" required>
         </div>
 
-        <form action="register-diplomado.php" method="POST" class="needs-validation" novalidate>
-          <div class="mb-3">
-            <label for="nombre_diplomado" class="form-label">Nombre del Diplomado</label>
-            <input type="text" class="form-control" id="nombre_diplomado" name="nombre_diplomado" required>
-          </div>
+        <div class="col-md-4 mb-3">
+          <label for="fecha_fin" class="form-label">Fecha de Fin</label>
+          <input type="date" class="form-control" id="fecha_fin" 
+                 name="fecha_fin" value="<?= htmlspecialchars($diplomado['FechaFin']) ?>" required>
+        </div>
 
-          <div class="mb-3">
-            <label for="descripcion" class="form-label">Descripción</label>
-            <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
-          </div>
+        <div class="col-md-4 mb-3">
+          <label for="num_secciones" class="form-label">Número de Secciones</label>
+          <input type="number" class="form-control" id="num_secciones" 
+                 name="num_secciones" min="1" value="<?= htmlspecialchars($diplomado['Num']) ?>" required>
+        </div>
+      </div>
 
-          <div class="row">
-            <div class="col-md-4 mb-3">
-              <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
-              <input type="date" class="form-control" id="fecha_inicio" name="fecha_inicio" required>
-            </div>
-
-            <div class="col-md-4 mb-3">
-              <label for="fecha_fin" class="form-label">Fecha de Fin</label>
-              <input type="date" class="form-control" id="fecha_fin" name="fecha_fin" required>
-            </div>
-
-            <div class="col-md-4 mb-3">
-              <label for="num_secciones" class="form-label">Número de Secciones</label>
-              <input type="number" class="form-control" id="num_secciones" name="num_secciones" min="1" required>
-            </div>
-          </div>
-
-          <!-- Vista previa -->
-          <div id="preview-fechas" class="mb-3"></div>
-
-          <button class="btn btn-primary w-100" type="submit">Registrar Diplomado</button>
-        </form>
-      </main>
+      <button class="btn btn-success w-100" type="submit">💾 Guardar Cambios</button>
+    </form>
+  </main>
+</div>
 
 <!-- Vista previa -->
 <div id="preview-fechas" class="mt-4"></div>
@@ -224,6 +203,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   document.getElementById("fecha_inicio").addEventListener("change", generarFechas);
   document.getElementById("fecha_fin").addEventListener("change", generarFechas);
 </script>
+
 
 
         <footer class="my-5 pt-5 text-body-secondary text-center text-small">

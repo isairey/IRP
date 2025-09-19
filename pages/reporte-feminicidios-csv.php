@@ -279,153 +279,161 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
 
 
 
-<?php
+
  
+
+<?php 
 require_once __DIR__ . '/../pages/footer.php';
-?>
-    <!-- Temina -->
-    <!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
-
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">LISTADO DE DIPLOMADOS</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-          <div class="btn-group me-2">
-            <!-- <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button> -->
-          </div>
-          <!-- <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1">
-            <svg class="bi"><use xlink:href="#calendar3"/></svg>
-            This week
-          </button> -->
-        </div> 
-      </div>
-
-    <div class="d-flex gap- justify-content-center py-5">
-    
-      
-      <form for="search" class="d-flex" role="search">
-        <input class="form-control me-2" type="text" placeholder="Buscar" id="search" name="search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Buscar</button>
-        <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-diplomado.php'"><i class="bi bi-arrow-repeat"></i></button>
-      </form> 
-
-</div>
-
-
-<?php
 require_once __DIR__ . '/../db/config.php';
 
-try {
-    $registrosPorPagina = 8;
-    $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-    $offset = ($pagina - 1) * $registrosPorPagina;
+// Parámetros de paginación
+$registrosPorPagina = 8;
+$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$offset = ($pagina - 1) * $registrosPorPagina;
 
-    $query = "SELECT * FROM Diplomados";
-    $countQuery = "SELECT COUNT(*) FROM Diplomados";
+// Consulta base
+$query = "SELECT * FROM Feminicidios";
+$countQuery = "SELECT COUNT(*) FROM Feminicidios";
 
-    $condiciones = [];
-    $params = [];
+$condiciones = [];
+$params = [];
 
-    // Búsqueda por nombre
-    if (!empty($_GET['search'])) {
-        $condiciones[] = "NombreDiplomado LIKE :search";
-        $params[':search'] = "%" . $_GET['search'] . "%";
-    }
-
-    if ($condiciones) {
-        $where = " WHERE " . implode(" AND ", $condiciones);
-        $query .= $where;
-        $countQuery .= $where;
-    }
-
-    // Total de registros
-    $stmtCount = $conn->prepare($countQuery);
-    foreach ($params as $k => $v) $stmtCount->bindValue($k, $v);
-    $stmtCount->execute();
-    $totalRegistros = $stmtCount->fetchColumn();
-    $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
-
-    // Consulta con LIMIT
-    $query .= " LIMIT :limit OFFSET :offset";
-    $stmt = $conn->prepare($query);
-    foreach ($params as $k => $v) $stmt->bindValue($k, $v);
-    $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $diplomados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "Error: " . $e->getMessage();
-    exit;
+// Búsqueda por nombre de víctima
+if (isset($_GET['search']) && !empty($_GET['search'])) {
+    $condiciones[] = "CONCAT(NombreVictima, ' ', ApellidoPaterno, ' ', ApellidoMaterno) LIKE :search";
+    $params[':search'] = "%{$_GET['search']}%";
 }
+
+if (count($condiciones) > 0) {
+    $where = " WHERE " . implode(" AND ", $condiciones);
+    $query .= $where;
+    $countQuery .= $where;
+}
+
+// Contar total de registros
+$stmtCount = $conn->prepare($countQuery);
+foreach ($params as $key => $value) $stmtCount->bindValue($key, $value);
+$stmtCount->execute();
+$totalRegistros = $stmtCount->fetchColumn();
+$totalPaginas = ceil($totalRegistros / $registrosPorPagina);
+
+// Consulta principal con LIMIT y OFFSET
+$query .= " ORDER BY FechaHecho DESC LIMIT :limit OFFSET :offset";
+$stmt = $conn->prepare($query);
+foreach ($params as $key => $value) $stmt->bindValue($key, $value);
+$stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
+
+$feminicidios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Listado de Feminicidios</h1>
+    </div>
+
+    <!-- Botón único de descarga -->
+    <div class="d-flex justify-content-start py-3">
+        <form action="exportar_feminicidios.php" method="post">
+            <button class="btn btn-success" type="submit">Descargar CSV</button>
+        </form>
+    </div>
+
+    <div class="table-responsive small">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Fecha del Hecho</th>
+                    <th>Nombre de la Víctima</th>
+                    <th>Lugar de Origen</th>
+                    <th>Ocupación</th>
+                    <th>Dirección</th>
+                    <th>Municipio</th>
+                    <th>Región</th>
+                    <th>Estado</th>
+                    <th>Clave Municipio</th>
+                    <th>Alerta de Género</th>
+                    <th>ID Caso Anual</th>
+                    <th>Número de Averiguación</th>
+                    <th>Situación Jurídica</th>
+                    <th>Desaparecida</th>
+                    <th>Fecha de Desaparición</th>
+                    <th>Lugar de Encuentro del Cuerpo</th>
+                    <th>Descripción del Cuerpo</th>
+                    <th>Forma de Muerte</th>
+                    <th>Tipo de Arma</th>
+                    <th>Causas</th>
+                    <th>Descendencia</th>
+                    <th>Número de Descendencia</th>
+                    <th>Nombre del Agresor</th>
+                    <th>Parentesco del Agresor</th>
+                    <th>Fuente Periodística</th>
+                    <th>Autor de la Nota</th>
+                    <th>Enlace de la Nota</th>
+                    <th>Latitud</th>
+                    <th>Longitud</th>
+                    <th>Sexenio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($feminicidios as $f): ?>
+                <tr>
+                    <td><?= $f['FechaHecho'] ?></td>
+                    <td><?= $f['NombreVictima'] . ' ' . $f['ApellidoPaterno'] . ' ' . $f['ApellidoMaterno'] ?></td>
+                    <td><?= $f['LugarOrigen'] ?></td>
+                    <td><?= $f['Ocupacion'] ?></td>
+                    <td><?= $f['Calle'] . ' ' . $f['Numero'] ?></td>
+                    <td><?= $f['Municipio'] ?></td>
+                    <td><?= $f['Region'] ?></td>
+                    <td><?= $f['Estado'] ?></td>
+                    <td><?= $f['ClaveMunicipio'] ?></td>
+                    <td><?= $f['AlertaGenero'] ?></td>
+                    <td><?= $f['IDCasoAnual'] ?></td>
+                    <td><?= $f['NumAveriguacion'] ?></td>
+                    <td><?= $f['SituacionJuridica'] ?></td>
+                    <td><?= $f['Desaparecida'] ?></td>
+                    <td><?= $f['FechaDesaparicion'] ?></td>
+                    <td><?= $f['LugarEncontradoCuerpo'] ?></td>
+                    <td><?= $f['DescripcionCuerpo'] ?></td>
+                    <td><?= $f['FormaMuerte'] ?></td>
+                    <td><?= $f['TipoArma'] ?></td>
+                    <td><?= $f['Causas'] ?></td>
+                    <td><?= $f['Descendencia'] ?></td>
+                    <td><?= $f['NumDescendencia'] ?></td>
+                    <td><?= $f['NombreAgresor'] ?></td>
+                    <td><?= $f['ParentescoAgresor'] ?></td>
+                    <td><?= $f['FuentePeriodistica'] ?></td>
+                    <td><?= $f['AutorNota'] ?></td>
+                    <td><a href="<?= $f['LinkNota'] ?>" target="_blank">Ver Nota</a></td>
+                    <td><?= $f['Latitud'] ?></td>
+                    <td><?= $f['Longitud'] ?></td>
+                    <td><?= $f['Sexenio'] ?></td>
+                    <td>
+                        <button class="btn btn-danger btn-sm eliminar-feminicidio" data-id="<?= $f['ID'] ?>">Eliminar</button>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
 
 
-<!-- Tabla de diplomados -->
-<div class="table-responsive small">
-  <table class="table table-striped table-sm">
-    <thead>
-      <tr>
-        <th>Nombre del Diplomado</th>
-        <th>Descripción</th>
-        <th>Fecha de Inicio</th>
-        <th>Fecha de Fin</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($diplomados as $d): ?>
-        <tr>
-          <td><?= htmlspecialchars($d['NombreDiplomado']) ?></td>
-          <td><?= nl2br(htmlspecialchars($d['Descripcion'])) ?></td>
-          <td><?= htmlspecialchars($d['FechaInicio']) ?></td>
-          <td><?= htmlspecialchars($d['FechaFin']) ?></td>
-          <td>
-            <a href="/ERP/ERP_IRP/checkout/editar_diplomado.php?id=<?= $d['ID_Diplomado'] ?>" class="btn btn-sm btn-warning">Editar</a>
-            <button class="btn btn-sm btn-danger eliminar-diplomado" data-id="<?= $d['ID_Diplomado'] ?>">Eliminar</button>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
-</div>
+    <!-- Paginación --> <nav aria-label="Page navigation"> <ul class="pagination justify-content-center mt-3"> <?php if($pagina > 1): ?> <li class="page-item"><a class="page-link" href="?pagina=<?= $pagina-1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">&larr; Anterior</a></li> <?php else: ?> <li class="page-item disabled"><span class="page-link">&larr; Anterior</span></li> <?php endif; ?> <?php $ventana = 10; $inicio = max(1, $pagina - floor($ventana / 2)); $fin = min($totalPaginas, $inicio + $ventana - 1); if ($fin - $inicio + 1 < $ventana) $inicio = max(1, $fin - $ventana + 1); for ($i=$inicio; $i<=$fin; $i++): ?> <li class="page-item <?= $i==$pagina?'active':'' ?>"><a class="page-link" href="?pagina=<?= $i ?>&search=<?= urlencode($_GET['search'] ?? '') ?>"><?= $i ?></a></li> <?php endfor; ?> <?php if($pagina < $totalPaginas): ?> <li class="page-item"><a class="page-link" href="?pagina=<?= $pagina+1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Siguiente &rarr;</a></li> <?php else: ?> <li class="page-item disabled"><span class="page-link">Siguiente &rarr;</span></li> <?php endif; ?> </ul> </nav> </main>
 
-<!-- Paginación -->
-<nav aria-label="Paginación">
-  <ul class="pagination justify-content-center mt-3">
-    <?php if ($pagina > 1): ?>
-      <li class="page-item"><a class="page-link" href="?pagina=<?= $pagina - 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">&laquo; Anterior</a></li>
-    <?php else: ?>
-      <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
-    <?php endif; ?>
 
-    <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-      <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
-        <a class="page-link" href="?pagina=<?= $i ?>&search=<?= urlencode($_GET['search'] ?? '') ?>"><?= $i ?></a>
-      </li>
-    <?php endfor; ?>
-
-    <?php if ($pagina < $totalPaginas): ?>
-      <li class="page-item"><a class="page-link" href="?pagina=<?= $pagina + 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Siguiente &raquo;</a></li>
-    <?php else: ?>
-      <li class="page-item disabled"><span class="page-link">Siguiente &raquo;</span></li>
-    <?php endif; ?>
-  </ul>
-</nav>
-
-<!-- Script para eliminar -->
 <script>
-document.querySelectorAll('.eliminar-diplomado').forEach(button => {
-  button.addEventListener('click', () => {
-    if (confirm('¿Estás seguro de que deseas eliminar este diplomado?')) {
-      const id = button.getAttribute('data-id');
-      window.location.href = `eliminar_diplomado.php?eliminar_id=${id}`;
-    }
-  });
+document.querySelectorAll('.eliminar-feminicidio').forEach(btn => {
+    btn.addEventListener('click', () => {
+        if(confirm('¿Estás seguro de que deseas eliminar este registro?')) {
+            const id = btn.getAttribute('data-id');
+            window.location.href = `eliminar_feminicidio.php?eliminar_id=${id}`;
+        }
+    });
 });
 </script>
-<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
       
