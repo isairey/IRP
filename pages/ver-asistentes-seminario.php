@@ -1,13 +1,54 @@
 <?php
+// Inicia sesión, verifica permisos si es necesario
 session_start();
+require_once __DIR__ . '/../db/config.php';
 
-// Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    // Si el usuario no ha iniciado sesión o no tiene el rol adecuado, redirigirlo a otra página
-    header("Location: ../sign-in/index.php"); // O a una página de acceso denegado
-    exit();
+// --- Validar ID de seminario ---
+if (!isset($_GET['id_seminario']) || !is_numeric($_GET['id_seminario'])) {
+    die("ID de seminario inválido.");
+}
+$idSeminario = (int) $_GET['id_seminario'];
+
+$registrosPorPagina = 8;
+$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
+$offset = ($pagina - 1) * $registrosPorPagina;
+
+// 1️⃣ Consulta de asistentes del seminario
+$stmt = $conn->prepare("
+    SELECT u.ID, u.Nombre, u.Email, aa.FechaAsignacion
+    FROM asignaciones_seminario aa
+    INNER JOIN usuario u ON aa.ID = u.ID
+    WHERE aa.ID_Seminario = :idSeminario
+    ORDER BY aa.FechaAsignacion DESC
+    LIMIT :limit OFFSET :offset
+");
+$stmt->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
+$stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
+$asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// 2️⃣ Traer la fecha del seminario
+foreach ($asistentes as &$asistente) {
+    $stmt2 = $conn->prepare("
+        SELECT fecha 
+        FROM seminarios 
+        WHERE ID_Seminario = :idSeminario
+    ");
+    $stmt2->execute([
+        ':idSeminario' => $idSeminario
+    ]);
+    // fetchColumn() devuelve un solo valor, la fecha
+    $asistente['fecha_seminario'] = $stmt2->fetchColumn();
 }
 
+
+// Conteo total para paginación
+$stmtCount = $conn->prepare("SELECT COUNT(*) FROM asignaciones_seminario WHERE ID_Seminario = :idSeminario");
+$stmtCount->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
+$stmtCount->execute();
+$totalRegistros = $stmtCount->fetchColumn();
+$totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 ?>
 
 
@@ -275,160 +316,117 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
 </header>
 
 
-
-
-
-
 <?php
  
 require_once __DIR__ . '/../pages/footer.php';
 ?>
-    <!-- Temina -->
-    <!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
 
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">LISTADO DE DIPLOMADOS</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-          <div class="btn-group me-2">
-            <!-- <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button> -->
-          </div>
-          <!-- <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1">
-            <svg class="bi"><use xlink:href="#calendar3"/></svg>
-            This week
-          </button> -->
-        </div> 
-      </div>
-
-    <div class="d-flex gap- justify-content-center py-5">
-    
-      
-      <form for="search" class="d-flex" role="search">
-        <input class="form-control me-2" type="text" placeholder="Buscar" id="search" name="search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Buscar</button>
-        <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-diplomado.php'"><i class="bi bi-arrow-repeat"></i></button>
-      </form> 
-
-</div>
 
 
 <?php
 require_once __DIR__ . '/../db/config.php';
 
-try {
-    $registrosPorPagina = 8;
-    $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
-    $offset = ($pagina - 1) * $registrosPorPagina;
+// Validar ID de seminario
+if (!isset($_GET['id_seminario']) || !is_numeric($_GET['id_seminario'])) {
+    die("ID de seminario inválido.");
+}
+$idSeminario = (int) $_GET['id_seminario'];
 
-    $query = "SELECT * FROM Diplomados";
-    $countQuery = "SELECT COUNT(*) FROM Diplomados";
+// Obtener fecha del seminario
+$stmtSem = $conn->prepare("SELECT fecha FROM seminarios WHERE ID_seminario = :idSeminario");
+$stmtSem->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
+$stmtSem->execute();
+$seminario = $stmtSem->fetch(PDO::FETCH_ASSOC);
 
-    $condiciones = [];
-    $params = [];
+if (!$seminario) die("Seminario no encontrado.");
 
-    // Búsqueda por nombre
-    if (!empty($_GET['search'])) {
-        $condiciones[] = "NombreDiplomado LIKE :search";
-        $params[':search'] = "%" . $_GET['search'] . "%";
-    }
+// Obtener asistentes según tipo
+$stmt = $conn->prepare("
+    SELECT a.ID_Persona, a.Tipo, a.FechaAsignacion,
+        CASE 
+            WHEN a.Tipo = 'participante' THEN p.Nombre
+            WHEN a.Tipo = 'usuario' THEN u.Nombre
+            WHEN a.Tipo = 'personal' THEN pe.Nombre
+            ELSE 'Desconocido'
+        END AS Nombre,
+        CASE 
+            WHEN a.Tipo = 'participante' THEN p.Email
+            WHEN a.Tipo = 'usuario' THEN u.Email
+            WHEN a.Tipo = 'personal' THEN pe.Email
+            ELSE ''
+        END AS Email
+    FROM asignaciones_seminario a
+    LEFT JOIN participante p ON a.Tipo = 'participante' AND a.ID_Persona = p.ID_Participante
+    LEFT JOIN usuario u ON a.Tipo = 'usuario' AND a.ID_Persona = u.ID
+    LEFT JOIN personal pe ON a.Tipo = 'personal' AND a.ID_Persona = pe.ID_Personal
+    WHERE a.ID_Seminario = :idSeminario
+    ORDER BY a.FechaAsignacion DESC
+");
+$stmt->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
+$stmt->execute();
+$asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    if ($condiciones) {
-        $where = " WHERE " . implode(" AND ", $condiciones);
-        $query .= $where;
-        $countQuery .= $where;
-    }
-
-    // Total de registros
-    $stmtCount = $conn->prepare($countQuery);
-    foreach ($params as $k => $v) $stmtCount->bindValue($k, $v);
-    $stmtCount->execute();
-    $totalRegistros = $stmtCount->fetchColumn();
-    $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
-
-    // Consulta con LIMIT
-    $query .= " LIMIT :limit OFFSET :offset";
-    $stmt = $conn->prepare($query);
-    foreach ($params as $k => $v) $stmt->bindValue($k, $v);
-    $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-    $diplomados = $stmt->fetchAll(PDO::FETCH_ASSOC);
-} catch (PDOException $e) {
-    echo "Error: " . $e->getMessage();
-    exit;
+// Traer asistencias si existe la tabla (opcional)
+$asistencias = [];
+$stmtAsis = $conn->prepare("SELECT ID_Persona, Asistio FROM asistencias_seminario WHERE ID_Seminario = :idSeminario");
+$stmtAsis->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
+$stmtAsis->execute();
+foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
+    $asistencias[$a['ID_Persona']] = $a['Asistio'];
 }
 ?>
 
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Asistentes del Seminario #<?= htmlspecialchars($idSeminario) ?></h1>
+    <p>Fecha del Seminario: <?= htmlspecialchars($seminario['fecha']) ?></p>
+  </div>
 
+  <div class="table-responsive small">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Tipo</th>
+                <th>Fecha Asignación</th>
+                <th>Asistencia</th>
+            </tr>
+        </thead>
+        <tbody>
+<?php foreach ($asistentes as $a): ?>
+<tr>
+    <td><?= htmlspecialchars($a['Nombre']) ?></td>
+    <td><?= htmlspecialchars($a['Email']) ?></td>
+    <td><?= htmlspecialchars($a['Tipo']) ?></td>
+    <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
+    <td>
+        <input type="checkbox" class="asistencia-switch"
+               data-persona="<?= $a['ID_Persona'] ?>"
+               <?= isset($asistencias[$a['ID_Persona']]) && $asistencias[$a['ID_Persona']] ? 'checked' : '' ?>>
+    </td>
+</tr>
+<?php endforeach; ?>
+        </tbody>
+    </table>
+  </div>
+</main>
 
-<!-- Tabla de diplomados -->
-<div class="table-responsive small">
-  <table class="table table-striped table-sm">
-    <thead>
-      <tr>
-        <th>Nombre del Diplomado</th>
-        <th>Descripción</th>
-        <th>Fecha de Inicio</th>
-        <th>Fecha de Fin</th>
-        <th>Acciones</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($diplomados as $d): ?>
-        <tr>
-          <td><?= htmlspecialchars($d['NombreDiplomado']) ?></td>
-          <td><?= nl2br(htmlspecialchars($d['Descripcion'])) ?></td>
-          <td><?= htmlspecialchars($d['FechaInicio']) ?></td>
-          <td><?= htmlspecialchars($d['FechaFin']) ?></td>
-          <td>
-            <a href="/ERP/ERP_IRP/checkout/editar_diplomado.php?id=<?= $d['ID_Diplomado'] ?>" class="btn btn-sm btn-warning">Editar</a>
-            <button class="btn btn-sm btn-danger eliminar-diplomado" data-id="<?= $d['ID_Diplomado'] ?>">Eliminar</button>
-          </td>
-        </tr>
-      <?php endforeach; ?>
-    </tbody>
-  </table>
-</div>
-
-<!-- Paginación -->
-<nav aria-label="Paginación">
-  <ul class="pagination justify-content-center mt-3">
-    <?php if ($pagina > 1): ?>
-      <li class="page-item"><a class="page-link" href="?pagina=<?= $pagina - 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">&laquo; Anterior</a></li>
-    <?php else: ?>
-      <li class="page-item disabled"><span class="page-link">&laquo; Anterior</span></li>
-    <?php endif; ?>
-
-    <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-      <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
-        <a class="page-link" href="?pagina=<?= $i ?>&search=<?= urlencode($_GET['search'] ?? '') ?>"><?= $i ?></a>
-      </li>
-    <?php endfor; ?>
-
-    <?php if ($pagina < $totalPaginas): ?>
-      <li class="page-item"><a class="page-link" href="?pagina=<?= $pagina + 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Siguiente &raquo;</a></li>
-    <?php else: ?>
-      <li class="page-item disabled"><span class="page-link">Siguiente &raquo;</span></li>
-    <?php endif; ?>
-  </ul>
-</nav>
-
-<!-- Script para eliminar -->
 <script>
-document.querySelectorAll('.eliminar-diplomado').forEach(button => {
-  button.addEventListener('click', () => {
-    if (confirm('¿Estás seguro de que deseas eliminar este diplomado?')) {
-      const id = button.getAttribute('data-id');
-      window.location.href = `eliminar_diplomado.php?eliminar_id=${id}`;
-    }
-  });
+document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
+    switchEl.addEventListener('change', () => {
+        const idPersona = switchEl.dataset.persona;
+        const presente = switchEl.checked ? 1 : 0;
+        const idSeminario = <?= $idSeminario ?>;
+
+        fetch('guardar_asistencia_sem.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `id_persona=${idPersona}&id_seminario=${idSeminario}&Asistio=${presente}`
+        })
+        .then(res => res.text())
+        .then(res => console.log("Servidor respondió:", res))
+        .catch(err => console.error("Error en fetch:", err));
+    });
 });
 </script>
-<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
-      
-    </script><script src="dashboard.js"></script>
-</body>
-</html>

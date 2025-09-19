@@ -3,13 +3,56 @@ session_start();
 
 // Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    // Si el usuario no ha iniciado sesión o no tiene el rol adecuado, redirigirlo a otra página
-    header("Location: ../sign-in/index.php"); // O a una página de acceso denegado
+    header("Location: ../sign-in/index.php");
     exit();
 }
 
-?>
+// Conexión a la base de datos
+require_once __DIR__ . '/../db/config.php';
 
+try {
+    $registrosPorPagina = 8;
+    $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+    $offset = ($pagina - 1) * $registrosPorPagina;
+
+    $query = "SELECT ID_Seminario, Nombre, fecha, DuracionHoras, Estado FROM seminarios";
+    $countQuery = "SELECT COUNT(*) FROM seminarios";
+
+    $condiciones = [];
+    $params = [];
+
+    // Búsqueda por título
+    if (!empty($_GET['search'])) {
+        $condiciones[] = "titulo LIKE :search";
+        $params[':search'] = "%" . $_GET['search'] . "%";
+    }
+
+    if ($condiciones) {
+        $where = " WHERE " . implode(" AND ", $condiciones);
+        $query .= $where;
+        $countQuery .= $where;
+    }
+
+    // Total de registros
+    $stmtCount = $conn->prepare($countQuery);
+    foreach ($params as $k => $v) $stmtCount->bindValue($k, $v);
+    $stmtCount->execute();
+    $totalRegistros = $stmtCount->fetchColumn();
+    $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
+
+    // Consulta con LIMIT
+    $query .= " ORDER BY fecha ASC LIMIT :limit OFFSET :offset";
+    $stmt = $conn->prepare($query);
+    foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+    $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+    $seminarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    die("Error al obtener seminarios: " . $e->getMessage());
+}
+?>
 
 
 <!doctype html>
@@ -285,33 +328,21 @@ require_once __DIR__ . '/../pages/footer.php';
 ?>
     <!-- Temina -->
     <!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">LISTADO DE SEMINARIOS</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+      <div class="btn-group me-2"></div>
+    </div>
+  </div>
 
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">LISTADO DE DIPLOMADOS</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-          <div class="btn-group me-2">
-            <!-- <button type="button" class="btn btn-sm btn-outline-secondary">Share</button>
-            <button type="button" class="btn btn-sm btn-outline-secondary">Export</button> -->
-          </div>
-          <!-- <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle d-flex align-items-center gap-1">
-            <svg class="bi"><use xlink:href="#calendar3"/></svg>
-            This week
-          </button> -->
-        </div> 
-      </div>
-
-    <div class="d-flex gap- justify-content-center py-5">
-    
-      
-      <form for="search" class="d-flex" role="search">
-        <input class="form-control me-2" type="text" placeholder="Buscar" id="search" name="search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Buscar</button>
-        <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-diplomado.php'"><i class="bi bi-arrow-repeat"></i></button>
-      </form> 
-
-</div>
-
+  <div class="d-flex gap-2 justify-content-center py-5">
+    <form for="search" class="d-flex" role="search">
+      <input class="form-control me-2" type="text" placeholder="Buscar" id="search" name="search" aria-label="Search">
+      <button class="btn btn-outline-success" type="submit">Buscar</button>
+      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-seminario.php'"><i class="bi bi-arrow-repeat"></i></button>
+    </form>
+  </div>
 
 <?php
 require_once __DIR__ . '/../db/config.php';
@@ -321,15 +352,15 @@ try {
     $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
     $offset = ($pagina - 1) * $registrosPorPagina;
 
-    $query = "SELECT * FROM Diplomados";
-    $countQuery = "SELECT COUNT(*) FROM Diplomados";
+    $query = "SELECT * FROM Seminarios";
+    $countQuery = "SELECT COUNT(*) FROM Seminarios";
 
     $condiciones = [];
     $params = [];
 
-    // Búsqueda por nombre
+    // Búsqueda por título
     if (!empty($_GET['search'])) {
-        $condiciones[] = "NombreDiplomado LIKE :search";
+        $condiciones[] = "Nombre LIKE :search";
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
@@ -353,37 +384,37 @@ try {
     $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
-    $diplomados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $seminarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
     exit;
 }
 ?>
 
-
-
-<!-- Tabla de diplomados -->
+<!-- Tabla de seminarios -->
 <div class="table-responsive small">
   <table class="table table-striped table-sm">
     <thead>
       <tr>
-        <th>Nombre del Diplomado</th>
+        <th>Título</th>
         <th>Descripción</th>
-        <th>Fecha de Inicio</th>
-        <th>Fecha de Fin</th>
+        <th>Fecha</th>
+        <th>Duracion</th>
+        <th>Estado</th>
         <th>Acciones</th>
       </tr>
     </thead>
     <tbody>
-      <?php foreach ($diplomados as $d): ?>
+      <?php foreach ($seminarios as $s): ?>
         <tr>
-          <td><?= htmlspecialchars($d['NombreDiplomado']) ?></td>
-          <td><?= nl2br(htmlspecialchars($d['Descripcion'])) ?></td>
-          <td><?= htmlspecialchars($d['FechaInicio']) ?></td>
-          <td><?= htmlspecialchars($d['FechaFin']) ?></td>
+          <td><?= htmlspecialchars($s['Nombre']) ?></td>
+          <td><?= nl2br(htmlspecialchars($s['Descripcion'])) ?></td>
+          <td><?= htmlspecialchars($s['Fecha']) ?></td>
+          <td><?= htmlspecialchars($s['DuracionHoras']) ?></td>
+          <td><?= htmlspecialchars($s['Estado']) ?></td>
           <td>
-            <a href="/ERP/ERP_IRP/checkout/editar_diplomado.php?id=<?= $d['ID_Diplomado'] ?>" class="btn btn-sm btn-warning">Editar</a>
-            <button class="btn btn-sm btn-danger eliminar-diplomado" data-id="<?= $d['ID_Diplomado'] ?>">Eliminar</button>
+            <a href="/ERP/ERP_IRP/checkout/editar_seminario.php?id=<?= $s['ID_Seminario'] ?>" class="btn btn-sm btn-warning">Editar</a>
+            <button class="btn btn-sm btn-danger eliminar-seminario" data-id="<?= $s['ID_Seminario'] ?>">Eliminar</button>
           </td>
         </tr>
       <?php endforeach; ?>
@@ -416,19 +447,19 @@ try {
 
 <!-- Script para eliminar -->
 <script>
-document.querySelectorAll('.eliminar-diplomado').forEach(button => {
+document.querySelectorAll('.eliminar-seminario').forEach(button => {
   button.addEventListener('click', () => {
-    if (confirm('¿Estás seguro de que deseas eliminar este diplomado?')) {
+    if (confirm('¿Estás seguro de que deseas eliminar este seminario?')) {
       const id = button.getAttribute('data-id');
-      window.location.href = `eliminar_diplomado.php?eliminar_id=${id}`;
+      window.location.href = `eliminar_seminario.php?eliminar_id=${id}`;
     }
   });
 });
 </script>
-<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
-      
+<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+</main>
+
     </script><script src="dashboard.js"></script>
 </body>
 </html>

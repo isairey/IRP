@@ -155,6 +155,8 @@
     </a>
   </li>
 
+  <hr class="my-3">
+
 <li class="nav-item">
     <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-diplomado.php">
     <i class="bi bi-person-vcard"></i>
@@ -192,6 +194,52 @@
       Ver Asistentes
     </a>
   </li>
+
+
+
+
+
+
+  <hr class="my-3">
+
+<li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-seminario.php">
+    <i class="bi bi-person-vcard"></i>
+      Registrar Seminario
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-seminario.php">
+    <i class="bi bi-person-lines-fill"></i>
+      Lista de Seminarios
+    </a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignar-seminario-ponente.php">
+    <i class="bi bi-piggy-bank-fill"></i>
+      Asignar Seminario
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-seminario-ponente.php">
+    <i class="bi bi-card-checklist"></i>
+      Ver Seminarios Impartidos
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignar-seminario.php">
+    <i class="bi bi-card-checklist"></i>
+      Registrar Asistentes
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-asistentes_seminario.php">
+    <i class="bi bi-card-checklist"></i>
+      Ver Asistentes
+    </a>
+  </li>
+
 
 
 
