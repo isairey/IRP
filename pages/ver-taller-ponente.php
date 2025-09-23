@@ -16,23 +16,23 @@ try {
 
     // Consulta principal
     $query = "
-        SELECT sp.ID_Asignacion, s.Nombre, p.Nombre, sp.FechaAsignacion
-        FROM asignacion_ponente_seminario sp
-        LEFT JOIN Seminarios s ON sp.ID_Seminario = s.ID_Seminario
-        LEFT JOIN Ponentes p ON sp.ID_Ponente = p.ID_Ponente
+        SELECT at.ID, t.Nombre, p.Nombre, at.FechaAsignacion
+        FROM asignacion_ponentes_taller at
+        LEFT JOIN Talleres t ON at.ID_Taller = t.ID_Taller
+        LEFT JOIN Ponentes p ON at.ID_Ponente = p.ID_Ponente
     ";
 
     $countQuery = "SELECT COUNT(*) 
-                   FROM asignacion_ponente_seminario sp
-                   LEFT JOIN Seminarios s ON sp.ID_Seminario = s.ID_Seminario
-                   LEFT JOIN Ponentes p ON sp.ID_Ponente = p.ID_Ponente";
+                   FROM asignacion_ponentes_taller at
+                   LEFT JOIN Talleres t ON at.ID_Taller = t.ID_Taller
+                   LEFT JOIN Ponentes p ON at.ID_Ponente = p.ID_Ponente";
 
     $condiciones = [];
     $params = [];
 
     // Buscador
     if (!empty($_GET['search'])) {
-        $condiciones[] = "(s.NombreSeminario LIKE :search OR p.NombrePonente LIKE :search)";
+        $condiciones[] = "(t.NombreTaller LIKE :search OR p.NombrePonente LIKE :search)";
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
@@ -52,7 +52,7 @@ try {
     $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
     // Paginación
-    $query .= " ORDER BY sp.FechaAsignacion DESC LIMIT :limit OFFSET :offset";
+    $query .= " ORDER BY at.FechaAsignacion DESC LIMIT :limit OFFSET :offset";
     $stmt = $conn->prepare($query);
     foreach ($params as $k => $v) {
         $stmt->bindValue($k, $v);
@@ -339,91 +339,97 @@ try {
 
 
 <?php
- 
 require_once __DIR__ . '/../pages/footer.php';
 ?>
-    <!-- Temina -->
-    <!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
+<!-- Termina el menú -->
+<!-- CONTENIDO DE LA PÁGINA -->
 
-   <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-  <div class="d-flex justify-content-between ... border-bottom">
-    <h1 class="h2">Listado de Seminarios y Ponentes</h1>
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap 
+              align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Listado de Talleres y Ponentes</h1>
   </div>
 
   <div class="container mt-4">
+    
 
+    <!-- Buscador -->
+    <form method="get" class="mb-3 d-flex">
+      <input type="text" name="search" class="form-control me-2"
+             placeholder="Buscar taller o ponente..."
+             value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
+      <button type="submit" class="btn btn-primary">Buscar</button>
+    </form>
 
-  <!-- Buscador -->
-  <form method="get" class="mb-3 d-flex">
-    <input type="text" name="search" class="form-control me-2" 
-           placeholder="Buscar seminario o ponente..." 
-           value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-    <button type="submit" class="btn btn-primary">Buscar</button>
-  </form>
-
-  <!-- Tabla -->
-  <table class="table table-striped table-sm">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Seminario</th>
-        <th>Ponente</th>
-        <th>Fecha Asignación</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php if ($asignaciones): ?>
-        <?php foreach ($asignaciones as $a): ?>
-          <tr>
-            <td><?= htmlspecialchars($a['ID_Asignacion']) ?></td>
-            <td><?= htmlspecialchars($a['Nombre']) ?></td>
-            <td><?= htmlspecialchars($a['Nombre']) ?></td>
-            <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
-          </tr>
-        <?php endforeach; ?>
-      <?php else: ?>
+    <!-- Tabla -->
+<table class="table table-striped table-sm">
+      <thead >
         <tr>
-          <td colspan="4" class="text-center">No se encontraron resultados</td>
+          <th>ID</th>
+          <th>Taller</th>
+          <th>Ponente</th>
+          <th>Fecha Asignación</th>
+          <th>Acciones</th>
         </tr>
-      <?php endif; ?>
-    </tbody>
-  </table>
+      </thead>
+      <tbody>
+        <?php if ($asignaciones): ?>
+          <?php foreach ($asignaciones as $a): ?>
+            <tr>
+              <td><?= htmlspecialchars($a['ID']) ?></td>
+              <td><?= htmlspecialchars($a['Nombre']) ?></td>
+              <td><?= htmlspecialchars($a['Nombre']) ?></td>
+              <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
+              <td>
+                <button class="btn btn-danger btn-sm eliminar-asignacion"
+                        data-id="<?= $a['ID'] ?>">Eliminar</button>
+              </td>
+            </tr>
+          <?php endforeach; ?>
+        <?php else: ?>
+          <tr>
+            <td colspan="5" class="text-center">No se encontraron resultados</td>
+          </tr>
+        <?php endif; ?>
+      </tbody>
+    </table>
 
-  <!-- Paginación -->
-  <nav>
-    <ul class="pagination justify-content-center">
-      <li class="page-item <?= ($pagina <= 1) ? 'disabled' : '' ?>">
-        <a class="page-link" href="?pagina=<?= $pagina - 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Anterior</a>
-      </li>
-      <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-        <li class="page-item <?= ($i == $pagina) ? 'active' : '' ?>">
-          <a class="page-link" href="?pagina=<?= $i ?>&search=<?= urlencode($_GET['search'] ?? '') ?>"><?= $i ?></a>
+    <!-- Paginación -->
+    <nav>
+      <ul class="pagination justify-content-center">
+        <li class="page-item <?= ($pagina <= 1) ? 'disabled' : '' ?>">
+          <a class="page-link"
+             href="?pagina=<?= $pagina - 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Anterior</a>
         </li>
-      <?php endfor; ?>
-      <li class="page-item <?= ($pagina >= $totalPaginas) ? 'disabled' : '' ?>">
-        <a class="page-link" href="?pagina=<?= $pagina + 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Siguiente</a>
-      </li>
-    </ul>
-  </nav>
-</div>
+        <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+          <li class="page-item <?= ($i == $pagina) ? 'active' : '' ?>">
+            <a class="page-link"
+               href="?pagina=<?= $i ?>&search=<?= urlencode($_GET['search'] ?? '') ?>"><?= $i ?></a>
+          </li>
+        <?php endfor; ?>
+        <li class="page-item <?= ($pagina >= $totalPaginas) ? 'disabled' : '' ?>">
+          <a class="page-link"
+             href="?pagina=<?= $pagina + 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Siguiente</a>
+        </li>
+      </ul>
+    </nav>
+  </div>
 </main>
 
 <script>
   document.querySelectorAll('.eliminar-asignacion').forEach(btn => {
     btn.addEventListener('click', () => {
       if (confirm('¿Eliminar esta asignación?')) {
-        location.href = `eliminar_asignacion.php?id=${btn.dataset.id}`;
+        location.href = `eliminar_asignacion_ponente.php?id=${btn.dataset.id}`;
       }
     });
   });
 </script>
 
-<!-- Aquí tus scripts de Bootstrap y dashboard.js si aplica -->
-
-
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
-      
-    </script><script src="dashboard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js"
+        integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp"
+        crossorigin="anonymous"></script>
+<script src="dashboard.js"></script>
 </body>
 </html>

@@ -1,55 +1,38 @@
 <?php
-session_start();
-
-// Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    header("Location: ../sign-in/index.php");
-    exit();
-}
-
 require_once __DIR__ . '/../db/config.php';
 $conn->exec("SET NAMES utf8");
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $id_usuario = $_POST['id_usuario'] ?? null;
-    $id_diplomado = $_POST['id_diplomado'] ?? null;
-    $id_ponente = $_POST['id_ponente'] ?? null;
-    $tipo_usuario = $_POST['tipo_usuario'] ?? null; // Lo enviaremos vía JS
-
-    if (!$id_usuario || !$id_diplomado || !$id_ponente) {
-        die("Todos los campos son obligatorios.");
-    }
+    $id_taller   = $_POST['id_taller'] ?? null;
+    $id_persona  = $_POST['id_asistente'] ?? null;
+    $tipo        = $_POST['tipo'] ?? null;
 
     try {
-        
+        $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-        // Determinar TipoUsuario automáticament
-
-        
-
-        // Insertar en AsignacionesDiplomado
-        $sql = "INSERT INTO AsignacionesDiplomado (ID_Usuario, TipoUsuario, ID_Diplomado, ID_Ponente, FechaAsignacion)
-                VALUES (:id_usuario, :tipo_usuario, :id_diplomado, :id_ponente, NOW())";
+        $sql = "INSERT INTO asistentes_taller (ID_Taller, ID_Persona, TipoPersona, FechaRegistro)
+                VALUES (:id_taller, :id_persona, :tipo, NOW())";
 
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':id_usuario', $id_usuario);
-        $stmt->bindParam(':tipo_usuario', $tipo_usuario);
-        $stmt->bindParam(':id_diplomado', $id_diplomado);
-        $stmt->bindParam(':id_ponente', $id_ponente);
+        $stmt->bindParam(':id_taller', $id_taller);
+        $stmt->bindParam(':id_persona', $id_persona);
+        $stmt->bindParam(':tipo', $tipo);
 
         if ($stmt->execute()) {
             echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
-                    ¡Asignación registrada correctamente!
+                    ✅ ¡Asistente asignado correctamente al taller!
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                   </div>';
         } else {
-            echo '<div class="alert alert-danger">Error al registrar la asignación.</div>';
+            echo '<div class="alert alert-danger">❌ Error al registrar la asignación.</div>';
         }
     } catch (PDOException $e) {
         echo "Error en la base de datos: " . $e->getMessage();
     }
 }
 ?>
+
 
 
 
@@ -128,128 +111,89 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     </div>
 
     
-        
-     <div class="container">
+   <div class="container">
     <main>
         <div class="py-5 text-center">
             <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
-            <h2>Asignaciones Diplomado</h2>
+            <h2>Asignar Asistentes a Taller</h2>
         </div>
-      <form class="needs-validation" action="asignar-diplomado.php" method="POST" enctype="multipart/form-data" novalidate>
-            
 
-<div class="col-sm-12">
-    <label for="buscar_usuario" class="form-label">Buscar Participante</label>
-    <div class="input-group mb-3">
-        <input type="text" id="buscar_usuario" class="form-control" placeholder="Ingresa el nombre">
-        <button class="btn btn-outline-secondary" type="button" id="btnBuscarUsuario">Buscar</button>
-        <button class="btn btn-outline-secondary" type="button" id="btnRefreshUsuario">Refresh</button>
-    </div>
+        <form class="needs-validation" action="asignar-taller.php" method="POST" enctype="multipart/form-data" novalidate>
 
-    <label for="id_usuario" class="form-label">Participante</label>
-    <select name="id_usuario" class="form-select" id="id_usuario">
-    <option value="">-- Selecciona un participante --</option>
-    <?php
-    $sql = "
-        SELECT ID_Participante AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto, 'participante' AS tipo
-        FROM Participante
-        UNION
-        SELECT ID_Personal AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto, 'personal' AS tipo
-        FROM Personal
-        UNION
-        SELECT id AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto, 'usuario' AS tipo
-        FROM Usuario
-    ";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
-    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        echo "<option value='{$row['id']}' data-tipo='{$row['tipo']}'>{$row['NombreCompleto']}</option>";
-    }
-    ?>
-    <option value="_otro_">Otro...</option>
-</select>
-<!-- Aquí va el input hidden -->
-    <input type="hidden" name="tipo_usuario" id="tipo_usuario">
+            <!-- Buscar asistente -->
+            <div class="col-sm-12">
+                <label for="buscar_asistente" class="form-label">Buscar Asistente</label>
+                <div class="input-group mb-3">
+                    <input type="text" id="buscar_asistente" class="form-control" placeholder="Ingresa el nombre">
+                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarAsistente">Buscar</button>
+                    <button class="btn btn-outline-secondary" type="button" id="btnRefreshAsistente">Refresh</button>
+                </div>
 
-</div>
-
-<script>
-document.getElementById('id_usuario').addEventListener('change', function() {
-    const tipo = this.selectedOptions[0].dataset.tipo || '';
-    document.getElementById('tipo_usuario').value = tipo;
-});
-</script>
-
-<script>
-// Filtrar opciones del select según el input
-document.getElementById('btnBuscarUsuario').addEventListener('click', function() {
-    const filtro = document.getElementById('buscar_usuario').value.toLowerCase();
-    const select = document.getElementById('id_usuario');
-    for (let i = 0; i < select.options.length; i++) {
-        const texto = select.options[i].text.toLowerCase();
-        select.options[i].style.display = texto.includes(filtro) ? '' : 'none';
-    }
-});
-
-// Botón de refresh: limpia el input y muestra todas las opciones
-document.getElementById('btnRefreshUsuario').addEventListener('click', function() {
-    document.getElementById('buscar_usuario').value = '';
-    const select = document.getElementById('id_usuario');
-    for (let i = 0; i < select.options.length; i++) {
-        select.options[i].style.display = '';
-    }
-});
-</script>
-
-
-                        <!-- Seleccionar Diplomado -->
-                        <div class="col-sm-12">
-                            <label for="id_diplomado" class="form-label">Diplomado</label>
-                            <select name="id_diplomado" class="form-select" id="id_diplomado">
-                                <?php
-                                try {
-                                    $sql = "SELECT ID_Diplomado, NombreDiplomado FROM Diplomados";
-                                    $stmt = $conn->prepare($sql);
-                                    $stmt->execute();
-                                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                        echo "<option value='{$row['ID_Diplomado']}'>{$row['NombreDiplomado']}</option>";
-                                    }
-                                } catch(PDOException $e) {
-                                    echo "<option value=''>Error al obtener diplomados</option>";
-                                }
-                                ?>
-                            </select>
-                        </div>
-
-                      <!-- Seleccionar Ponente -->
-<div class="col-sm-12">
-    <label for="id_ponente" class="form-label">Ponente</label>
-    <select name="id_ponente" class="form-select" id="id_ponente">
-        <?php
-        try {
-            $sql = "SELECT ID_Ponente, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombrePonente FROM Ponentes";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                echo "<option value='{$row['ID_Ponente']}'>{$row['NombrePonente']}</option>";
-            }
-            $conn = null;
-        } catch(PDOException $e) {
-            echo "<option value=''>Error al obtener ponentes</option>";
-        }
-        ?>
-    </select>
-</div>
-
-
-                    </div>
-
-                    <hr class="my-4">
-                    <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar Asignación</button>
-                </form>
+                <label for="id_asistente" class="form-label">Asistente</label>
+                <select name="id_asistente" class="form-select" id="id_asistente">
+                    <option value="">-- Selecciona un asistente --</option>
+                    <?php
+                    try {
+                        $sql = "
+                            SELECT ID_Participante AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
+                            FROM Participante
+                            UNION
+                            SELECT ID_Personal AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
+                            FROM Personal
+                            UNION
+                            SELECT id AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
+                            FROM Usuario
+                            ORDER BY NombreCompleto
+                        ";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->execute();
+                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            echo "<option value='{$row['id']}'>{$row['NombreCompleto']}</option>";
+                        }
+                    } catch(PDOException $e) {
+                        echo "<option value=''>Error al obtener asistentes</option>";
+                    }
+                    ?>
+                </select>
             </div>
+
+            <!-- Seleccionar Taller -->
+            <div class="col-sm-12 mt-3">
+                <label for="id_taller" class="form-label">Taller</label>
+                <select name="id_taller" class="form-select" id="id_taller">
+                    <option value="">-- Selecciona un taller --</option>
+                    <?php
+                    try {
+                        $sql = "SELECT ID_Taller, Nombre FROM talleres";
+                        $stmt = $conn->prepare($sql);
+                        $stmt->execute();
+                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                            echo "<option value='{$row['ID_Taller']}'>{$row['Nombre']}</option>";
+                        }
+                    } catch(PDOException $e) {
+                        echo "<option value=''>Error al obtener talleres</option>";
+                    }
+                    ?>
+                </select>
+            </div>
+
+            <!-- Tipo -->
+            <div class="col-sm-12 mt-3">
+                <label for="tipo" class="form-label">Tipo de Persona</label>
+                <select name="tipo" class="form-select" id="tipo">
+                    <option value="">-- Selecciona Tipo --</option>
+                    <option value="participante">Participante</option>
+                    <option value="usuario">Usuario</option>
+                    <option value="personal">Personal</option>
+                </select>
+            </div>
+
+            <hr class="my-4">
+            <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar Asignación</button>
+        </form>
     </main>
 </div>
+
 
 <div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 1055;"></div>
 
@@ -310,27 +254,40 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
     <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="checkout.js"></script>
+
+    <style>
+
+        </style>
    <script>
 
+const btnSubmit = document.querySelector('button[type="submit"]');
 
+document.getElementById('id_seminario').addEventListener('change', function() {
+    const idSeminario = this.value;
+    const nombrePonenteInput = document.getElementById('nombre_ponente');
+    const idPonenteHidden = document.getElementById('id_ponente_hidden');
 
-const selectUsuario = document.getElementById('id_usuario');
-selectUsuario.addEventListener('change', function() {
-    const tipo = this.selectedOptions[0].dataset.tipo || '';
-    // Crear o actualizar input hidden
-    let inputTipo = document.querySelector('input[name="tipo_usuario"]');
-    if(!inputTipo) {
-        inputTipo = document.createElement('input');
-        inputTipo.type = 'hidden';
-        inputTipo.name = 'tipo_usuario';
-        this.form.appendChild(inputTipo);
+    if (!idSeminario) {
+        nombrePonenteInput.value = "Seleccione un seminario primero";
+        idPonenteHidden.value = "";
+        btnSubmit.disabled = true;
+        return;
     }
-    inputTipo.value = tipo;
+
+    fetch('obtener_ponente.php?id_seminario=' + idSeminario)
+        .then(res => res.json())
+        .then(data => {
+            nombrePonenteInput.value = data.nombre;
+            idPonenteHidden.value = data.id;
+            btnSubmit.disabled = !data.id; // Solo habilita si hay id
+        })
+        .catch(err => {
+            console.error(err);
+            nombrePonenteInput.value = "Error al cargar ponente";
+            idPonenteHidden.value = "";
+            btnSubmit.disabled = true;
+        });
 });
-
-
-
-
 
 
 
@@ -396,7 +353,6 @@ document.getElementById('formNuevoParticipante').addEventListener('submit', func
 
 </body>
         </html>
-
 
 
 

@@ -245,6 +245,52 @@
 
 
 
+
+   <hr class="my-3">
+
+<li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-taller.php">
+    <i class="bi bi-person-vcard"></i>
+      Registrar Taller
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-taller.php">
+    <i class="bi bi-person-lines-fill"></i>
+      Lista de Talleres
+    </a>
+  </li>
+
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignar-taller-ponente.php">
+    <i class="bi bi-piggy-bank-fill"></i>
+      Asignar Taller
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-taller-ponente.php">
+    <i class="bi bi-card-checklist"></i>
+      Ver Talleres Impartidos
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignar-taller.php">
+    <i class="bi bi-card-checklist"></i>
+      Registrar Asistentes
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-asistentes_taller.php">
+    <i class="bi bi-card-checklist"></i>
+      Ver Asistentes
+    </a>
+  </li>
+
+
+
+
+
+
   <hr class="my-3">
 
 <li class="nav-item">

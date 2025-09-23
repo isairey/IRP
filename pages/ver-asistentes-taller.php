@@ -1,72 +1,51 @@
 <?php
 session_start();
-
-// Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    header("Location: ../sign-in/index.php");
-    exit();
-}
-
 require_once __DIR__ . '/../db/config.php';
 
-try {
-    $registrosPorPagina = 8;
-    $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
-    $offset = ($pagina - 1) * $registrosPorPagina;
-
-    // Consulta principal
-    $query = "
-        SELECT sp.ID_Asignacion, s.Nombre, p.Nombre, sp.FechaAsignacion
-        FROM asignacion_ponente_seminario sp
-        LEFT JOIN Seminarios s ON sp.ID_Seminario = s.ID_Seminario
-        LEFT JOIN Ponentes p ON sp.ID_Ponente = p.ID_Ponente
-    ";
-
-    $countQuery = "SELECT COUNT(*) 
-                   FROM asignacion_ponente_seminario sp
-                   LEFT JOIN Seminarios s ON sp.ID_Seminario = s.ID_Seminario
-                   LEFT JOIN Ponentes p ON sp.ID_Ponente = p.ID_Ponente";
-
-    $condiciones = [];
-    $params = [];
-
-    // Buscador
-    if (!empty($_GET['search'])) {
-        $condiciones[] = "(s.NombreSeminario LIKE :search OR p.NombrePonente LIKE :search)";
-        $params[':search'] = "%" . $_GET['search'] . "%";
-    }
-
-    if ($condiciones) {
-        $where = " WHERE " . implode(" AND ", $condiciones);
-        $query .= $where;
-        $countQuery .= $where;
-    }
-
-    // Total registros
-    $stmtCount = $conn->prepare($countQuery);
-    foreach ($params as $k => $v) {
-        $stmtCount->bindValue($k, $v);
-    }
-    $stmtCount->execute();
-    $totalRegistros = $stmtCount->fetchColumn();
-    $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
-
-    // Paginación
-    $query .= " ORDER BY sp.FechaAsignacion DESC LIMIT :limit OFFSET :offset";
-    $stmt = $conn->prepare($query);
-    foreach ($params as $k => $v) {
-        $stmt->bindValue($k, $v);
-    }
-    $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
-    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
-    $stmt->execute();
-
-    $asignaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    echo "Error: " . $e->getMessage();
-    exit;
+// --- Validar ID de taller ---
+if (!isset($_GET['id_taller']) || !is_numeric($_GET['id_taller'])) {
+    die("ID de taller inválido.");
 }
+$idTaller = (int) $_GET['id_taller'];
+
+$registrosPorPagina = 8;
+$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
+$offset = ($pagina - 1) * $registrosPorPagina;
+
+// 1️⃣ Consulta de asistentes del taller
+$stmt = $conn->prepare("
+    SELECT u.ID, u.Nombre, u.Email, at.FechaRegistro
+    FROM asistentes_taller at
+    INNER JOIN usuario u ON at.ID_persona = u.ID
+    WHERE at.ID_Taller = :idTaller
+    ORDER BY at.FechaRegistro DESC
+    LIMIT :limit OFFSET :offset
+");
+$stmt->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
+$stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->execute();
+$asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// 2️⃣ Traer la fecha del taller
+foreach ($asistentes as &$asistente) {
+    $stmt2 = $conn->prepare("
+        SELECT Fecha 
+        FROM talleres 
+        WHERE ID_Taller = :idTaller
+    ");
+    $stmt2->execute([
+        ':idTaller' => $idTaller
+    ]);
+    $asistente['fecha_taller'] = $stmt2->fetchColumn();
+}
+
+// Conteo total para paginación
+$stmtCount = $conn->prepare("SELECT COUNT(*) FROM asistentes_taller WHERE ID_Taller = :idTaller");
+$stmtCount->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
+$stmtCount->execute();
+$totalRegistros = $stmtCount->fetchColumn();
+$totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 ?>
 
 
@@ -334,96 +313,124 @@ try {
 </header>
 
 
-
-
-
-
 <?php
  
 require_once __DIR__ . '/../pages/footer.php';
 ?>
-    <!-- Temina -->
-    <!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
 
-   <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-  <div class="d-flex justify-content-between ... border-bottom">
-    <h1 class="h2">Listado de Seminarios y Ponentes</h1>
+
+
+<?php
+require_once __DIR__ . '/../db/config.php';
+
+// Validar ID de taller
+if (!isset($_GET['id_taller']) || !is_numeric($_GET['id_taller'])) {
+    die("ID de taller inválido.");
+}
+$idTaller = (int) $_GET['id_taller'];
+
+// Obtener fecha del taller
+$stmtTaller = $conn->prepare("SELECT fecha FROM talleres WHERE ID_taller = :idTaller");
+$stmtTaller->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
+$stmtTaller->execute();
+$taller = $stmtTaller->fetch(PDO::FETCH_ASSOC);
+
+if (!$taller) die("Taller no encontrado.");
+
+// Obtener asistentes según tipo
+$stmt = $conn->prepare("
+    SELECT a.ID_Persona, a.TipoPersona, a.FechaRegistro,
+        CASE 
+            WHEN a.TipoPersona = 'participante' THEN p.Nombre
+            WHEN a.TipoPersona = 'usuario' THEN u.Nombre
+            WHEN a.TipoPersona = 'personal' THEN pe.Nombre
+            ELSE 'Desconocido'
+        END AS Nombre,
+        CASE 
+            WHEN a.TipoPersona = 'participante' THEN p.Email
+            WHEN a.TipoPersona = 'usuario' THEN u.Email
+            WHEN a.TipoPersona = 'personal' THEN pe.Email
+            ELSE ''
+        END AS Email
+    FROM asistentes_taller a
+    LEFT JOIN participante p ON a.TipoPersona = 'participante' AND a.ID_Persona = p.ID_Participante
+    LEFT JOIN usuario u ON a.TipoPersona = 'usuario' AND a.ID_Persona = u.ID
+    LEFT JOIN personal pe ON a.TipoPersona = 'personal' AND a.ID_Persona = pe.ID_Personal
+    WHERE a.ID_Taller = :idTaller
+    ORDER BY a.FechaRegistro DESC
+");
+$stmt->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
+$stmt->execute();
+$asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// Traer asistencias si existe la tabla (opcional)
+$asistencias = [];
+$stmtAsis = $conn->prepare("SELECT ID_Persona, Asistio FROM asistencias_taller WHERE ID_Taller = :idTaller");
+$stmtAsis->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
+$stmtAsis->execute();
+foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
+    $asistencias[$a['ID_Persona']] = $a['Asistio'];
+}
+?>
+
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Asistentes del Taller #<?= htmlspecialchars($idTaller) ?></h1>
+    <p>Fecha del Taller: <?= htmlspecialchars($taller['fecha']) ?></p>
   </div>
 
-  <div class="container mt-4">
-
-
-  <!-- Buscador -->
-  <form method="get" class="mb-3 d-flex">
-    <input type="text" name="search" class="form-control me-2" 
-           placeholder="Buscar seminario o ponente..." 
-           value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-    <button type="submit" class="btn btn-primary">Buscar</button>
-  </form>
-
-  <!-- Tabla -->
-  <table class="table table-striped table-sm">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Seminario</th>
-        <th>Ponente</th>
-        <th>Fecha Asignación</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php if ($asignaciones): ?>
-        <?php foreach ($asignaciones as $a): ?>
-          <tr>
-            <td><?= htmlspecialchars($a['ID_Asignacion']) ?></td>
-            <td><?= htmlspecialchars($a['Nombre']) ?></td>
-            <td><?= htmlspecialchars($a['Nombre']) ?></td>
-            <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
-          </tr>
-        <?php endforeach; ?>
-      <?php else: ?>
-        <tr>
-          <td colspan="4" class="text-center">No se encontraron resultados</td>
-        </tr>
-      <?php endif; ?>
-    </tbody>
-  </table>
-
-  <!-- Paginación -->
-  <nav>
-    <ul class="pagination justify-content-center">
-      <li class="page-item <?= ($pagina <= 1) ? 'disabled' : '' ?>">
-        <a class="page-link" href="?pagina=<?= $pagina - 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Anterior</a>
-      </li>
-      <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-        <li class="page-item <?= ($i == $pagina) ? 'active' : '' ?>">
-          <a class="page-link" href="?pagina=<?= $i ?>&search=<?= urlencode($_GET['search'] ?? '') ?>"><?= $i ?></a>
-        </li>
-      <?php endfor; ?>
-      <li class="page-item <?= ($pagina >= $totalPaginas) ? 'disabled' : '' ?>">
-        <a class="page-link" href="?pagina=<?= $pagina + 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Siguiente</a>
-      </li>
-    </ul>
-  </nav>
-</div>
+  <div class="table-responsive small">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Email</th>
+                <th>Tipo</th>
+                <th>Fecha Asignación</th>
+                <th>Asistencia</th>
+            </tr>
+        </thead>
+        <tbody>
+<?php foreach ($asistentes as $a): ?>
+<tr>
+    <td><?= htmlspecialchars($a['Nombre']) ?></td>
+    <td><?= htmlspecialchars($a['Email']) ?></td>
+    <td><?= htmlspecialchars($a['TipoPersona']) ?></td>
+    <td><?= htmlspecialchars($a['FechaRegistro']) ?></td>
+    <td>
+        <input type="checkbox" class="asistencia-switch"
+               data-persona="<?= $a['ID_Persona'] ?>"
+               <?= isset($asistencias[$a['ID_Persona']]) && $asistencias[$a['ID_Persona']] ? 'checked' : '' ?> >
+    </td>
+</tr>
+<?php endforeach; ?>
+        </tbody>
+    </table>
+  </div>
 </main>
 
 <script>
-  document.querySelectorAll('.eliminar-asignacion').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (confirm('¿Eliminar esta asignación?')) {
-        location.href = `eliminar_asignacion.php?id=${btn.dataset.id}`;
-      }
+document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
+    switchEl.addEventListener('change', () => {
+        const idPersona = switchEl.dataset.persona;
+        const presente = switchEl.checked ? 1 : 0;
+        const idTaller = <?= $idTaller ?>;
+
+        fetch('guardar_asistencia_taller.php', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `id_persona=${idPersona}&id_taller=${idTaller}&Asistio=${presente}`
+        })
+        .then(res => res.text())
+        .then(res => {
+            console.log("Servidor respondió:", res);
+            alert(res); // <-- muestra mensaje al usuario
+        })
+        .catch(err => {
+            console.error("Error en fetch:", err);
+            alert("Error al guardar asistencia: " + err);
+        });
     });
-  });
+});
+
 </script>
-
-<!-- Aquí tus scripts de Bootstrap y dashboard.js si aplica -->
-
-
-<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
-      
-    </script><script src="dashboard.js"></script>
-</body>
-</html>

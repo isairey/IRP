@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-// Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
+// Verificar sesión y rol
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
     header("Location: ../sign-in/index.php");
     exit();
@@ -14,25 +14,27 @@ try {
     $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
     $offset = ($pagina - 1) * $registrosPorPagina;
 
-    // Consulta principal
+    // Consulta principal: talleres asignados a ponentes
     $query = "
-        SELECT sp.ID_Asignacion, s.Nombre, p.Nombre, sp.FechaAsignacion
-        FROM asignacion_ponente_seminario sp
-        LEFT JOIN Seminarios s ON sp.ID_Seminario = s.ID_Seminario
-        LEFT JOIN Ponentes p ON sp.ID_Ponente = p.ID_Ponente
+        SELECT apt.ID, t.ID_Taller, t.Nombre AS NombreTaller, 
+               p.Nombre AS NombrePonente, apt.FechaAsignacion
+        FROM asignacion_ponentes_taller apt
+        LEFT JOIN Talleres t ON apt.ID_Taller = t.ID_Taller
+        LEFT JOIN Ponentes p ON apt.ID_Ponente = p.ID_Ponente
     ";
 
-    $countQuery = "SELECT COUNT(*) 
-                   FROM asignacion_ponente_seminario sp
-                   LEFT JOIN Seminarios s ON sp.ID_Seminario = s.ID_Seminario
-                   LEFT JOIN Ponentes p ON sp.ID_Ponente = p.ID_Ponente";
+    $countQuery = "
+        SELECT COUNT(*)
+        FROM asignacion_ponentes_taller apt
+        LEFT JOIN Talleres t ON apt.ID_Taller = t.ID_Taller
+        LEFT JOIN Ponentes p ON apt.ID_Ponente = p.ID_Ponente
+    ";
 
     $condiciones = [];
     $params = [];
 
-    // Buscador
     if (!empty($_GET['search'])) {
-        $condiciones[] = "(s.NombreSeminario LIKE :search OR p.NombrePonente LIKE :search)";
+        $condiciones[] = "(t.Nombre LIKE :search OR p.Nombre LIKE :search)";
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
@@ -42,27 +44,20 @@ try {
         $countQuery .= $where;
     }
 
-    // Total registros
     $stmtCount = $conn->prepare($countQuery);
-    foreach ($params as $k => $v) {
-        $stmtCount->bindValue($k, $v);
-    }
+    foreach ($params as $k => $v) $stmtCount->bindValue($k, $v);
     $stmtCount->execute();
     $totalRegistros = $stmtCount->fetchColumn();
     $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
-    // Paginación
-    $query .= " ORDER BY sp.FechaAsignacion DESC LIMIT :limit OFFSET :offset";
+    $query .= " ORDER BY apt.FechaAsignacion DESC LIMIT :limit OFFSET :offset";
     $stmt = $conn->prepare($query);
-    foreach ($params as $k => $v) {
-        $stmt->bindValue($k, $v);
-    }
+    foreach ($params as $k => $v) $stmt->bindValue($k, $v);
     $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
 
-    $asignaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+    $talleres = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
     exit;
@@ -338,92 +333,91 @@ try {
 
 
 
-<?php
- 
-require_once __DIR__ . '/../pages/footer.php';
-?>
-    <!-- Temina -->
-    <!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
+<?php require_once __DIR__ . '/../pages/footer.php'; ?>
 
-   <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-  <div class="d-flex justify-content-between ... border-bottom">
-    <h1 class="h2">Listado de Seminarios y Ponentes</h1>
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+  <div class="d-flex justify-content-between border-bottom">
+    <h1 class="h2">Talleres Impartidos</h1>
   </div>
 
-  <div class="container mt-4">
+  <div class="d-flex justify-content-center py-4">
+    <form class="d-flex" role="search">
+      <input class="form-control me-2" type="text" placeholder="Buscar taller o ponente" name="search"
+             value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+      <button class="btn btn-outline-success" type="submit">Buscar</button>
+      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='vista-talleres.php'">
+        <i class="bi bi-arrow-repeat"></i>
+      </button>
+    </form>
+  </div>
 
-
-  <!-- Buscador -->
-  <form method="get" class="mb-3 d-flex">
-    <input type="text" name="search" class="form-control me-2" 
-           placeholder="Buscar seminario o ponente..." 
-           value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-    <button type="submit" class="btn btn-primary">Buscar</button>
-  </form>
-
-  <!-- Tabla -->
-  <table class="table table-striped table-sm">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Seminario</th>
-        <th>Ponente</th>
-        <th>Fecha Asignación</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php if ($asignaciones): ?>
-        <?php foreach ($asignaciones as $a): ?>
+  <div class="table-responsive small">
+    <table class="table table-striped table-sm">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Taller</th>
+          <th>Ponente</th>
+          <th>Fecha Asignación</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php foreach ($talleres as $t): ?>
           <tr>
-            <td><?= htmlspecialchars($a['ID_Asignacion']) ?></td>
-            <td><?= htmlspecialchars($a['Nombre']) ?></td>
-            <td><?= htmlspecialchars($a['Nombre']) ?></td>
-            <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
+            <td><?= htmlspecialchars($t['ID']) ?></td>
+            <td><?= htmlspecialchars($t['NombreTaller'] ?: '—') ?></td>
+            <td><?= htmlspecialchars($t['NombrePonente'] ?: '—') ?></td>
+            <td><?= htmlspecialchars($t['FechaAsignacion']) ?></td>
+            <td>
+              <form method="GET" action="ver-asistentes-taller.php" style="display:inline;">
+                <input type="hidden" name="id_taller" value="<?= $t['ID_Taller'] ?>">
+                <button type="submit" class="btn btn-sm btn-info">Ver Participantes</button>
+              </form>
+            </td>
           </tr>
         <?php endforeach; ?>
-      <?php else: ?>
-        <tr>
-          <td colspan="4" class="text-center">No se encontraron resultados</td>
-        </tr>
-      <?php endif; ?>
-    </tbody>
-  </table>
+        <?php if (!$talleres): ?>
+          <tr><td colspan="5" class="text-center">No se encontraron registros.</td></tr>
+        <?php endif; ?>
+      </tbody>
+    </table>
+  </div>
 
-  <!-- Paginación -->
-  <nav>
-    <ul class="pagination justify-content-center">
-      <li class="page-item <?= ($pagina <= 1) ? 'disabled' : '' ?>">
-        <a class="page-link" href="?pagina=<?= $pagina - 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Anterior</a>
+  <nav aria-label="Paginación">
+    <ul class="pagination justify-content-center mt-3">
+      <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
+        <a class="page-link" href="?pagina=<?= max($pagina - 1, 1) ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">&laquo; Anterior</a>
       </li>
+
       <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-        <li class="page-item <?= ($i == $pagina) ? 'active' : '' ?>">
+        <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
           <a class="page-link" href="?pagina=<?= $i ?>&search=<?= urlencode($_GET['search'] ?? '') ?>"><?= $i ?></a>
         </li>
       <?php endfor; ?>
-      <li class="page-item <?= ($pagina >= $totalPaginas) ? 'disabled' : '' ?>">
-        <a class="page-link" href="?pagina=<?= $pagina + 1 ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Siguiente</a>
+
+      <li class="page-item <?= $pagina >= $totalPaginas ? 'disabled' : '' ?>">
+        <a class="page-link" href="?pagina=<?= min($pagina + 1, $totalPaginas) ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Siguiente &raquo;</a>
       </li>
     </ul>
   </nav>
-</div>
 </main>
+
+
 
 <script>
   document.querySelectorAll('.eliminar-asignacion').forEach(btn => {
     btn.addEventListener('click', () => {
       if (confirm('¿Eliminar esta asignación?')) {
-        location.href = `eliminar_asignacion.php?id=${btn.dataset.id}`;
+        location.href = `eliminar_asignacion_taller.php?id=${btn.dataset.id}`;
       }
     });
   });
 </script>
 
-<!-- Aquí tus scripts de Bootstrap y dashboard.js si aplica -->
-
-
+<!-- Scripts Bootstrap -->
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
-      
-    </script><script src="dashboard.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" crossorigin="anonymous"></script>
+<script src="dashboard.js"></script>
 </body>
 </html>
