@@ -35,7 +35,7 @@ try {
         $apellidoMaterno = $_POST['ApellidoMaterno'] ?? '';
         $correo = $_POST['Correo'] ?? '';
         $telefono = $_POST['Telefono'] ?? '';
-        $especialidad = $_POST['Especialidad'] ?? '';
+
         $biografia = $_POST['Biografia'] ?? '';
         $redes = $_POST['RedesSociales'] ?? '';
 
@@ -60,7 +60,7 @@ try {
                 ApellidoMaterno = :am,
                 Correo = :correo,
                 Telefono = :telefono,
-                Especialidad = :especialidad,
+              
                 Biografia = :biografia,
                 RedesSociales = :redes,
                 Foto = :foto
@@ -72,7 +72,7 @@ try {
             ':am' => $apellidoMaterno,
             ':correo' => $correo,
             ':telefono' => $telefono,
-            ':especialidad' => $especialidad,
+          
             ':biografia' => $biografia,
             ':redes' => $redes,
             ':foto' => $foto,
@@ -199,10 +199,7 @@ try {
       <label class="form-label">Teléfono</label>
       <input type="text" name="Telefono" class="form-control" value="<?= htmlspecialchars($ponente['Telefono']) ?>">
     </div>
-    <div class="mb-3">
-      <label class="form-label">Especialidad</label>
-      <input type="text" name="Especialidad" class="form-control" value="<?= htmlspecialchars($ponente['Especialidad']) ?>">
-    </div>
+  
     <div class="mb-3">
       <label class="form-label">Biografía</label>
       <textarea name="Biografia" class="form-control" rows="4"><?= htmlspecialchars($ponente['Biografia']) ?></textarea>

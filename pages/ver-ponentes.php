@@ -334,7 +334,7 @@ require_once __DIR__ . '/../pages/footer.php';
     </div> 
   </div>
 
-  <div class="table-responsive small">
+<div class="table-responsive small">
     <table id="tabla-ponentes" class="table table-striped table-hover align-middle">
       <thead>
         <tr>
@@ -344,6 +344,8 @@ require_once __DIR__ . '/../pages/footer.php';
           <th>Correo</th>
           <th>Teléfono</th>
           <th>Especialidad</th>
+          <th>Título Profesional</th>
+          <th>Institución</th>
           <th>Biografía</th>
           <th>Redes Sociales</th>
           <th>Acciones</th>
@@ -356,77 +358,85 @@ require_once __DIR__ . '/../pages/footer.php';
         try {
             $conn = new mysqli($host, $username, $password, $dbname);
             if ($conn->connect_error) {
-                die("<tr><td colspan='9'>Conexión fallida: " . htmlspecialchars($conn->connect_error) . "</td></tr>");
+                die("<tr><td colspan='11'>Conexión fallida: " . htmlspecialchars($conn->connect_error) . "</td></tr>");
             }
-$conn->set_charset("utf8");
-            $sql = "SELECT ID_Ponente, Nombre, ApellidoPaterno, ApellidoMaterno, Correo, Telefono, Especialidad, Biografia, Foto, RedesSociales FROM Ponentes";
+            $conn->set_charset("utf8");
+
+            // Consulta con JOINs para obtener los nombres reales
+            $sql = "SELECT p.ID_Ponente, p.Nombre, p.ApellidoPaterno, p.ApellidoMaterno, 
+                           p.Correo, p.Telefono, p.Biografia, p.Foto, p.RedesSociales,
+                           e.NombreEspecialidad, t.NombreTitulo, i.NombreInstitucion
+                    FROM Ponentes p
+                    LEFT JOIN Especialidades e ON p.ID_Especialidad = e.ID_Especialidad
+                    LEFT JOIN TitulosProfesionales t ON p.ID_Titulo = t.ID_Titulo
+                    LEFT JOIN Instituciones i ON p.ID_Institucion = i.ID_Institucion";
 
             if (isset($_GET['search']) && !empty($_GET['search'])) {
                 $search = $conn->real_escape_string($_GET['search']);
-                $sql .= " WHERE CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno, ' ', Especialidad) LIKE '%$search%'";
+                $sql .= " WHERE CONCAT(p.Nombre, ' ', p.ApellidoPaterno, ' ', p.ApellidoMaterno, ' ', e.NombreEspecialidad, ' ', t.NombreTitulo, ' ', i.NombreInstitucion) LIKE '%$search%'";
             }
 
             $result = $conn->query($sql);
 
             if ($result && $result->num_rows > 0):
                 while ($row = $result->fetch_assoc()):
-
-         
         ?>
 
-        
         <tr>
-          <td><?= htmlspecialchars(isset($row['ID_Ponente']) ? $row['ID_Ponente'] : 'N/A') ?></td>
+          <td><?= htmlspecialchars($row['ID_Ponente'] ?? 'N/A') ?></td>
           <td>
             <?php
-            $foto = isset($row['Foto']) && !empty($row['Foto']) ? $row['Foto'] : 'default.png';
+            $foto = !empty($row['Foto']) ? $row['Foto'] : 'default.png';
             ?>
-            <img src="../uploads/ponentes/<?= htmlspecialchars($foto) ?>" alt="Foto Ponente" class="foto-ponente">
+            <img src="../uploads/ponentes/<?= htmlspecialchars($foto) ?>" alt="Foto Ponente" class="foto-ponente" width="80">
           </td>
           <?php
-        $nombre = 
-      (isset($row['Nombre']) ? $row['Nombre'] : '') . " " .
-      (isset($row['ApellidoPaterno']) ? $row['ApellidoPaterno'] : '') . " " .
-      (isset($row['ApellidoMaterno']) ? $row['ApellidoMaterno'] : '');
+            $nombre = trim(
+                ($row['Nombre'] ?? '') . " " .
+                ($row['ApellidoPaterno'] ?? '') . " " .
+                ($row['ApellidoMaterno'] ?? '')
+            );
           ?>
-          <td><?= htmlspecialchars(trim($nombre))?></td>
-          <td><?= htmlspecialchars(isset($row['Correo']) ? $row['Correo'] : 'N/A') ?></td>
-          <td><?= htmlspecialchars(isset($row['Telefono']) ? $row['Telefono'] : 'N/A') ?></td>
-          <td><?= htmlspecialchars(isset($row['Especialidad']) ? $row['Especialidad'] : 'N/A') ?></td>
-          <td><?= htmlspecialchars(isset($row['Biografia']) ? $row['Biografia'] : 'N/A') ?></td>
-          <td><?= htmlspecialchars(isset($row['RedesSociales']) ? $row['RedesSociales'] : 'N/A') ?></td>
-            <td>
-                <!-- Botón Editar -->
+          <td><?= htmlspecialchars($nombre) ?></td>
+          <td><?= htmlspecialchars($row['Correo'] ?? 'N/A') ?></td>
+          <td><?= htmlspecialchars($row['Telefono'] ?? 'N/A') ?></td>
+          <td><?= htmlspecialchars($row['NombreEspecialidad'] ?? 'N/A') ?></td>
+          <td><?= htmlspecialchars($row['NombreTitulo'] ?? 'N/A') ?></td>
+          <td><?= htmlspecialchars($row['NombreInstitucion'] ?? 'N/A') ?></td>
+          <td><?= htmlspecialchars($row['Biografia'] ?? 'N/A') ?></td>
+          <td><?= htmlspecialchars($row['RedesSociales'] ?? 'N/A') ?></td>
+          <td>
                 <a href="/ERP/ERP_IRP/checkout/editar_ponente.php?id=<?= htmlspecialchars($row['ID_Ponente']) ?>" 
                    class="btn btn-primary btn-sm mb-1">
                    <i class="bi bi-pencil-square"></i> Editar
                 </a>
 
-                <!-- Botón Eliminar -->
                 <a href="eliminar_ponente.php?id=<?= htmlspecialchars($row['ID_Ponente']) ?>" 
                    class="btn btn-danger btn-sm" 
                    onclick="return confirm('¿Seguro que deseas eliminar este ponente?');">
                    <i class="bi bi-trash3-fill"></i> Eliminar
                 </a>
-            </td>
+          </td>
         </tr>
+
         <?php
                 endwhile;
             else:
         ?>
         <tr>
-          <td colspan="9" class="text-center">No hay ponentes registrados.</td>
+          <td colspan="11" class="text-center">No hay ponentes registrados.</td>
         </tr>
         <?php
             endif;
             $conn->close();
         } catch (Exception $e) {
-            echo "<tr><td colspan='9' class='text-center'>Error: " . htmlspecialchars($e->getMessage()) . "</td></tr>";
+            echo "<tr><td colspan='11' class='text-center'>Error: " . htmlspecialchars($e->getMessage()) . "</td></tr>";
         }
         ?>
       </tbody>
     </table>
-  </div>
+</div>
+
 </main>
 
 <?php if (isset($_GET['msg'])): ?>

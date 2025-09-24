@@ -155,16 +155,33 @@ $instituciones = [
 ];
 */
 
-// Procesar el formulario
+
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Traer especialidades
+    $especialidades = $conn->query("SELECT ID_Especialidad, NombreEspecialidad FROM Especialidades ORDER BY NombreEspecialidad ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+    // Traer títulos profesionales
+    $titulos = $conn->query("SELECT ID_Titulo, NombreTitulo FROM TitulosProfesionales ORDER BY NombreTitulo ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+    // Traer instituciones
+    $instituciones = $conn->query("SELECT ID_Institucion, NombreInstitucion FROM Instituciones ORDER BY NombreInstitucion ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    die("Error al conectar con la base de datos: " . $e->getMessage());
+}
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nombre = $_POST["nombre"];
     $apellido_paterno = $_POST["apellido_paterno"];
     $apellido_materno = $_POST["apellido_materno"];
     $email = $_POST["email"];
     $telefono = $_POST["telefono"];
-    $especialidad = $_POST["especialidad"];
-    $titulo_profesional = $_POST["titulo_profesional"];
-    $institucion = $_POST["institucion"];
+    $id_especialidad = $_POST["especialidad"];  // Aquí recibes el ID
+    $id_titulo = $_POST["titulo_profesional"];  // Aquí recibes el ID
+    $id_institucion = $_POST["institucion"];    // Aquí recibes el ID
     $biografia = $_POST["biografia"];
     $redes = $_POST["redes_sociales"];
 
@@ -185,8 +202,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     try {
         $sql = "INSERT INTO Ponentes 
-                (Nombre, ApellidoPaterno, ApellidoMaterno, Correo, Telefono, Especialidad, 
-                 TituloProfesional, Institucion, Biografia, Foto, RedesSociales) 
+                (Nombre, ApellidoPaterno, ApellidoMaterno, Correo, Telefono, ID_Especialidad, 
+                 ID_Titulo, ID_Institucion, Biografia, Foto, RedesSociales) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         $stmt = $conn->prepare($sql);
@@ -195,49 +212,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(3, $apellido_materno);
         $stmt->bindParam(4, $email);
         $stmt->bindParam(5, $telefono);
-        $stmt->bindParam(6, $especialidad);
-        $stmt->bindParam(7, $titulo_profesional);
-        $stmt->bindParam(8, $institucion);
+        $stmt->bindParam(6, $id_especialidad, PDO::PARAM_INT);
+        $stmt->bindParam(7, $id_titulo, PDO::PARAM_INT);
+        $stmt->bindParam(8, $id_institucion, PDO::PARAM_INT);
         $stmt->bindParam(9, $biografia);
         $stmt->bindParam(10, $foto);
         $stmt->bindParam(11, $redes);
 
         if ($stmt->execute()) {
             echo '<script>alert("Ponente registrado correctamente.");</script>';
-            echo '<script>window.location.href = "/SYSGES/pages/ver-ponentes.php";</script>';
+            echo '<script>window.location.href = "/ERP/ERP_IRP/pages/ver-ponentes.php";</script>';
+            exit;
         } else {
             echo "Error al registrar ponente: " . $stmt->errorInfo()[2];
         }
 
-       
     } catch (PDOException $e) {
         echo '<script>alert("Error al registrar el ponente: ' . $e->getMessage() . '");</script>';
-    } 
-
-    $conn = null;
+    }
 }
 ?>
 
-<?php
-require_once __DIR__ . '/../db/config.php';
-
-try {
-    $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Traer especialidades
-    $especialidades = $conn->query("SELECT ID_Especialidad, NombreEspecialidad FROM Especialidades ORDER BY NombreEspecialidad ASC")->fetchAll(PDO::FETCH_ASSOC);
-
-    // Traer títulos profesionales
-    $titulos = $conn->query("SELECT ID_Titulo, NombreTitulo FROM TitulosProfesionales ORDER BY NombreTitulo ASC")->fetchAll(PDO::FETCH_ASSOC);
-
-    // Traer instituciones
-    $instituciones = $conn->query("SELECT ID_Institucion, NombreInstitucion FROM Instituciones ORDER BY NombreInstitucion ASC")->fetchAll(PDO::FETCH_ASSOC);
-
-} catch (PDOException $e) {
-    die("Error al conectar con la base de datos: " . $e->getMessage());
-}
-?>
 
 
 
@@ -492,7 +487,7 @@ try {
     <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
     <h2>Registro de Ponentes</h2>
 
-    <form class="needs-validation" action="register-ponentes.php" method="POST" enctype="multipart/form-data" novalidate>
+    <form class="needs-validation" action="regiter-ponentes.php" method="POST" enctype="multipart/form-data" novalidate>
     <div class="row g-3">
 
         <div class="col-sm-12">
@@ -576,10 +571,15 @@ try {
             <textarea class="form-control" name="redes_sociales" rows="2"></textarea>
         </div>
 
-        <div class="col-sm-12">
-            <label class="form-label">Foto:</label>
-            <input type="file" class="form-control" name="foto" accept="image/*">
-        </div>
+      <div class="mb-3">
+  <label class="form-label">Foto</label><br>
+  <?php if (!empty($ponente['Foto'])): ?>
+    <img src="../uploads/ponentes/<?= htmlspecialchars($ponente['Foto']) ?>" 
+         alt="Foto actual" width="100"><br><br>
+  <?php endif; ?>
+  <input type="file" name="foto" class="form-control">
+</div>
+
 
         <hr class="my-4">
 
