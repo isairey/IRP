@@ -366,6 +366,7 @@ require_once __DIR__ . '/../pages/footer.php';
           <th>Diplomado</th>
           <th>Ponente</th>
           <th>Fecha Asignación</th>
+            <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -375,6 +376,10 @@ require_once __DIR__ . '/../pages/footer.php';
             <td><?= htmlspecialchars($a['NombreDiplomado'] ?: '—') ?></td>
             <td><?= htmlspecialchars($a['Nombre'] ?: '—') ?></td>
             <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
+             <td>
+            <button class="eliminar-asignacion btn btn-danger" data-id="<?= $a['ID_Asignacion'] ?>">Eliminar</button>
+
+          </td>
           </tr>
         <?php endforeach; ?>
         <?php if (!$asignaciones): ?>
@@ -415,7 +420,7 @@ require_once __DIR__ . '/../pages/footer.php';
   document.querySelectorAll('.eliminar-asignacion').forEach(btn => {
     btn.addEventListener('click', () => {
       if (confirm('¿Eliminar esta asignación?')) {
-        location.href = `eliminar_asignacion.php?id=${btn.dataset.id}`;
+        location.href = `eliminar_asignacion_ponente.php?id=${btn.dataset.id}`;
       }
     });
   });

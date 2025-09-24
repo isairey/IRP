@@ -395,10 +395,20 @@ $conn->set_charset("utf8");
           <td><?= htmlspecialchars(isset($row['Especialidad']) ? $row['Especialidad'] : 'N/A') ?></td>
           <td><?= htmlspecialchars(isset($row['Biografia']) ? $row['Biografia'] : 'N/A') ?></td>
           <td><?= htmlspecialchars(isset($row['RedesSociales']) ? $row['RedesSociales'] : 'N/A') ?></td>
-          <td>
-            <a href="editar_ponente.php?id=<?= htmlspecialchars($row['ID_Ponente']) ?>" class="btn btn-primary btn-sm mb-1"><i class="bi bi-pencil-square"></i> Editar</a>
-            <a href="eliminar_ponente.php?id=<?= htmlspecialchars($row['ID_Ponente']) ?>" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este ponente?');"><i class="bi bi-trash3-fill"></i> Eliminar</a>
-          </td>
+            <td>
+                <!-- Botón Editar -->
+                <a href="/ERP/ERP_IRP/checkout/editar_ponente.php?id=<?= htmlspecialchars($row['ID_Ponente']) ?>" 
+                   class="btn btn-primary btn-sm mb-1">
+                   <i class="bi bi-pencil-square"></i> Editar
+                </a>
+
+                <!-- Botón Eliminar -->
+                <a href="eliminar_ponente.php?id=<?= htmlspecialchars($row['ID_Ponente']) ?>" 
+                   class="btn btn-danger btn-sm" 
+                   onclick="return confirm('¿Seguro que deseas eliminar este ponente?');">
+                   <i class="bi bi-trash3-fill"></i> Eliminar
+                </a>
+            </td>
         </tr>
         <?php
                 endwhile;
@@ -419,6 +429,13 @@ $conn->set_charset("utf8");
   </div>
 </main>
 
+<?php if (isset($_GET['msg'])): ?>
+    <?php if ($_GET['msg'] === 'success'): ?>
+        <div class="alert alert-success">✅ Ponente eliminado correctamente.</div>
+    <?php elseif ($_GET['msg'] === 'error'): ?>
+        <div class="alert alert-danger">❌ Error al eliminar el ponente.</div>
+    <?php endif; ?>
+<?php endif; ?>
 
 
 
@@ -426,6 +443,18 @@ $conn->set_charset("utf8");
 
   
 </div>
+
+<script>
+document.querySelectorAll('.btn-eliminar-ponente').forEach(btn => {
+    btn.addEventListener('click', e => {
+        e.preventDefault();
+        if (confirm('¿Seguro que deseas eliminar este ponente?')) {
+            location.href = btn.getAttribute('href');
+        }
+    });
+});
+</script>
+
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous"></script>

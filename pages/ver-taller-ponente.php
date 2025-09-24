@@ -381,8 +381,8 @@ require_once __DIR__ . '/../pages/footer.php';
               <td><?= htmlspecialchars($a['Nombre']) ?></td>
               <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
               <td>
-                <button class="btn btn-danger btn-sm eliminar-asignacion"
-                        data-id="<?= $a['ID'] ?>">Eliminar</button>
+                <button class="eliminar-asignacion-taller btn btn-danger" data-id="<?= $asignacion['ID'] ?>">Eliminar</button>
+
               </td>
             </tr>
           <?php endforeach; ?>
@@ -417,14 +417,16 @@ require_once __DIR__ . '/../pages/footer.php';
 </main>
 
 <script>
-  document.querySelectorAll('.eliminar-asignacion').forEach(btn => {
+document.querySelectorAll('.eliminar-asignacion-taller').forEach(btn => {
     btn.addEventListener('click', () => {
-      if (confirm('¿Eliminar esta asignación?')) {
-        location.href = `eliminar_asignacion_ponente.php?id=${btn.dataset.id}`;
-      }
+        if (confirm('¿Eliminar esta asignación?')) {
+            const id = btn.getAttribute('data-id');
+            location.href = `eliminar_asignacion_ponente_taller.php?id=${id}`;
+        }
     });
-  });
+});
 </script>
+
 
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js"
