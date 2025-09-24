@@ -330,9 +330,9 @@ require_once __DIR__ . '/../pages/footer.php';
                 <th>Nombre Completo</th>
                 <th>CURP</th>
                 <th>INE</th>
-                <!-- <th>Documento CURP</th>
+                 <th>Documento CURP</th>
                 <th>Documento INE</th>
-                <th>Comprobante de Domicilio</th> -->
+                <th>Comprobante de Domicilio</th> 
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -387,21 +387,50 @@ try {
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Mostrar usuarios
-    foreach ($usuarios as $usuario) {
-        echo "<tr>";
-        echo "<td>{$usuario['id']}</td>";
-        echo "<td>{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}</td>";
-        echo "<td>{$usuario['CURP']}</td>";
-        echo "<td>{$usuario['INE']}</td>";
-        echo "<td>";
-        echo "<a href='../checkout/editar_usuaria.php?id={$usuario['id']}' class='btn btn-primary btn-sm'>Editar</a> ";
-        echo "<button class='btn btn-danger btn-sm eliminar-usuario' data-id='{$usuario['id']}'>Eliminar</button>";
-        echo "</td>";
-        echo "</tr>";
-    }
+    // Mostrar usuarios
+foreach ($usuarios as $usuario) {
+    echo "<tr>";
+    echo "<td>{$usuario['id']}</td>";
+    echo "<td>{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}</td>";
+    echo "<td>{$usuario['CURP']}</td>";
+    echo "<td>{$usuario['INE']}</td>";
 
-    // --- Paginación estilo ventana de 10 páginas ---
-    $ventana = 10;
+    // Documentos PDF
+    echo "<td>";
+    if (!empty($usuario['RutaCURP'])) {
+        echo "<a href='../uploads/documents/{$usuario['RutaCURP']}' target='_blank'><i class='bi bi-file-earmark-pdf'></i> CURP</a>";
+    } else {
+        echo "Sin CURP";
+    }
+    echo "</td>";
+
+    echo "<td>";
+    if (!empty($usuario['RutaINE'])) {
+        echo "<a href='../uploads/documents/{$usuario['RutaINE']}' target='_blank'><i class='bi bi-file-earmark-pdf'></i> INE</a>";
+    } else {
+        echo "Sin INE";
+    }
+    echo "</td>";
+
+    echo "<td>";
+    if (!empty($usuario['RutaComDomicilio'])) {
+        echo "<a href='../uploads/documents/{$usuario['RutaComDomicilio']}' target='_blank'><i class='bi bi-file-earmark-pdf'></i> Comprobante</a>";
+    } else {
+        echo "Sin Comprobante";
+    }
+    echo "</td>";
+
+    // Acciones
+    echo "<td>";
+    echo "<a href='../checkout/editar_usuaria.php?id={$usuario['id']}' class='btn btn-primary btn-sm'>Editar</a> ";
+    echo "<button class='btn btn-danger btn-sm eliminar-usuario' data-id='{$usuario['id']}'>Eliminar</button>";
+    echo "</td>";
+
+    echo "</tr>";
+}
+
+
+ $ventana = 10;
     $inicio = max(1, $pagina - floor($ventana / 2));
     $fin = min($totalPaginas, $inicio + $ventana - 1);
     if ($fin - $inicio + 1 < $ventana) {
@@ -433,6 +462,10 @@ try {
     } else {
         echo "<li class='page-item disabled'><span class='page-link'>Siguiente &rarr;</span></li>";
     }
+
+    echo "</ul>";
+    echo "</nav>";
+
 
     echo "</ul>";
     echo "</nav>";
