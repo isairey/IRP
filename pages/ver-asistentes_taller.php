@@ -1,14 +1,70 @@
 <?php
 session_start();
 
-// Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
+// Verificar sesión y rol
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    // Si el usuario no ha iniciado sesión o no tiene el rol adecuado, redirigirlo a otra página
-    header("Location: ../sign-in/index.php"); // O a una página de acceso denegado
+    header("Location: ../sign-in/index.php");
     exit();
 }
 
+require_once __DIR__ . '/../db/config.php';
+
+try {
+    $registrosPorPagina = 8;
+    $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
+    $offset = ($pagina - 1) * $registrosPorPagina;
+
+    // Consulta principal: talleres asignados a ponentes
+    $query = "
+        SELECT apt.ID, t.ID_Taller, t.Nombre AS NombreTaller, 
+               p.Nombre AS NombrePonente, apt.FechaAsignacion
+        FROM asignacion_ponentes_taller apt
+        LEFT JOIN Talleres t ON apt.ID_Taller = t.ID_Taller
+        LEFT JOIN Ponentes p ON apt.ID_Ponente = p.ID_Ponente
+    ";
+
+    $countQuery = "
+        SELECT COUNT(*)
+        FROM asignacion_ponentes_taller apt
+        LEFT JOIN Talleres t ON apt.ID_Taller = t.ID_Taller
+        LEFT JOIN Ponentes p ON apt.ID_Ponente = p.ID_Ponente
+    ";
+
+    $condiciones = [];
+    $params = [];
+
+    if (!empty($_GET['search'])) {
+        $condiciones[] = "(t.Nombre LIKE :search OR p.Nombre LIKE :search)";
+        $params[':search'] = "%" . $_GET['search'] . "%";
+    }
+
+    if ($condiciones) {
+        $where = " WHERE " . implode(" AND ", $condiciones);
+        $query .= $where;
+        $countQuery .= $where;
+    }
+
+    $stmtCount = $conn->prepare($countQuery);
+    foreach ($params as $k => $v) $stmtCount->bindValue($k, $v);
+    $stmtCount->execute();
+    $totalRegistros = $stmtCount->fetchColumn();
+    $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
+
+    $query .= " ORDER BY apt.FechaAsignacion DESC LIMIT :limit OFFSET :offset";
+    $stmt = $conn->prepare($query);
+    foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+    $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+    $stmt->execute();
+
+    $talleres = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+    exit;
+}
 ?>
+
+
 
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
@@ -19,7 +75,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
     <meta name="description" content="">
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.122.0">
-    <title>Listado de Ponentes</title>
+    <title>Listado de Feminicidios</title>
 
     <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/dashboard/">
 
@@ -107,17 +163,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
         display: block !important;
       }
 
-      table {
-            border-collapse: collapse;
-        }
-        table, th, td {
-            border: 1px solid black;
-            padding: 5px;
-            text-align: center;
-        }
-
-
-        .boton-morado {
+      .boton-morado {
   background-color: #6a0dad; /* Morado base */
   color: white;
   padding: 5px 10px; /* Angosto y pequeño */
@@ -198,7 +244,7 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
             <svg class="bi me-2 opacity-50" width="1em" height="1em"><use href="#circle-half"></use></svg>
             Auto
             <svg class="bi ms-auto d-none" width="1em" height="1em"><use href="#check2"></use></svg>
-          </button> 
+          </button>
         </li>
       </ul>
     </div>
@@ -285,180 +331,93 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
 
 
 
-<?php
- 
-require_once __DIR__ . '/../pages/footer.php';
-  require_once __DIR__ . '/../db/config.php';
-?>
-    <!-- Temina -->
-    <!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
 
-   
-       
-</head>
-<body >
-<style>
-  /* Quitar todos los bordes de la tabla */
-  #tabla-ponentes, 
-  #tabla-ponentes th, 
-  #tabla-ponentes td {
-      border: none !important;
-  }
 
-  /* Mantener rayado de filas y hover */
-  #tabla-ponentes tbody tr:nth-child(odd) {
-      background-color: #f9f9f9; /* gris suave igual que table-striped */
-  }
-  #tabla-ponentes tbody tr:hover {
-      background-color: #e9ecef; /* gris hover */
-  }
-
-  /* Ajustar imagen */
-  .foto-ponente {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 4px;
-  }
-</style>
+<?php require_once __DIR__ . '/../pages/footer.php'; ?>
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">📋 Listado de Ponentes</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-      <form class="d-flex" role="search" method="get">
-        <input class="form-control me-2" type="text" placeholder="Buscar Ponente" name="search" aria-label="Search" value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
-        <button class="btn btn-outline-success" type="submit">Buscar</button>
-        <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='ver-ponentes.php'"><i class="bi bi-arrow-repeat"></i></button>
-      </form>
-    </div> 
+  <div class="d-flex justify-content-between border-bottom">
+    <h1 class="h2">Talleres Impartidos</h1>
+  </div>
+
+  <div class="d-flex justify-content-center py-4">
+    <form class="d-flex" role="search">
+      <input class="form-control me-2" type="text" placeholder="Buscar taller o ponente" name="search"
+             value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+      <button class="btn btn-outline-success" type="submit">Buscar</button>
+      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='vista-talleres.php'">
+        <i class="bi bi-arrow-repeat"></i>
+      </button>
+    </form>
   </div>
 
   <div class="table-responsive small">
-    <table id="tabla-ponentes" class="table table-striped table-hover align-middle">
+    <table class="table table-striped table-sm">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Foto</th>
-          <th>Nombre Completo</th>
-          <th>Correo</th>
-          <th>Teléfono</th>
-          <th>Especialidad</th>
-          <th>Biografía</th>
-          <th>Redes Sociales</th>
+          <th>#</th>
+          <th>Taller</th>
+          <th>Ponente</th>
+          <th>Fecha Asignación</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        <?php
-        require_once __DIR__ . '/../db/config.php';
-
-        try {
-            $conn = new mysqli($host, $username, $password, $dbname);
-            if ($conn->connect_error) {
-                die("<tr><td colspan='9'>Conexión fallida: " . htmlspecialchars($conn->connect_error) . "</td></tr>");
-            }
-$conn->set_charset("utf8");
-            $sql = "SELECT ID_Ponente, Nombre, ApellidoPaterno, ApellidoMaterno, Correo, Telefono, Especialidad, Biografia, Foto, RedesSociales FROM Ponentes";
-
-            if (isset($_GET['search']) && !empty($_GET['search'])) {
-                $search = $conn->real_escape_string($_GET['search']);
-                $sql .= " WHERE CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno, ' ', Especialidad) LIKE '%$search%'";
-            }
-
-            $result = $conn->query($sql);
-
-            if ($result && $result->num_rows > 0):
-                while ($row = $result->fetch_assoc()):
-
-         
-        ?>
-
-        
-        <tr>
-          <td><?= htmlspecialchars(isset($row['ID_Ponente']) ? $row['ID_Ponente'] : 'N/A') ?></td>
-          <td>
-            <?php
-            $foto = isset($row['Foto']) && !empty($row['Foto']) ? $row['Foto'] : 'default.png';
-            ?>
-            <img src="../uploads/ponentes/<?= htmlspecialchars($foto) ?>" alt="Foto Ponente" class="foto-ponente">
-          </td>
-          <?php
-        $nombre = 
-      (isset($row['Nombre']) ? $row['Nombre'] : '') . " " .
-      (isset($row['ApellidoPaterno']) ? $row['ApellidoPaterno'] : '') . " " .
-      (isset($row['ApellidoMaterno']) ? $row['ApellidoMaterno'] : '');
-          ?>
-          <td><?= htmlspecialchars(trim($nombre))?></td>
-          <td><?= htmlspecialchars(isset($row['Correo']) ? $row['Correo'] : 'N/A') ?></td>
-          <td><?= htmlspecialchars(isset($row['Telefono']) ? $row['Telefono'] : 'N/A') ?></td>
-          <td><?= htmlspecialchars(isset($row['Especialidad']) ? $row['Especialidad'] : 'N/A') ?></td>
-          <td><?= htmlspecialchars(isset($row['Biografia']) ? $row['Biografia'] : 'N/A') ?></td>
-          <td><?= htmlspecialchars(isset($row['RedesSociales']) ? $row['RedesSociales'] : 'N/A') ?></td>
+        <?php foreach ($talleres as $t): ?>
+          <tr>
+            <td><?= htmlspecialchars($t['ID']) ?></td>
+            <td><?= htmlspecialchars($t['NombreTaller'] ?: '—') ?></td>
+            <td><?= htmlspecialchars($t['NombrePonente'] ?: '—') ?></td>
+            <td><?= htmlspecialchars($t['FechaAsignacion']) ?></td>
             <td>
-                <!-- Botón Editar -->
-                <a href="/ERP/ERP_IRP/checkout/editar_ponente.php?id=<?= htmlspecialchars($row['ID_Ponente']) ?>" 
-                   class="btn btn-primary btn-sm mb-1">
-                   <i class="bi bi-pencil-square"></i> Editar
-                </a>
-
-                <!-- Botón Eliminar -->
-                <a href="eliminar_ponente.php?id=<?= htmlspecialchars($row['ID_Ponente']) ?>" 
-                   class="btn btn-danger btn-sm" 
-                   onclick="return confirm('¿Seguro que deseas eliminar este ponente?');">
-                   <i class="bi bi-trash3-fill"></i> Eliminar
-                </a>
+              <form method="GET" action="ver-asistentes-taller.php" style="display:inline;">
+                <input type="hidden" name="id_taller" value="<?= $t['ID_Taller'] ?>">
+                <button type="submit" class="btn btn-sm btn-info">Ver Participantes</button>
+              </form>
             </td>
-        </tr>
-        <?php
-                endwhile;
-            else:
-        ?>
-        <tr>
-          <td colspan="9" class="text-center">No hay ponentes registrados.</td>
-        </tr>
-        <?php
-            endif;
-            $conn->close();
-        } catch (Exception $e) {
-            echo "<tr><td colspan='9' class='text-center'>Error: " . htmlspecialchars($e->getMessage()) . "</td></tr>";
-        }
-        ?>
+          </tr>
+        <?php endforeach; ?>
+        <?php if (!$talleres): ?>
+          <tr><td colspan="5" class="text-center">No se encontraron registros.</td></tr>
+        <?php endif; ?>
       </tbody>
     </table>
   </div>
+
+  <nav aria-label="Paginación">
+    <ul class="pagination justify-content-center mt-3">
+      <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
+        <a class="page-link" href="?pagina=<?= max($pagina - 1, 1) ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">&laquo; Anterior</a>
+      </li>
+
+      <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+        <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
+          <a class="page-link" href="?pagina=<?= $i ?>&search=<?= urlencode($_GET['search'] ?? '') ?>"><?= $i ?></a>
+        </li>
+      <?php endfor; ?>
+
+      <li class="page-item <?= $pagina >= $totalPaginas ? 'disabled' : '' ?>">
+        <a class="page-link" href="?pagina=<?= min($pagina + 1, $totalPaginas) ?>&search=<?= urlencode($_GET['search'] ?? '') ?>">Siguiente &raquo;</a>
+      </li>
+    </ul>
+  </nav>
 </main>
 
-<?php if (isset($_GET['msg'])): ?>
-    <?php if ($_GET['msg'] === 'success'): ?>
-        <div class="alert alert-success">✅ Ponente eliminado correctamente.</div>
-    <?php elseif ($_GET['msg'] === 'error'): ?>
-        <div class="alert alert-danger">❌ Error al eliminar el ponente.</div>
-    <?php endif; ?>
-<?php endif; ?>
 
-
-
-
-
-  
-</div>
 
 <script>
-document.querySelectorAll('.btn-eliminar-ponente').forEach(btn => {
-    btn.addEventListener('click', e => {
-        e.preventDefault();
-        if (confirm('¿Seguro que deseas eliminar este ponente?')) {
-            location.href = btn.getAttribute('href');
-        }
+  document.querySelectorAll('.eliminar-asignacion').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (confirm('¿Eliminar esta asignación?')) {
+        location.href = `eliminar_asignacion_taller.php?id=${btn.dataset.id}`;
+      }
     });
-});
+  });
 </script>
 
+<!-- Scripts Bootstrap -->
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
-
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous"></script>
-    <script src="dashboard.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" crossorigin="anonymous"></script>
+<script src="dashboard.js"></script>
 </body>
 </html>

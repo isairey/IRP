@@ -347,11 +347,11 @@ require_once __DIR__ . '/../pages/footer.php';
 
    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between ... border-bottom">
-    <h1 class="h2">Asignaciones de Ponentes</h1>
+    <h1 class="h2">Listado de Seminarios y Ponentes</h1>
   </div>
 
   <div class="container mt-4">
-  <h3 class="mb-4">Listado de Seminarios y Ponentes</h3>
+
 
   <!-- Buscador -->
   <form method="get" class="mb-3 d-flex">
@@ -362,8 +362,8 @@ require_once __DIR__ . '/../pages/footer.php';
   </form>
 
   <!-- Tabla -->
-  <table class="table table-striped table-bordered">
-    <thead class="table-dark">
+  <table class="table table-striped table-sm">
+    <thead>
       <tr>
         <th>ID</th>
         <th>Seminario</th>

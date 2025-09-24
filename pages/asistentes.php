@@ -345,7 +345,7 @@ require_once __DIR__ . '/../pages/footer.php';
   </div>
   -->
 
-  <?php
+<?php
 require_once __DIR__ . '/../db/config.php';
 
 // Validar ID de diplomado
@@ -356,35 +356,63 @@ $idDiplomado = (int) $_GET['id_diplomado'];
 
 // 1️⃣ Obtener todas las fechas de secciones de este diplomado
 $stmtFechas = $conn->prepare("
-    SELECT fecha, ID 
+    SELECT ID, fecha
     FROM secciones 
     WHERE DiplomadoID = :idDiplomado
     ORDER BY fecha ASC
 ");
 $stmtFechas->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
 $stmtFechas->execute();
-$fechasDiplomado = $stmtFechas->fetchAll(PDO::FETCH_COLUMN);
+$fechasDiplomados = [];
+while ($row = $stmtFechas->fetch(PDO::FETCH_ASSOC)) {
+    $fechasDiplomados[$row['ID']] = $row['fecha'];
+}
 
-// 2️⃣ Obtener asistentes
-$stmt = $conn->prepare("
+// 2️⃣ Obtener asistentes con UNION ALL para respetar el tipo
+$sql = "
+(
     SELECT 
-        u.ID AS ID_Usuario, 
-        u.Nombre, 
-        u.Email, 
-        aa.FechaAsignacion
-    FROM asignacionesdiplomado aa
-    INNER JOIN usuario u ON aa.ID_Usuario = u.ID
-    WHERE aa.ID_Diplomado = :idDiplomado
-    ORDER BY aa.FechaAsignacion DESC
-");
-
+        a.ID_Usuario,
+        a.TipoUsuario,
+        a.FechaAsignacion,
+        CONCAT(p.Nombre, ' ', p.ApellidoPaterno, ' ', p.ApellidoMaterno) AS NombreCompleto,
+        p.Email
+    FROM asignacionesdiplomado a
+    INNER JOIN participante p ON a.ID_Usuario = p.ID_Participante
+    WHERE a.ID_Diplomado = :idDiplomado AND a.TipoUsuario = 'participante'
+)
+UNION ALL
+(
+    SELECT 
+        a.ID_Usuario,
+        a.TipoUsuario,
+        a.FechaAsignacion,
+        CONCAT(pe.Nombre, ' ', pe.ApellidoPaterno, ' ', pe.ApellidoMaterno) AS NombreCompleto,
+        pe.Email
+    FROM asignacionesdiplomado a
+    INNER JOIN personal pe ON a.ID_Usuario = pe.ID_Personal
+    WHERE a.ID_Diplomado = :idDiplomado AND a.TipoUsuario = 'personal'
+)
+UNION ALL
+(
+    SELECT 
+        a.ID_Usuario,
+        a.TipoUsuario,
+        a.FechaAsignacion,
+        CONCAT(u.Nombre, ' ', u.ApellidoPaterno, ' ', u.ApellidoMaterno) AS NombreCompleto,
+        u.Email
+    FROM asignacionesdiplomado a
+    INNER JOIN usuario u ON a.ID_Usuario = u.ID
+    WHERE a.ID_Diplomado = :idDiplomado AND a.TipoUsuario = 'usuario'
+)
+ORDER BY FechaAsignacion DESC
+";
+$stmt = $conn->prepare($sql);
 $stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-
-// 3️⃣ Traer asistencias si ya las tienes registradas (opcional)
-// Aquí se asumiría que hay una tabla `asistencias` con columnas: ID_Usuario, ID_Seccion, presente
+// 3️⃣ Traer asistencias ya registradas
 $asistencias = [];
 $stmtAsis = $conn->prepare("
     SELECT ID_Seccion, presente, id_usu
@@ -396,20 +424,6 @@ $stmtAsis->execute();
 foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
     $asistencias[$a['id_usu']][$a['ID_Seccion']] = $a['presente'];
 }
-
-
-
-
-
-// Ejemplo en PHP al preparar $fechasDiplomado
-$stmt = $conn->prepare("SELECT ID, fecha FROM secciones WHERE DiplomadoID = :idDiplomado ORDER BY fecha ASC");
-$stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
-$stmt->execute();
-$fechasDiplomados = [];
-while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-    $fechasDiplomados[$row['ID']] = $row['fecha'];
-}
-
 ?>
 <div class="table-responsive small">
     <table class="table table-striped">
@@ -417,30 +431,31 @@ while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
             <tr>
                 <th>Nombre</th>
                 <th>Email</th>
+                <th>Tipo</th>
                 <th>Fecha Asignación</th>
-                <?php foreach ($fechasDiplomado as $fecha): ?>
+                <?php foreach ($fechasDiplomados as $fecha): ?>
                     <th><?= htmlspecialchars($fecha) ?></th>
                 <?php endforeach; ?>
             </tr>
         </thead>
         <tbody>
-<?php foreach ($asistentes as $asistente): ?>
-<tr>
-    <td><?= htmlspecialchars($asistente['Nombre']) ?></td>
-    <td><?= htmlspecialchars($asistente['Email']) ?></td>
-    <td><?= htmlspecialchars($asistente['FechaAsignacion']) ?></td>
-    <?php foreach ($fechasDiplomados as $idSeccion => $fecha): ?>
-    <td>
-        <input type="checkbox" class="asistencia-switch"
-               data-usuario="<?= $asistente['ID_Usuario'] ?>"
-               data-seccion="<?= $idSeccion ?>"
-               <?= isset($asistencias[$asistente['ID_Usuario']][$idSeccion]) && $asistencias[$asistente['ID_Usuario']][$idSeccion] ? 'checked' : '' ?>>
-    </td>
-    <?php endforeach; ?>
-</tr>
-<?php endforeach; ?>
-</tbody>
-
+        <?php foreach ($asistentes as $asistente): ?>
+            <tr>
+                <td><?= htmlspecialchars($asistente['NombreCompleto'] ?? 'Desconocido') ?></td>
+                <td><?= htmlspecialchars($asistente['Email'] ?? '-') ?></td>
+                <td><?= htmlspecialchars($asistente['TipoUsuario']) ?></td>
+                <td><?= htmlspecialchars($asistente['FechaAsignacion']) ?></td>
+                <?php foreach ($fechasDiplomados as $idSeccion => $fecha): ?>
+                    <td>
+                        <input type="checkbox" class="asistencia-switch"
+                               data-usuario="<?= $asistente['ID_Usuario'] ?>"
+                               data-seccion="<?= $idSeccion ?>"
+                               <?= isset($asistencias[$asistente['ID_Usuario']][$idSeccion]) && $asistencias[$asistente['ID_Usuario']][$idSeccion] ? 'checked' : '' ?>>
+                    </td>
+                <?php endforeach; ?>
+            </tr>
+        <?php endforeach; ?>
+        </tbody>
     </table>
 </div>
 

@@ -16,20 +16,21 @@ try {
     $offset = ($pagina - 1) * $registrosPorPagina;
 
     // Consulta principal: asignaciones de seminario
-    $query = "
-        SELECT aps.ID, s.ID_Seminario, s.Nombre, p.Nombre AS NombrePonente, aps.FechaAsignacion
-        FROM asignaciones_seminario aps
-        LEFT JOIN Seminarios s ON aps.ID_Seminario = s.ID_Seminario
-        LEFT JOIN Ponentes p ON aps.ID_Ponente = p.ID_Ponente
-    ";
+   $query = "
+    SELECT aps.ID_Asignacion, s.ID_Seminario, s.Nombre, p.Nombre AS NombrePonente, aps.FechaAsignacion
+    FROM asignacion_ponente_seminario aps
+    LEFT JOIN Seminarios s ON aps.ID_Seminario = s.ID_Seminario
+    LEFT JOIN Ponentes p ON aps.ID_Ponente = p.ID_Ponente
+";
 
-    // Consulta para contar registros
-    $countQuery = "
-        SELECT COUNT(*)
-        FROM asignaciones_seminario aps
-        LEFT JOIN Seminarios s ON aps.ID = s.ID_Seminario
-        LEFT JOIN Ponentes p ON aps.ID_Ponente = p.ID_Ponente
-    ";
+// Consulta para contar registros
+// Consulta para contar registros
+$countQuery = "
+    SELECT COUNT(*)
+    FROM asignacion_ponente_seminario
+";
+
+
 
     $condiciones = [];
     $params = [];
@@ -380,7 +381,7 @@ require_once __DIR__ . '/../pages/footer.php';
   <tbody>
     <?php foreach ($asignaciones as $a): ?>
       <tr>
-        <td><?= htmlspecialchars($a['ID']) ?></td>
+        <td><?= htmlspecialchars($a['ID_Asignacion']) ?></td>
         <td><?= htmlspecialchars($a['Nombre'] ?: '—') ?></td>
         <td><?= htmlspecialchars($a['NombrePonente'] ?: '—') ?></td>
         <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
