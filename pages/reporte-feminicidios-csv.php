@@ -292,7 +292,8 @@ $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pa
 $offset = ($pagina - 1) * $registrosPorPagina;
 
 // Consulta base
-$query = "SELECT * FROM Feminicidios";
+// Consulta base
+$query = "SELECT *, YEAR(FechaHecho) AS Anio FROM Feminicidios";
 $countQuery = "SELECT COUNT(*) FROM Feminicidios";
 
 $condiciones = [];
@@ -311,6 +312,7 @@ if (count($condiciones) > 0) {
 }
 
 // Contar total de registros
+// Contar total de registros
 $stmtCount = $conn->prepare($countQuery);
 foreach ($params as $key => $value) $stmtCount->bindValue($key, $value);
 $stmtCount->execute();
@@ -318,7 +320,8 @@ $totalRegistros = $stmtCount->fetchColumn();
 $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
 // Consulta principal con LIMIT y OFFSET
-$query .= " ORDER BY FechaHecho DESC LIMIT :limit OFFSET :offset";
+// Consulta principal con LIMIT y OFFSET
+$query .= " ORDER BY FechaHecho ASC, ID ASC LIMIT :limit OFFSET :offset";
 $stmt = $conn->prepare($query);
 foreach ($params as $key => $value) $stmt->bindValue($key, $value);
 $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
@@ -326,6 +329,31 @@ $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 
 $feminicidios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+
+$idCasoAnual = $offset; // arrancar según la página
+$numAlertaGenero = $offset;
+$contadorPorAnio = [];
+
+foreach ($feminicidios as &$f) {
+    $anio = $f['Anio'];
+
+    // Contadores
+    $idCasoAnual++;
+    $numAlertaGenero++;
+    if (!isset($contadorPorAnio[$anio])) {
+        $contadorPorAnio[$anio] = 1;
+    } else {
+        $contadorPorAnio[$anio]++;
+    }
+
+    // Guardar en arreglo para mostrar
+    $f['IDCasoAnualCalc'] = $idCasoAnual;
+    $f['NumAnoCalc'] = $contadorPorAnio[$anio];
+    $f['NumAlertaCalc'] = $numAlertaGenero;
+}
+unset($f);
+
 ?>
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
@@ -344,6 +372,9 @@ $feminicidios = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <table class="table table-striped table-sm">
             <thead>
                 <tr>
+                   <th>ID Caso Anual</th>
+                    <th>Num de Año</th>
+                    <th>Num. de Alerta de Género</th>
                     <th>Fecha del Hecho</th>
                     <th>Nombre de la Víctima</th>
                     <th>Lugar de Origen</th>
@@ -380,6 +411,9 @@ $feminicidios = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <tbody>
                 <?php foreach ($feminicidios as $f): ?>
                 <tr>
+                    <td><?= $f['IDCasoAnualCalc'] ?></td>
+                    <td><?= $f['NumAnoCalc'] ?></td>
+                    <td><?= $f['NumAlertaCalc'] ?></td>
                     <td><?= $f['FechaHecho'] ?></td>
                     <td><?= $f['NombreVictima'] . ' ' . $f['ApellidoPaterno'] . ' ' . $f['ApellidoMaterno'] ?></td>
                     <td><?= $f['LugarOrigen'] ?></td>

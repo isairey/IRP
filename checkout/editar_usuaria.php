@@ -10,6 +10,28 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
 
 ?>
 <?php
+require_once __DIR__ . '/../db/config.php';
+
+try {
+    $id = $_GET['id'];
+    $stmt = $conn->prepare("SELECT * FROM Usuario WHERE id = :id");
+    $stmt->bindParam(':id', $id);
+    $stmt->execute();
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$usuario) {
+        echo "Usuario no encontrado.";
+        exit;
+    }
+} catch(PDOException $e) {
+    echo "Error: " . $e->getMessage();
+    exit;
+}
+
+
+
+
+
 ini_set('display_errors', 0); // No mostrar los errores
 error_reporting(0); // No reportar los errores
 require_once __DIR__ . '/../db/config.php';
@@ -21,91 +43,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         echo "Datos incorrectos, intente de nuevo.";
         exit;
     }
-    if (isset($_POST['nombre']) 
-        && isset($_POST['apellidoPaterno']) 
-        && isset($_POST['apellidoMaterno']) 
-        && isset($_POST['fecha_nacimiento']) 
-        && isset($_POST['edad'])
-        && isset($_POST['sexo']) 
-        && isset($_POST['lugar_nacimiento']) 
-        && isset($_POST['indigena']) 
-        && isset($_POST['hablaLenguaIndigena']) 
-        && isset($_POST['lenguaIndigena']) 
-        && isset($_POST['lenguaMaterna']) 
-        && isset($_POST['escolaridad']) 
-        && isset($_POST['estadocivil']) 
-        && isset($_POST['orientacionSexual']) 
-        && isset($_POST['discapacidad']) 
-        && isset($_POST['decendencia'])
-        && isset($_POST['numDecendencia']) 
-        && isset($_POST['calle']) 
-        && isset($_POST['numInterior']) 
-        && isset($_POST['numExterior']) 
-        && isset($_POST['cp']) 
-        && isset($_POST['estado'])
-        && isset($_POST['municipio']) 
-        && isset($_POST['colonia']) 
-        && isset($_POST['region']) 
-        && isset($_POST['callePC']) 
-        && isset($_POST['numInteriorPC']) 
-        && isset($_POST['numExteriorPC']) 
-        && isset($_POST['cppc']) 
-        && isset($_POST['estadoPC']) 
-        && isset($_POST['municipioPC']) 
-        && isset($_POST['coloniaPC']) 
-        && isset($_POST['regionPC'])  
-        && isset($_POST['telCelular']) 
-        && isset($_POST['telFijo']) 
-        && isset($_POST['telConfianza']) 
-        && isset($_POST['email']) 
-        && isset($_POST['emailRespaldo'])
-        && isset($_POST['curp']) 
-        && isset($_POST['ine']) 
-        && isset($_POST['ocupacion']) 
-        && isset($_POST['fuenteIngresos']) 
-        && isset($_POST['sectorEconomico'])
-        && isset($_POST['horasTrabajo']) 
-        && isset($_POST['ingresosDiarios']) 
-        && isset($_POST['tipoEnergia']) 
-        && isset($_POST['agua']) 
-        && isset($_POST['materialPiso']) 
-        && isset($_POST['tipoServicioAgua']) 
-        && isset($_POST['materialVivienda']) 
-        && isset($_POST['banioDentro']) 
-        && isset($_POST['tipoBano']) 
-        && isset($_POST['personasCasa']) 
-        && isset($_POST['personasDormitorio'])
-        && isset($_POST['tipoVivienda']) 
-        && isset($_POST['comoSeEntero'])
-        && isset($_POST['parejaTrabaja']) 
-        && isset($_POST['nombreAgresor']) 
-        && isset($_POST['dondeTrabaja'])
-        && isset($_POST['situacionUsuaria'])  
-        && isset($_POST['relacionAgresora']) 
-        && isset($_POST['tipoRelacion']) 
-        && isset($_POST['viveConPareja']) 
-        && isset($_POST['tiempoViviendoPareja']) 
-        && isset($_POST['chantajeado']) 
-        && isset($_POST['comochantajeado'])
-        && isset($_POST['parejaCelosa']) 
-        && isset($_POST['utilizaHijos']) 
-        && isset($_POST['consumidora']) 
-        && isset($_POST['agresion']) 
-        && isset($_POST['incrementoAgresiones']) 
-        && isset($_POST['atencionMedica']) 
-        && isset($_POST['amenazadaConArmas']) 
-        && isset($_POST['intentoAhorcar']) 
-        && isset($_POST['sienteTemorVida']) 
-        && isset($_POST['poseeArmaFuego']) 
-        && isset($_POST['denuncia']) 
-        && isset($_POST['ingresadoPrision'])
-        && isset($_POST['valoracionRiesgo']) 
-        && isset($_POST['canalizacion']) 
-        && isset($_POST['canalizacionExterna']) 
-        && isset($_POST['canalizacionInterna']) 
-        && isset($_POST['auxiliosPsicologicos'])
-        && isset($_POST['tipoDenuncia'])) {
-        
+
+
+    // Carpeta donde guardar los archivos
+$uploadDir = __DIR__ . '/../uploads/documents/';
+
+// Inicializar variables de rutas
+$rutaCURP = $usuario['RutaCURP'] ?? "SIN DATOS";
+$rutaINE = $usuario['RutaINE'] ?? "SIN DATOS";
+$rutaComDomicilio = $usuario['RutaComDomicilio'] ?? "SIN DATOS";
+
+// FUNCION PARA SUBIR ARCHIVO
+function subirArchivo($inputName, $uploadDir, $rutaActual) {
+    if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
+        $nombreArchivo = time() . "_" . basename($_FILES[$inputName]['name']);
+        $rutaDestino = $uploadDir . $nombreArchivo;
+
+        if (move_uploaded_file($_FILES[$inputName]['tmp_name'], $rutaDestino)) {
+            return "uploads/documents/" . $nombreArchivo; // Ruta relativa
+        }
+    }
+    // Si no se sube archivo, retorna la ruta actual (mantiene el archivo existente)
+    return $rutaActual;
+}
+
+
+// Subir archivos y obtener rutas
+$rutaCURP = subirArchivo('rutaCURP', $uploadDir, $rutaCURP);
+$rutaINE = subirArchivo('rutaINE', $uploadDir, $rutaINE);
+$rutaComDomicilio = subirArchivo('rutaComDomicilio', $uploadDir, $rutaComDomicilio);
+
+  
         // Recuperar los datos del formulario
         $nombre = $_POST['nombre'];
         $apellidoPaterno = $_POST['apellidoPaterno'];
@@ -237,6 +205,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             EmailRespaldo = :emailRespaldo,
             CURP = :curp, 
             INE = :ine, 
+            RutaCURP = :rutaCURP, 
+            RutaINE = :rutaINE, 
+            RutaComDomicilio = :rutaComDomicilio,
             Ocupacion = :ocupacion, 
             FuenteIngresos = :fuenteIngresos, 
             SectorEconomico = :sectorEconomico, 
@@ -325,6 +296,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->bindParam(':emailRespaldo', $emailRespaldo);
             $stmt->bindParam(':curp', $curp);
             $stmt->bindParam(':ine', $ine);
+            $stmt->bindParam(':rutaCURP', $rutaCURP);
+            $stmt->bindParam(':rutaINE', $rutaINE);
+            $stmt->bindParam(':rutaComDomicilio', $rutaComDomicilio);
             $stmt->bindParam(':ocupacion', $ocupacion);
             $stmt->bindParam(':fuenteIngresos', $fuenteIngresos);
             $stmt->bindParam(':sectorEconomico', $sectorEconomico);
@@ -373,16 +347,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->execute();
 
             // Redirigir al usuario a la página de inicio o a donde sea apropiado
-            echo '<script>window.location.href = "/SYSGES/pages/ver-usuaria.php";</script>';
+            echo '<script>window.location.href = "/ERP/ERP_IRP/pages/ver-usuaria.php";</script>';
             exit();
         } catch(PDOException $e) {
             // En un entorno de producción, considera registrar este error en un archivo de log
             echo "Error al procesar su solicitud, por favor intente de nuevo más tarde.";
         }
-    } else {
-        echo "Por favor, complete todos los campos requeridos.";
-        exit;
-    }
+   
 } else {
     // Si no es una solicitud POST, mostrar el formulario con los datos del usuario
     try {
@@ -490,7 +461,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="col-xxl-12 col-xxl-12">
         <h4 class="mb-3">Datos Generales</h4>
         <!-- <form class="needs-validation" action="register-usuario.php" method="POST" enctype="multipart/form-data"  novalidate> -->
-        <form method="POST" action="">
+        <form method="POST" action="" enctype="multipart/form-data">
         <input type="hidden" name="id" value="<?php echo $usuario['id']; ?>">
     <div class="row g-3">
             
@@ -1976,20 +1947,62 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="text" class="form-control" maxlength="50" id="emailRespaldo" name="emailRespaldo" placeholder="you@example.com" value="<?php echo $usuario['EmailRespaldo']; ?>"><br>
     </div>
 
-            <h4>Documentos comprobables</h4>
-            <hr class="my-4">
+<h4>Documentos comprobables</h4>
+<hr class="my-4">
 
-            <div class="col-sm-6">
-        <label for="curp" class="form-label">CURP</label>
-        <input type="text" class="form-control" id="curp" name="curp" value="<?php echo $usuario['CURP']; ?>"><br>
-        <div class="invalid-feedback">Se requiere una CURP válida.</div>
-    </div>
+<!-- CURP -->
+<div class="col-sm-6">
+    <label for="curp" class="form-label">CURP</label>
+    <input type="text" class="form-control" id="curp" name="curp" value="<?php echo $usuario['CURP']; ?>" placeholder="">
+    <div class="invalid-feedback">Se requiere una CURP válida.</div>
+</div>
 
-    <div class="col-sm-6">
-        <label for="ine" class="form-label">INE</label>
-        <input type="text" class="form-control" id="ine" name="ine" value="<?php echo $usuario['INE']; ?>"><br>
-        <div class="invalid-feedback">Se requiere una INE válida.</div>
-    </div>
+<div class="col-sm-6">
+    <label for="rutaCURP">Documento CURP:</label><br>
+    <?php if (!empty($usuario['RutaCURP']) && strtoupper($usuario['RutaCURP']) !== "SIN DATOS"): ?>
+        <a href="../uploads/documents/<?php echo $usuario['RutaCURP']; ?>" target="_blank">
+            <i class="bi bi-file-earmark-pdf"></i> Ver CURP
+        </a><br><br>
+    <?php else: ?>
+        <span class="text-muted">SIN CURP</span><br><br>
+    <?php endif; ?>
+    <input type="file" class="form-control" name="rutaCURP" id="rutaCURP" accept=".pdf"><br>
+</div>
+
+<!-- INE -->
+<div class="col-sm-6">
+    <label for="ine" class="form-label">INE</label>
+    <input type="text" class="form-control" id="ine" name="ine" value="<?php echo $usuario['INE']; ?>" placeholder="">
+    <div class="invalid-feedback">Se requiere una INE válida.</div>
+</div>
+
+<div class="col-sm-6">
+    <label for="rutaINE">Documento INE:</label><br>
+    <?php if (!empty($usuario['RutaINE']) && strtoupper($usuario['RutaINE']) !== "SIN DATOS"): ?>
+        <a href="../uploads/documents/<?php echo $usuario['RutaINE']; ?>" target="_blank">
+            <i class="bi bi-file-earmark-pdf"></i> Ver INE
+        </a><br><br>
+    <?php else: ?>
+        <span class="text-muted">SIN INE</span><br><br>
+    <?php endif; ?>
+    <input type="file" class="form-control" name="rutaINE" id="rutaINE" accept=".pdf"><br>
+</div>
+
+<!-- Comprobante de Domicilio -->
+<div class="col-sm-6">
+    <label for="rutaComDomicilio">Comprobante de Domicilio:</label><br>
+    <?php if (!empty($usuario['RutaComDomicilio']) && strtoupper($usuario['RutaComDomicilio']) !== "SIN DATOS"): ?>
+        <a href="../uploads/documents/<?php echo $usuario['RutaComDomicilio']; ?>" target="_blank">
+            <i class="bi bi-file-earmark-pdf"></i> Ver Comprobante
+        </a><br><br>
+    <?php else: ?>
+        <span class="text-muted">SIN COMPROBANTE</span><br><br>
+    <?php endif; ?>
+    <input type="file" class="form-control" name="rutaComDomicilio" id="rutaComDomicilio" accept=".pdf"><br>
+</div>
+
+
+
 
     <h3>Estudio socioeconómico</h3>
             <hr class="my-4">

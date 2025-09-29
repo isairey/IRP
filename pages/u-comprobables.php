@@ -396,29 +396,33 @@ foreach ($usuarios as $usuario) {
     echo "<td>{$usuario['INE']}</td>";
 
     // Documentos PDF
-    echo "<td>";
-    if (!empty($usuario['RutaCURP'])) {
-        echo "<a href='../uploads/documents/{$usuario['RutaCURP']}' target='_blank'><i class='bi bi-file-earmark-pdf'></i> CURP</a>";
-    } else {
-        echo "Sin CURP";
-    }
-    echo "</td>";
+    // CURP
+echo "<td>";
+if (!empty($usuario['RutaCURP']) && strtoupper($usuario['RutaCURP']) !== "SIN DATOS") {
+    echo "<a href='../uploads/documents/{$usuario['RutaCURP']}' target='_blank'><i class='bi bi-file-earmark-pdf'></i> CURP</a>";
+} else {
+    echo "Sin CURP";
+}
+echo "</td>";
 
-    echo "<td>";
-    if (!empty($usuario['RutaINE'])) {
-        echo "<a href='../uploads/documents/{$usuario['RutaINE']}' target='_blank'><i class='bi bi-file-earmark-pdf'></i> INE</a>";
-    } else {
-        echo "Sin INE";
-    }
-    echo "</td>";
+// INE
+echo "<td>";
+if (!empty($usuario['RutaINE']) && strtoupper($usuario['RutaINE']) !== "SIN DATOS") {
+    echo "<a href='../uploads/documents/{$usuario['RutaINE']}' target='_blank'><i class='bi bi-file-earmark-pdf'></i> INE</a>";
+} else {
+    echo "Sin INE";
+}
+echo "</td>";
 
-    echo "<td>";
-    if (!empty($usuario['RutaComDomicilio'])) {
-        echo "<a href='../uploads/documents/{$usuario['RutaComDomicilio']}' target='_blank'><i class='bi bi-file-earmark-pdf'></i> Comprobante</a>";
-    } else {
-        echo "Sin Comprobante";
-    }
-    echo "</td>";
+// Comprobante de domicilio
+echo "<td>";
+if (!empty($usuario['RutaComDomicilio']) && strtoupper($usuario['RutaComDomicilio']) !== "SIN DATOS") {
+    echo "<a href='../uploads/documents/{$usuario['RutaComDomicilio']}' target='_blank'><i class='bi bi-file-earmark-pdf'></i> Comprobante</a>";
+} else {
+    echo "Sin Comprobante";
+}
+echo "</td>";
+
 
     // Acciones
     echo "<td>";
