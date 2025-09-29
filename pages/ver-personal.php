@@ -327,6 +327,7 @@ require_once __DIR__ . '/../pages/footer.php';
         <thead>
             <tr>
                 <th>ID</th>
+                <TH>Foto</th>
                 <th>Nombre Completo</th>
                 <th>Fecha de Nacimiento</th>
                 <th>Sexo</th>
@@ -387,6 +388,17 @@ try {
     foreach ($personales as $personal) {
         echo "<tr>";
         echo "<td>{$personal['ID_Personal']}</td>";
+    echo "<td>";
+$foto = !empty($personal['foto']) ? $personal['foto'] : 'default.png';
+// Verifica si la ruta ya incluye "uploads/"
+if (strpos($foto, "uploads/") !== false) {
+    echo '<img src="../' . htmlspecialchars($foto) . '" alt="Foto Personal" class="foto-ponente" width="80">';
+} else {
+    echo '<img src="../uploads/personal/' . htmlspecialchars($foto) . '" alt="Foto Personal" class="foto-ponente" width="80">';
+}
+echo "</td>";
+
+
         echo "<td>{$personal['Nombre']} {$personal['ApellidoPaterno']} {$personal['ApellidoMaterno']}</td>";
 
         $fechaNacimiento = new DateTime($personal['FechaNacimiento']);

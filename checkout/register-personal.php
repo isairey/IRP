@@ -52,10 +52,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Encriptar la contraseña
     $hashed_password = password_hash($password, PASSWORD_DEFAULT);
 
+
+
+// Manejo de la foto
+    $foto = null;
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] == UPLOAD_ERR_OK) {
+        $carpetaDestino = "../uploads/personal/";
+        if (!file_exists($carpetaDestino)) {
+            mkdir($carpetaDestino, 0777, true);
+        }
+        $nombreArchivo = uniqid() . "_" . basename($_FILES["foto"]["name"]);
+        $rutaArchivo = $carpetaDestino . $nombreArchivo;
+
+        if (move_uploaded_file($_FILES["foto"]["tmp_name"], $rutaArchivo)) {
+            $foto = $nombreArchivo;
+        }
+    }
+
+
     try {
         // Preparamos la consulta SQL para insertar los datos
-        $sql = "INSERT INTO Personal (ID_Rol, Nombre, ApellidoPaterno, ApellidoMaterno, FechaNacimiento, Calle, NumInterior, NumExterior, CP, Estado, Municipio, Colonia, Region, PaisProcedencia, DireccionTemporal, Sexo, Genero, Email, Tel, NombreContactoEmergencia, TelContactoEmergencia, GradoAcademico, Institucion, AreaAsignada, EstatusPersonal, FechaIngreso, FechaTermino, ClasificacionPersonal, ProblemasSaludConsiderables, ProblemasMovilidad, Observaciones, Password) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        $sql = "INSERT INTO Personal (ID_Rol, Nombre, ApellidoPaterno, ApellidoMaterno, FechaNacimiento, Calle, NumInterior, NumExterior, CP, Estado, Municipio, Colonia, Region, PaisProcedencia, DireccionTemporal, Sexo, Genero, Email, Tel, NombreContactoEmergencia, TelContactoEmergencia, GradoAcademico, Institucion, AreaAsignada, EstatusPersonal, FechaIngreso, FechaTermino, ClasificacionPersonal, ProblemasSaludConsiderables, ProblemasMovilidad, Observaciones,foto, Password) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
         
         // Preparamos la sentencia
         $stmt = $conn->prepare($sql);
@@ -92,12 +110,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(29, $problemas_salud_considerables);
         $stmt->bindParam(30, $problemas_movilidad);
         $stmt->bindParam(31, $observaciones);
-        $stmt->bindParam(32, $hashed_password);
+        $stmt->bindParam(32, $foto);
+        $stmt->bindParam(33, $hashed_password);
 
         // Ejecutamos la consulta
         if ($stmt->execute()) {
             echo '<script>alert("Nuevo personal registrado correctamente.");</script>';
-            echo '<script>window.location.href = "/SYSGES/pages/ver-personal.php";</script>';
+            echo '<script>window.location.href = "/ERP/ERP_IRP/pages/ver-personal.php";</script>';
         } else {
             echo "Error al registrar el nuevo personal: " . $stmt->errorInfo()[2];
         }
@@ -204,6 +223,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="text" class="form-control" id="firstName" name="nombre" placeholder="" required>
     <div class="invalid-feedback">Se requiere un nombre válido.</div>
     </div>
+
+<div class="mb-3">
+  <label class="form-label">Foto</label><br>
+  <?php if (!empty($ponente['Foto'])): ?>
+    <img src="../uploads/ponentes/<?= htmlspecialchars($ponente['Foto']) ?>" 
+         alt="Foto actual" width="100"><br><br>
+  <?php endif; ?>
+  <input type="file" name="foto" class="form-control">
+</div>
 
     <div class="col-sm-6">
         <label for="lastName" class="form-label">Apellido Paterno:</label>

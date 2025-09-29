@@ -29,6 +29,55 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 
     // Verificamos si se recibieron datos del formulario de edición
     if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+
+
+require_once __DIR__ . '/../db/config.php';
+
+try {
+    $id = $_GET['id'];
+    $stmt = $conn->prepare("SELECT * FROM Personal WHERE ID_Personal = :id");
+    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
+    $stmt->execute();
+    $personal = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$personal) {
+        echo "Personal no encontrado.";
+        exit;
+    }
+} catch(PDOException $e) {
+    echo "Error: " . $e->getMessage();
+    exit;
+}
+
+// Carpeta donde guardar la foto
+$uploadDirFoto = __DIR__ . '/../uploads/personal/';
+
+// Inicializar variable de foto
+$foto = $personal['foto'] ?? "SIN DATOS";
+
+// Función para subir archivo (general)
+function subirArchivo($inputName, $uploadDir, $rutaActual) {
+    if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
+        $nombreArchivo = time() . "_" . basename($_FILES[$inputName]['name']);
+        $rutaDestino = $uploadDir . $nombreArchivo;
+
+        if (move_uploaded_file($_FILES[$inputName]['tmp_name'], $rutaDestino)) {
+            return "uploads/personal/" . $nombreArchivo; // Ruta relativa
+        }
+    }
+    // Si no se sube archivo, retorna la ruta actual (mantiene el archivo existente)
+    return $rutaActual;
+}
+
+// Subir foto y mantener si no cambia
+$foto = subirArchivo('foto', $uploadDirFoto, $foto);
+
+
+
+
+
+
         // Recibimos los datos actualizados del formulario
         $rol = $_POST["rol"];
         $nombre = $_POST["nombre"];
@@ -36,8 +85,8 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
         $apellido_materno = $_POST["apellido_materno"];
         $fecha_nacimiento = $_POST["fecha_nacimiento"];
         $calle = $_POST["calle"];
-        $num_interior = $_POST["num_interior"];
-        $num_exterior = $_POST["num_exterior"];
+        $num_interior = $_POST["NumInterior"];
+        $num_exterior = $_POST["NumExterior"];
         $cp = $_POST["cp"];
         $estado = $_POST["estado"];
         $municipio = $_POST["municipio"];
@@ -100,6 +149,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
                             ProblemasSaludConsiderables = ?, 
                             ProblemasMovilidad = ?, 
                             Observaciones = ?, 
+                            foto = ?, 
                             Password = ? 
                             WHERE ID_Personal = ?";
             $stmt_update = $conn->prepare($sql_update);
@@ -136,20 +186,21 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
             $stmt_update->bindParam(29, $problemas_salud_considerables);
             $stmt_update->bindParam(30, $problemas_movilidad);
             $stmt_update->bindParam(31, $observaciones);
-            $stmt_update->bindParam(32, $hashed_password);
-            $stmt_update->bindParam(33, $personal_id);
+            $stmt_update->bindParam(32, $foto);
+            $stmt_update->bindParam(33, $hashed_password);
+            $stmt_update->bindParam(34, $personal_id);
     
             // Ejecutamos la consulta de actualización
             if ($stmt_update->execute()) {
                 echo '<script>alert("Datos actualizados correctamente.");</script>';
-                echo '<script>window.location.href = "/SYSGES/pages/ver-personal.php";</script>';
+                echo '<script>window.location.href = "/ERP/ERP_IRP/pages/ver-personal.php";</script>';
             } else {
                 echo "Error al actualizar los datos: " . $stmt_update->errorInfo()[2];
             }
         } catch (PDOException $e) {
             // Registro de errores en un archivo de registro
             $error_message = "Error al ejecutar la consulta SQL: " . $e->getMessage() . "\n";
-            $file_path = '/xampp/htdocs/SYSGES/db/error_log.txt';
+            $file_path = '/xampp/htdocs/ERP/ERP_IRP/db/error_log.txt';
         
         
             // Mostrar un mensaje genérico al usuario
@@ -232,28 +283,72 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
       </ul>
     </div>
 
-    
+    <?php
+// Determinar la foto
+$foto = "default.png"; // Imagen por defecto
+if ($personal && !empty($personal['foto']) && strtoupper($personal['foto']) !== "SIN DATOS") {
+    if (strpos($personal['foto'], "uploads/") !== false) {
+        $foto = "../" . $personal['foto'];
+    } else {
+        $foto = "../uploads/personal/" . $personal['foto'];
+    }
+}
+?>
+    ?>
         <div class="container">
         <main>
     <div class="py-5 text-center">
-        <img class="d-block mx-auto mb-4" src="../assets/brand/bootstrap-logo.svg" alt="" width="72" height="57">
+       
         <h2>Registro de Personal </h2>
-        <p class="lead">Descripción de este formulario.</p>
+       
     </div>
 
     <div class="row g-5">
     <div class="col-xxl-12 col-xxl-12">
         <h4 class="mb-3">Datos Generales</h4>
-        <form action="" method="POST">
+        <form action="" method="POST" enctype="multipart/form-data" >
     <div class="row g-3"> 
 
             
     <div class="col-sm-12">
-        <label for="firstName" class="form-label">Nombre:</label>
+       <div class="py-5 text-center">
+    <!-- Foto circular -->
+    <img src="<?= htmlspecialchars($foto) ?>" 
+         alt="Foto de <?= htmlspecialchars($personal['Nombre'] ?? 'Personal') ?>" 
+         class="rounded-circle shadow" 
+         width="150" height="150"
+         style="object-fit: cover;">
+
+    <h2 class="mt-3">Registro de Personal</h2>
+    <?php if ($personal): ?>
+        <h5><?= htmlspecialchars($personal['Nombre'] . " " . $personal['ApellidoPaterno'] . " " . $personal['ApellidoMaterno']) ?></h5>
+    <?php endif; ?>
+</div><label for="firstName" class="form-label">Nombre:</label>
         <input type="text" class="form-control" id="firstName" name="nombre" value="<?php echo $personal['Nombre']; ?>">
     <div class="invalid-feedback">Se requiere un nombre válido.</div>
     </div>
     
+
+    <div class="mb-3">
+  <label class="form-label">Foto</label><br>
+  <?php if (!empty($personal['foto']) && strtoupper($personal['foto']) !== "SIN DATOS"): ?>
+     <?php
+if (!empty($personal['foto']) && strpos($personal['foto'], "uploads/") !== false) {
+    $foto = "../" . htmlspecialchars($personal['foto']);
+} elseif (!empty($personal['foto'])) {
+    $foto = "../uploads/personal/" . htmlspecialchars($personal['foto']);
+} else {
+    $foto = "../uploads/personal/default.png";
+}
+?>
+<img src="<?= $foto ?>" alt="Foto actual" width="100" class="rounded-circle shadow" style="object-fit: cover; height:100px;">
+
+  <?php else: ?>
+      <span class="text-muted">Sin foto</span><br><br>
+  <?php endif; ?>
+  <input type="file" name="foto" class="form-control">
+</div>
+
 
     <div class="col-sm-6">
         <label for="lastName" class="form-label">Apellido Paterno:</label>
@@ -302,15 +397,24 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
     <h4>Datos de Domicilio</h4>
         <hr class="my-4">
 
+
+<div class="col-sm-6">
+        <label for="calle" class="form-label">Calle</label>
+        <input type="text"  class="form-control" id="calle" name="calle" value="<?php echo $personal['Calle']; ?>"><br>
+        <div class="invalid-feedback">Se requiere un número interior válido.</div>
+    </div>
+
+
+
         <div class="col-sm-6">
         <label for="numInterior" class="form-label">Número interior</label>
-        <input type="number" max="100000" min="0" class="form-control" id="numInterior" name="numinterior" value="<?php echo $personal['NumInterior']; ?>"><br>
+        <input type="number" max="100000" min="0" class="form-control" id="numInterior" name="NumInterior" value="<?php echo $personal['NumInterior']; ?>"><br>
         <div class="invalid-feedback">Se requiere un número interior válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="numExterior" class="form-label">Número exterior</label>
-        <input type="number" max="100000" min="0"  class="form-control" id="numExterior" nampersonalxterior" value="<?php echo $personal['NumExterior']; ?>"><br>
+        <input type="number" max="100000" min="0"  class="form-control" id="numExterior" name="NumExterior" nampersonalxterior" value="<?php echo $personal['NumExterior']; ?>"><br>
     <div class="invalid-feedback">Se requiere un número exterior válido.</div>
     </div>
 
@@ -1100,7 +1204,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
     <label for="rol" class="form-label">Rol:</label>
     <select name="rol" class="form-select" id="rol">
         <?php
-        require_once '/home/gesmujer/config/config.php'; // Ruta al archivo de configuración
+       require_once __DIR__ . '/../db/config.php';
 
         try {
             // Crear conexión a la base de datos
@@ -1184,6 +1288,11 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
     <script src="checkout.js"></script></body>
     <script src="regiones.js"></script>
     <script src="vV-personal.js"></script>
+   
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
+      
+    </script><script src="dashboard.js"></script>
 
 
         </html>
