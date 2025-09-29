@@ -35,7 +35,9 @@ try {
         $apellidoMaterno = $_POST['ApellidoMaterno'] ?? '';
         $correo = $_POST['Correo'] ?? '';
         $telefono = $_POST['Telefono'] ?? '';
-
+  $id_especialidad = $_POST["especialidad"] ?? '';  // Aquí recibes el ID
+    $id_titulo = $_POST["titulo_profesional"] ?? '';  // Aquí recibes el ID
+    $id_institucion = $_POST["institucion"] ?? '';    // Aquí recibes el ID
         $biografia = $_POST['Biografia'] ?? '';
         $redes = $_POST['RedesSociales'] ?? '';
 
@@ -60,7 +62,10 @@ try {
                 ApellidoMaterno = :am,
                 Correo = :correo,
                 Telefono = :telefono,
-              
+                ID_Especialidad = :id_especialidad, 
+                 ID_Titulo = :id_titulo, 
+                 ID_Institucion = :id_institucion,
+                
                 Biografia = :biografia,
                 RedesSociales = :redes,
                 Foto = :foto
@@ -72,7 +77,9 @@ try {
             ':am' => $apellidoMaterno,
             ':correo' => $correo,
             ':telefono' => $telefono,
-          
+          ':id_especialidad' => $id_especialidad,
+          ':id_titulo' => $id_titulo,
+          ':id_institucion' => $id_institucion,
             ':biografia' => $biografia,
             ':redes' => $redes,
             ':foto' => $foto,
@@ -84,6 +91,87 @@ try {
     }
 } catch (PDOException $e) {
     die("Error: " . $e->getMessage());
+}
+?>
+
+
+
+<?php
+require_once __DIR__ . '/../db/config.php';
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // Traer especialidades
+    $especialidades = $conn->query("SELECT ID_Especialidad, NombreEspecialidad FROM Especialidades ORDER BY NombreEspecialidad ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+    // Traer títulos profesionales
+    $titulos = $conn->query("SELECT ID_Titulo, NombreTitulo FROM TitulosProfesionales ORDER BY NombreTitulo ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+    // Traer instituciones
+    $instituciones = $conn->query("SELECT ID_Institucion, NombreInstitucion FROM Instituciones ORDER BY NombreInstitucion ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    die("Error al conectar con la base de datos: " . $e->getMessage());
+}
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nombre = $_POST["nombre"];
+    $apellido_paterno = $_POST["apellido_paterno"];
+    $apellido_materno = $_POST["apellido_materno"];
+    $email = $_POST["email"];
+    $telefono = $_POST["telefono"];
+    $id_especialidad = $_POST["especialidad"];  // Aquí recibes el ID
+    $id_titulo = $_POST["titulo_profesional"];  // Aquí recibes el ID
+    $id_institucion = $_POST["institucion"];    // Aquí recibes el ID
+    $biografia = $_POST["biografia"];
+    $redes = $_POST["redes_sociales"];
+
+    // Manejo de la foto
+    $foto = null;
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] == UPLOAD_ERR_OK) {
+        $carpetaDestino = "../uploads/ponentes/";
+        if (!file_exists($carpetaDestino)) {
+            mkdir($carpetaDestino, 0777, true);
+        }
+        $nombreArchivo = uniqid() . "_" . basename($_FILES["foto"]["name"]);
+        $rutaArchivo = $carpetaDestino . $nombreArchivo;
+
+        if (move_uploaded_file($_FILES["foto"]["tmp_name"], $rutaArchivo)) {
+            $foto = $nombreArchivo;
+        }
+    }
+
+    try {
+        $sql = "INSERT INTO Ponentes 
+                (Nombre, ApellidoPaterno, ApellidoMaterno, Correo, Telefono, ID_Especialidad, 
+                 ID_Titulo, ID_Institucion, Biografia, Foto, RedesSociales) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+        
+        $stmt = $conn->prepare($sql);
+        $stmt->bindParam(1, $nombre);
+        $stmt->bindParam(2, $apellido_paterno);
+        $stmt->bindParam(3, $apellido_materno);
+        $stmt->bindParam(4, $email);
+        $stmt->bindParam(5, $telefono);
+        $stmt->bindParam(6, $id_especialidad, PDO::PARAM_INT);
+        $stmt->bindParam(7, $id_titulo, PDO::PARAM_INT);
+        $stmt->bindParam(8, $id_institucion, PDO::PARAM_INT);
+        $stmt->bindParam(9, $biografia);
+        $stmt->bindParam(10, $foto);
+        $stmt->bindParam(11, $redes);
+
+        if ($stmt->execute()) {
+            echo '<script>alert("Ponente registrado correctamente.");</script>';
+            echo '<script>window.location.href = "/ERP/ERP_IRP/pages/ver-ponentes.php";</script>';
+            exit;
+        } else {
+            echo "Error al registrar ponente: " . $stmt->errorInfo()[2];
+        }
+
+    } catch (PDOException $e) {
+        echo '<script>alert("Error al registrar el ponente: ' . $e->getMessage() . '");</script>';
+    }
 }
 ?>
 
@@ -208,6 +296,59 @@ try {
       <label class="form-label">Redes Sociales</label>
       <input type="text" name="RedesSociales" class="form-control" value="<?= htmlspecialchars($ponente['RedesSociales']) ?>">
     </div>
+
+
+     <!-- Especialidad -->
+    <div class="mb-3">
+      <label class="form-label">Especialidad</label>
+      <select name="especialidad" id="especialidad" class="form-select" required>
+        <option value="">-- Selecciona una especialidad --</option>
+        <?php foreach ($especialidades as $esp): ?>
+          <option value="<?= htmlspecialchars($esp['ID_Especialidad']) ?>">
+            <?= htmlspecialchars($esp['NombreEspecialidad']) ?>
+          </option>
+        <?php endforeach; ?>
+        <option value="__otro__">➕ Otro…</option>
+      </select>
+      <div class="invalid-feedback">Selecciona una especialidad.</div>
+    </div>
+
+<!-- Título Profesional -->
+<div class="mb-3">
+  <label class="form-label">Título Profesional</label>
+  <select name="titulo_profesional" id="titulo_profesional" class="form-select" required>
+    <option value="">-- Selecciona un título profesional --</option>
+    <?php foreach ($titulos as $tit): ?>
+      <option value="<?= htmlspecialchars($tit['ID_Titulo']) ?>">
+        <?= htmlspecialchars($tit['NombreTitulo']) ?>
+      </option>
+    <?php endforeach; ?>
+    <option value="__otro__">➕ Otro…</option>
+  </select>
+  <div class="invalid-feedback">Selecciona un título profesional.</div>
+</div>
+
+
+<!-- Institución -->
+<div class="mb-3">
+  <label class="form-label">Institución</label>
+  <select name="institucion" id="institucion" class="form-select" required>
+    <option value="">-- Selecciona una institución --</option>
+    <?php foreach($instituciones as $inst): ?>
+      <option value="<?= htmlspecialchars($inst['ID_Institucion']) ?>">
+        <?= htmlspecialchars($inst['NombreInstitucion']) ?>
+      </option>
+    <?php endforeach; ?>
+    <option value="__otro__">➕ Otro…</option>
+  </select>
+  <div class="invalid-feedback">Selecciona una institución.</div>
+    </div>
+
+
+
+
+
+
     <div class="mb-3">
       <label class="form-label">Foto</label><br>
       <?php if (!empty($ponente['Foto'])): ?>
@@ -215,12 +356,112 @@ try {
       <?php endif; ?>
       <input type="file" name="Foto" class="form-control">
     </div>
+
+
+
+
+
+
+
     <button type="submit" class="btn btn-primary">Guardar Cambios</button>
     <a href="listado_ponentes.php" class="btn btn-secondary">Cancelar</a>
   </form>
             </div>
         </div>
     </main>
+
+
+
+
+<!-- Modal para nueva especialidad -->
+<!-- MODAL: Agregar Especialidad (FUERA del form principal) -->
+<div class="modal fade" id="modalEspecialidad" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="formEspecialidad" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar nueva especialidad</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div id="espAlert" class="alert alert-danger d-none"></div>
+        <label class="form-label">Nombre de la especialidad</label>
+        <input type="text" name="nueva_especialidad" class="form-control" required>
+      </div>
+      <div class="modal-body">
+        <div id="espAlert" class="alert alert-danger d-none"></div>
+        <label class="form-label">Descripcion de la especialidad</label>
+        <input type="text" name="descripcion" class="form-control" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button id="btnGuardarEsp" type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<!-- Modal para nueva especialidad -->
+<!-- MODAL: Agregar Especialidad (FUERA del form principal) -->
+<div class="modal fade" id="modalTitulo" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="formTitulo" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar nuevo título profesional</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <div id="tituloAlert" class="alert alert-danger d-none"></div>
+        <label class="form-label">Nombre del título</label>
+        <input type="text" name="nuevo_titulo" class="form-control" required>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Descripción del título</label>
+        <input type="text" name="descripcion" class="form-control" required>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button id="btnGuardarTitulo" type="submit" class="btn btn-primary">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+
+
+<!-- Modal de Institución -->
+<div class="modal fade" id="modalInstitucion" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="formInstitucion" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar Institución</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="instAlert" class="alert alert-danger d-none"></div>
+        <div class="mb-3">
+          <label>Nombre de la Institución</label>
+          <input type="text" name="nueva_institucion" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label>Descripción</label>
+          <textarea name="descripcion" class="form-control"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" id="btnGuardarInst" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+
+
+
 
     <footer class="my-5 pt-5 text-body-secondary text-center text-small">
         <?php require_once __DIR__ . '/../checkout/CR.php'; ?>
@@ -230,4 +471,277 @@ try {
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 <script src="checkout.js"></script>
 <script src="validation-donante.js"></script>
+<script>
+  const selInst = document.getElementById('institucion');
+  const modalInstEl = document.getElementById('modalInstitucion');
+  const modalInst = new bootstrap.Modal(modalInstEl);
+  let lastValidInstValue = "";
+
+  // Guardar valor anterior al abrir
+  selInst.addEventListener('focus', () => { lastValidInstValue = selInst.value; });
+
+  // Abrir modal al elegir "Otro"
+  selInst.addEventListener('change', () => {
+    if (selInst.value === '__otro__') {
+      document.getElementById('instAlert').classList.add('d-none');
+      document.getElementById('formInstitucion').reset();
+      modalInst.show();
+      selInst.value = ''; // limpiar select
+    }
+  });
+
+
+
+
+
+
+
+
+  
+
+  // AJAX para agregar institución
+  document.getElementById('formInstitucion').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarInst');
+    btn.disabled = true;
+
+    const fd = new FormData(e.target);
+    try {
+      const resp = await fetch('ajax_add_institucion.php', { method: 'POST', body: fd });
+      const data = await resp.json();
+
+      if (!data.ok) {
+        const alert = document.getElementById('instAlert');
+        alert.textContent = data.error || 'Error desconocido';
+        alert.classList.remove('d-none');
+        btn.disabled = false;
+        return;
+      }
+
+      // Agregar nueva opción al select y seleccionarla
+      const opt = document.createElement('option');
+      opt.value = data.id;
+      opt.textContent = data.NombreInstitucion; // igual que en PHP
+      const otro = selInst.querySelector('option[value="__otro__"]');
+      selInst.insertBefore(opt, otro);
+      selInst.value = data.id;
+
+      modalInst.hide();
+    } catch (err) {
+      const alert = document.getElementById('instAlert');
+      alert.textContent = 'No se pudo guardar. Intenta de nuevo.';
+      alert.classList.remove('d-none');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // Restaurar valor si cierran modal sin guardar
+  modalInstEl.addEventListener('hidden.bs.modal', () => {
+    if (selInst.value === '') {
+      selInst.value = lastValidInstValue || '';
+    }
+  });
+</script>
+
+
+<script>
+  const selEsp = document.getElementById('especialidad');
+  const modalEspEl = document.getElementById('modalEspecialidad');
+  const modalEsp = new bootstrap.Modal(modalEspEl);
+  let lastValidEspValue = ""; // para restaurar si cancelan
+
+  // Abrir modal al elegir "Otro"
+  selEsp.addEventListener('focus', () => { lastValidEspValue = selEsp.value; });
+  selEsp.addEventListener('change', () => {
+    if (selEsp.value === '__otro__') {
+      document.getElementById('espAlert').classList.add('d-none');
+      document.getElementById('formEspecialidad').reset();
+      modalEsp.show();
+    }
+  });
+
+
+
+  // Guardar por AJAX sin recargar
+  document.getElementById('formEspecialidad').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarEsp');
+    btn.disabled = true;
+
+    const fd = new FormData(e.target);
+    try {
+      const resp = await fetch('ajax_add_especialidad.php', { method: 'POST', body: fd });
+      const data = await resp.json();
+
+      if (!data.ok) {
+        // Mostrar error en el modal
+        const alert = document.getElementById('espAlert');
+        alert.textContent = data.error || 'Error desconocido';
+        alert.classList.remove('d-none');
+        btn.disabled = false;
+        return;
+      }
+
+      // Crear opción nueva en el select y seleccionarla
+      const opt = document.createElement('option');
+      opt.value = data.id;
+      opt.textContent = data.NombreEspecialidad;
+
+      // Insertarla antes de "Otro…"
+      const otro = selEsp.querySelector('option[value="__otro__"]');
+      selEsp.insertBefore(opt, otro);
+      selEsp.value = data.id;
+
+      modalEsp.hide();
+    } catch (err) {
+      const alert = document.getElementById('espAlert');
+      alert.textContent = 'No se pudo guardar. Intenta de nuevo.';
+      alert.classList.remove('d-none');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // Si cierran el modal sin guardar, restaurar el valor anterior del select
+  modalEspEl.addEventListener('hidden.bs.modal', () => {
+    if (selEsp.value === '__otro__') {
+      selEsp.value = lastValidEspValue || '';
+    }
+  });
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/*
+  document.getElementById('titulo_profesional').addEventListener('change', function() {
+  if (this.value === '__otro__') {
+    var modal = new bootstrap.Modal(document.getElementById('modalTitulo'));
+    modal.show();
+    this.value = ''; // Reset select
+  }
+});
+
+document.getElementById('formNuevoTitulo').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const nombre = document.getElementById('nuevo_titulo').value.trim();
+  const descripcion = document.getElementById('descripcion_titulo').value.trim(); // NUEVO
+  if (!nombre) return;
+
+  fetch('ajax_add_titulo.php', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: 'nuevo_titulo=' + encodeURIComponent(nombre) +
+          '&descripcion=' + encodeURIComponent(descripcion) // NUEVO
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.ok) {
+      // Agregar al select
+      const select = document.getElementById('titulo_profesional');
+      const option = document.createElement('option');
+      option.value = data.id;
+      option.textContent = data.NombreTitulo;
+      option.selected = true;
+      select.appendChild(option);
+
+      // Cerrar modal
+      const modalEl = document.getElementById('modalTitulo');
+      const modal = bootstrap.Modal.getInstance(modalEl);
+      modal.hide();
+
+      // Limpiar formulario
+      document.getElementById('nuevo_titulo').value = '';
+      document.getElementById('descripcion_titulo').value = '';
+    } else {
+      alert(data.error || 'Error al agregar el título');
+    }
+  });
+});  */
+
+</script>
+
+
+<script>
+
+const selTitulo = document.getElementById('titulo_profesional');
+  const modalTituloEl = document.getElementById('modalTitulo');
+  const modalTitulo = new bootstrap.Modal(modalTituloEl);
+  let lastValidTituloValue = ""; // para restaurar si cancelan
+
+  // Guardar valor previo
+  selTitulo.addEventListener('focus', () => { 
+    lastValidTituloValue = selTitulo.value; 
+  });
+
+  // Abrir modal al elegir "Otro"
+  selTitulo.addEventListener('change', () => {
+    if (selTitulo.value === '__otro__') {
+      document.getElementById('tituloAlert').classList.add('d-none');
+      document.getElementById('formTitulo').reset();
+      modalTitulo.show();
+    }
+  });
+
+  // Guardar por AJAX sin recargar
+  document.getElementById('formTitulo').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('btnGuardarTitulo');
+    btn.disabled = true;
+
+    const fd = new FormData(e.target);
+    try {
+      const resp = await fetch('ajax_add_titulo.php', { method: 'POST', body: fd });
+      const data = await resp.json();
+
+      if (!data.ok) {
+        // Mostrar error en el modal
+        const alert = document.getElementById('tituloAlert');
+        alert.textContent = data.error || 'Error desconocido';
+        alert.classList.remove('d-none');
+        btn.disabled = false;
+        return;
+      }
+
+      // Crear opción nueva en el select y seleccionarla
+      const opt = document.createElement('option');
+      opt.value = data.id;
+      opt.textContent = data.NombreTitulo;
+
+      // Insertar antes de "Otro…"
+      const otro = selTitulo.querySelector('option[value="__otro__"]');
+      selTitulo.insertBefore(opt, otro);
+      selTitulo.value = data.id;
+
+      modalTitulo.hide();
+    } catch (err) {
+      const alert = document.getElementById('tituloAlert');
+      alert.textContent = 'No se pudo guardar. Intenta de nuevo.';
+      alert.classList.remove('d-none');
+    } finally {
+      btn.disabled = false;
+    }
+  });
+
+  // Si cierran el modal sin guardar, restaurar el valor anterior
+  modalTituloEl.addEventListener('hidden.bs.modal', () => {
+    if (selTitulo.value === '__otro__') {
+      selTitulo.value = lastValidTituloValue || '';
+    }
+  });
+</script>
         </html>

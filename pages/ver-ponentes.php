@@ -477,7 +477,7 @@ require_once __DIR__ . '/../db/config.php';
             <?php
             $foto = !empty($row['Foto']) ? $row['Foto'] : 'default.png';
             ?>
-            <img src="../uploads/ponentes/<?= htmlspecialchars($foto) ?>" alt="Foto Ponente" class="foto-ponente" width="80">
+            <img src="../uploads/ponentes/<?= htmlspecialchars($foto) ?>" alt=" " class="foto-ponente" width="80">
           </td>
           <?php
             $nombre = trim(
