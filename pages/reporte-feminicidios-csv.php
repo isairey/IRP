@@ -368,6 +368,12 @@ unset($f);
         </form>
     </div>
 
+    <div class="d-flex justify-content-start py-3">
+        <form action="exportar_feminicidios_xml.php" method="post">
+            <button class="btn btn-success" type="submit">Descargar XML</button>
+        </form>
+    </div>
+
     <div class="table-responsive small">
         <table class="table table-striped table-sm">
             <thead>

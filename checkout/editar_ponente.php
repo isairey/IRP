@@ -142,36 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
     }
 
-    try {
-        $sql = "INSERT INTO Ponentes 
-                (Nombre, ApellidoPaterno, ApellidoMaterno, Correo, Telefono, ID_Especialidad, 
-                 ID_Titulo, ID_Institucion, Biografia, Foto, RedesSociales) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(1, $nombre);
-        $stmt->bindParam(2, $apellido_paterno);
-        $stmt->bindParam(3, $apellido_materno);
-        $stmt->bindParam(4, $email);
-        $stmt->bindParam(5, $telefono);
-        $stmt->bindParam(6, $id_especialidad, PDO::PARAM_INT);
-        $stmt->bindParam(7, $id_titulo, PDO::PARAM_INT);
-        $stmt->bindParam(8, $id_institucion, PDO::PARAM_INT);
-        $stmt->bindParam(9, $biografia);
-        $stmt->bindParam(10, $foto);
-        $stmt->bindParam(11, $redes);
-
-        if ($stmt->execute()) {
-            echo '<script>alert("Ponente registrado correctamente.");</script>';
-            echo '<script>window.location.href = "/ERP/ERP_IRP/pages/ver-ponentes.php";</script>';
-            exit;
-        } else {
-            echo "Error al registrar ponente: " . $stmt->errorInfo()[2];
-        }
-
-    } catch (PDOException $e) {
-        echo '<script>alert("Error al registrar el ponente: ' . $e->getMessage() . '");</script>';
-    }
+    
 }
 ?>
 
@@ -288,30 +259,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <input type="text" name="Telefono" class="form-control" value="<?= htmlspecialchars($ponente['Telefono']) ?>">
     </div>
   
-    <div class="mb-3">
-      <label class="form-label">Biografía</label>
-      <textarea name="Biografia" class="form-control" rows="4"><?= htmlspecialchars($ponente['Biografia']) ?></textarea>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Redes Sociales</label>
-      <input type="text" name="RedesSociales" class="form-control" value="<?= htmlspecialchars($ponente['RedesSociales']) ?>">
-    </div>
-
-
-     <!-- Especialidad -->
-    <div class="mb-3">
-      <label class="form-label">Especialidad</label>
-      <select name="especialidad" id="especialidad" class="form-select" required>
-        <option value="">-- Selecciona una especialidad --</option>
-        <?php foreach ($especialidades as $esp): ?>
-          <option value="<?= htmlspecialchars($esp['ID_Especialidad']) ?>">
-            <?= htmlspecialchars($esp['NombreEspecialidad']) ?>
-          </option>
-        <?php endforeach; ?>
-        <option value="__otro__">➕ Otro…</option>
-      </select>
-      <div class="invalid-feedback">Selecciona una especialidad.</div>
-    </div>
+   <!-- Especialidad -->
+<div class="mb-3">
+  <label class="form-label">Especialidad</label>
+  <select name="especialidad" id="especialidad" class="form-select" required>
+    <option value="">-- Selecciona una especialidad --</option>
+    <?php foreach ($especialidades as $esp): ?>
+      <option value="<?= htmlspecialchars($esp['ID_Especialidad']) ?>"
+        <?= ($ponente['ID_Especialidad'] == $esp['ID_Especialidad']) ? 'selected' : '' ?>>
+        <?= htmlspecialchars($esp['NombreEspecialidad']) ?>
+      </option>
+    <?php endforeach; ?>
+    <option value="__otro__">➕ Otro…</option>
+  </select>
+  <div class="invalid-feedback">Selecciona una especialidad.</div>
+</div>
 
 <!-- Título Profesional -->
 <div class="mb-3">
@@ -319,7 +281,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <select name="titulo_profesional" id="titulo_profesional" class="form-select" required>
     <option value="">-- Selecciona un título profesional --</option>
     <?php foreach ($titulos as $tit): ?>
-      <option value="<?= htmlspecialchars($tit['ID_Titulo']) ?>">
+      <option value="<?= htmlspecialchars($tit['ID_Titulo']) ?>"
+        <?= ($ponente['ID_Titulo'] == $tit['ID_Titulo']) ? 'selected' : '' ?>>
         <?= htmlspecialchars($tit['NombreTitulo']) ?>
       </option>
     <?php endforeach; ?>
@@ -328,22 +291,31 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <div class="invalid-feedback">Selecciona un título profesional.</div>
 </div>
 
-
 <!-- Institución -->
 <div class="mb-3">
   <label class="form-label">Institución</label>
   <select name="institucion" id="institucion" class="form-select" required>
     <option value="">-- Selecciona una institución --</option>
     <?php foreach($instituciones as $inst): ?>
-      <option value="<?= htmlspecialchars($inst['ID_Institucion']) ?>">
+      <option value="<?= htmlspecialchars($inst['ID_Institucion']) ?>"
+        <?= ($ponente['ID_Institucion'] == $inst['ID_Institucion']) ? 'selected' : '' ?>>
         <?= htmlspecialchars($inst['NombreInstitucion']) ?>
       </option>
     <?php endforeach; ?>
     <option value="__otro__">➕ Otro…</option>
   </select>
   <div class="invalid-feedback">Selecciona una institución.</div>
-    </div>
+</div>
 
+<div class="col-sm-12">
+    <label class="form-label">Biografía:</label>
+    <textarea class="form-control" name="Biografia" required><?= htmlspecialchars($ponente['Biografia']) ?></textarea>
+</div>
+
+<div class="col-sm-12">
+    <label class="form-label">Redes Sociales:</label>
+    <textarea class="form-control" name="RedesSociales" required><?= htmlspecialchars($ponente['RedesSociales']) ?></textarea>
+</div>
 
 
 
@@ -364,7 +336,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
     <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-    <a href="listado_ponentes.php" class="btn btn-secondary">Cancelar</a>
+    <a href="ver-ponentes.php" class="btn btn-secondary">Cancelar</a>
   </form>
             </div>
         </div>
