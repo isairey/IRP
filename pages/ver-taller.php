@@ -15,15 +15,22 @@ try {
     $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
     $offset = ($pagina - 1) * $registrosPorPagina;
 
-    $query = "SELECT ID_Taller, Nombre, Fecha, HoraInicio, HoraFin, Lugar FROM talleres";
-    $countQuery = "SELECT COUNT(*) FROM talleres";
+    $query = "
+        SELECT t.ID_Taller, t.Nombre, t.Fecha, t.HoraInicio, t.HoraFin, t.Lugar,
+               p.Nombre AS Ponente, t.Descripcion
+        FROM talleres t
+        LEFT JOIN asignacion_ponentes_taller apt ON t.ID_Taller = apt.ID_Taller
+        LEFT JOIN ponentes p ON apt.ID_Ponente = p.ID_Ponente
+    ";
+
+    $countQuery = "SELECT COUNT(*) FROM talleres t";
 
     $condiciones = [];
     $params = [];
 
     // Búsqueda por nombre
     if (!empty($_GET['search'])) {
-        $condiciones[] = "Nombre LIKE :search";
+        $condiciones[] = "t.Nombre LIKE :search";
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
@@ -41,7 +48,7 @@ try {
     $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
     // Consulta con LIMIT
-    $query .= " ORDER BY Fecha ASC LIMIT :limit OFFSET :offset";
+    $query .= " ORDER BY t.Fecha ASC LIMIT :limit OFFSET :offset";
     $stmt = $conn->prepare($query);
     foreach ($params as $k => $v) $stmt->bindValue($k, $v);
     $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
@@ -52,6 +59,7 @@ try {
 } catch (PDOException $e) {
     die("Error al obtener talleres: " . $e->getMessage());
 }
+
 ?>
 
 
@@ -297,26 +305,11 @@ try {
 </svg>
 
 <!-- Menu de arriba -->
-<header class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow" data-bs-theme="dark">
-  <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="#">Ges Mujer</a>
 
-  <ul class="navbar-nav flex-row d-md-none">
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSearch" aria-controls="navbarSearch" aria-expanded="false" aria-label="Toggle search">
-        <svg class="bi"><use xlink:href=""/></svg>
-      </button>
-    </li>
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-        <svg class="bi"><use xlink:href="#list"/></svg>
-      </button>
-    </li>
-  </ul>
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
 
-  <div id="navbarSearch" class="navbar-search w-100 collapse">
-    <input class="form-control w-100 rounded-0 border-0" type="text" placeholder="" aria-label="Search">
-  </div>
-</header>
 
 
 
@@ -384,7 +377,7 @@ try {
     $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
-    $talleres = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $talleress = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
     exit;
@@ -398,6 +391,7 @@ try {
       <tr>
         <th>Título</th>
         <th>Descripción</th>
+        <th>Ponente</th>
         <th>Fecha</th>
         <th>Duración</th>
         <th>Lugar</th>
@@ -409,6 +403,7 @@ try {
         <tr>
           <td><?= htmlspecialchars($t['Nombre']) ?></td>
           <td><?= nl2br(htmlspecialchars($t['Descripcion'])) ?></td>
+          <td><?= htmlspecialchars($t['Ponente']) ?></td>
           <td><?= htmlspecialchars($t['Fecha']) ?></td>
           <td>
 <?php
@@ -421,7 +416,7 @@ echo $duracion->format('%h horas %i minutos');
 
           <td><?= htmlspecialchars($t['Lugar']) ?></td>
           <td>
-            <a href="/ERP/ERP_IRP/checkout/editar_taller.php?id=<?= $t['ID_Taller'] ?>" class="btn btn-sm btn-warning">Editar</a>
+            <a href="../checkout/editar_taller.php?id=<?= $t['ID_Taller'] ?>" class="btn btn-sm btn-warning">Editar</a>
             <button class="btn btn-sm btn-danger eliminar-taller" data-id="<?= $t['ID_Taller'] ?>">Eliminar</button>
           </td>
         </tr>
@@ -452,6 +447,39 @@ echo $duracion->format('%h horas %i minutos');
     <?php endif; ?>
   </ul>
 </nav>
+
+
+
+
+
+<?php if (isset($_GET['status'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['status'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['status'] === 'success' ? 'Taller registrado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['status'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+<?php if (isset($_GET['statuss'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['statuss'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['statuss'] === 'success' ? 'Asistencia registrado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['statuss'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
 
 <!-- Script para eliminar -->
 <script>

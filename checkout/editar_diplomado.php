@@ -16,16 +16,43 @@ if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
 
 $idDiplomado = (int)$_GET['id'];
 
-// Consultar datos del diplomado
+
 try {
-    $sql = "SELECT * FROM diplomados WHERE ID_Diplomado = ?";
+    // Traer los datos del diplomado junto con el ponente asignado
+    $sql = "SELECT d.ID_Diplomado, d.NombreDiplomado, d.Descripcion, d.FechaInicio, d.FechaFin, d.Num,
+       ad.ID_Ponente,
+       p.Nombre AS NombrePonente
+FROM diplomados d
+LEFT JOIN asignacionponente ad ON d.ID_Diplomado = ad.ID_Diplomado
+LEFT JOIN ponentes p ON ad.ID_Ponente = p.ID_Ponente
+WHERE d.ID_Diplomado = :id
+LIMIT 1
+";
+
+
     $stmt = $conn->prepare($sql);
-    $stmt->execute([$idDiplomado]);
+    $stmt->bindParam(':id', $idDiplomado, PDO::PARAM_INT);
+    $stmt->execute();
     $diplomado = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$diplomado) {
         die("❌ Diplomado no encontrado.");
     }
+
+    // Traer todos los ponentes disponibles para llenar el <select>
+    $sqlPonentes = "SELECT ID_Ponente, Nombre FROM ponentes ORDER BY Nombre ASC";
+    $stmtPonentes = $conn->query($sqlPonentes);
+    $ponentes = $stmtPonentes->fetchAll(PDO::FETCH_ASSOC);
+
+
+    // Traer fechas registradas del diplomado
+$sqlFechas = "SELECT Fecha FROM secciones WHERE DiplomadoID = :id ORDER BY nUMSeccion ASC";
+$stmtFechas = $conn->prepare($sqlFechas);
+$stmtFechas->bindParam(':id', $idDiplomado, PDO::PARAM_INT);
+$stmtFechas->execute();
+$fechas = $stmtFechas->fetchAll(PDO::FETCH_COLUMN); // Array de strings de fechas
+
+
 } catch (PDOException $e) {
     die("Error: " . $e->getMessage());
 }
@@ -67,6 +94,14 @@ try {
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
+
+
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
+
+
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
@@ -110,7 +145,7 @@ try {
       <h2>Editar Diplomado</h2>
     </div>
 
-    <form action="update-diplomado.php" method="POST" class="needs-validation" novalidate>
+    <form action="" method="POST" class="needs-validation" novalidate>
       <input type="hidden" name="id_diplomado" value="<?= htmlspecialchars($diplomado['ID_Diplomado']) ?>">
 
       <div class="mb-3">
@@ -118,6 +153,20 @@ try {
         <input type="text" class="form-control" id="nombre_diplomado" 
                name="nombre_diplomado" value="<?= htmlspecialchars($diplomado['NombreDiplomado']) ?>" required>
       </div>
+
+<div class="mb-3">
+    <label class="form-label"><strong>Ponente asignado</strong></label>
+    <select name="ID_Ponente" class="form-control" required>
+       
+        <?php foreach ($ponentes as $p): ?>
+            <option value="<?= $p['ID_Ponente'] ?>" 
+                <?= ($diplomado['ID_Ponente'] == $p['ID_Ponente']) ? 'selected' : '' ?>>
+                <?= htmlspecialchars($p['Nombre']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
 
       <div class="mb-3">
         <label for="descripcion" class="form-label">Descripción</label>
@@ -143,6 +192,8 @@ try {
                  name="num_secciones" min="1" value="<?= htmlspecialchars($diplomado['Num']) ?>" required>
         </div>
       </div>
+<div id="preview-fechas" class="mt-4"></div>
+
 
       <button class="btn btn-success w-100" type="submit">💾 Guardar Cambios</button>
     </form>
@@ -150,58 +201,62 @@ try {
 </div>
 
 <!-- Vista previa -->
-<div id="preview-fechas" class="mt-4"></div>
 
 <script>
-  function generarFechas() {
-    let inicio = new Date(document.getElementById("fecha_inicio").value);
-    let fin = new Date(document.getElementById("fecha_fin").value);
+let fechasRegistradas = <?= json_encode($fechas) ?>;
+</script>
+
+
+<script>
+function generarFechas() {
+    const container = document.getElementById("preview-fechas");
+    container.innerHTML = "";
+
     let num = parseInt(document.getElementById("num_secciones").value);
 
-    if (!isNaN(inicio) && !isNaN(fin) && num > 0 && fin > inicio) {
-      // Diferencia total en milisegundos
-      let diff = fin.getTime() - inicio.getTime();
-      let intervalo = diff / (num - 1); // división equitativa
+    if (isNaN(num) || num <= 0) return;
 
-      let html = `
-        <h5 class="mb-3">📅 Fechas sugeridas de las secciones</h5>
+    let html = `
+        <h5 class="mb-3">📅 Fechas de Secciones</h5>
         <div class="table-responsive">
-          <table class="table table-bordered table-striped text-center align-middle">
-            <thead class="table-dark">
-              <tr>
-                <th>Sección</th>
-                <th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-      `;
+            <table class="table table-bordered table-striped text-center align-middle">
+                <thead >
+                    <tr>
+                        <th>Sección</th>
+                        <th>Fecha</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
 
-      for (let i = 0; i < num; i++) {
-        let fecha = new Date(inicio.getTime() + (intervalo * i));
-        let fechaStr = fecha.toISOString().split('T')[0];
+    for (let i = 0; i < num; i++) {
+        let fechaValue = fechasRegistradas[i] || ""; // Si existe, usarla, si no dejar vacío
         html += `
-          <tr>
-            <td><strong>${i + 1}</strong></td>
-            <td>${fechaStr}</td>
-          </tr>
+            <tr>
+                <td><strong>${i + 1}</strong></td>
+                <td>
+                    <input type="date" class="form-control" 
+                           name="seccion_fecha[]" 
+                           value="${fechaValue}" required>
+                </td>
+            </tr>
         `;
-      }
-
-      html += `
-            </tbody>
-          </table>
-        </div>
-      `;
-
-      document.getElementById("preview-fechas").innerHTML = html;
-    } else {
-      document.getElementById("preview-fechas").innerHTML = "";
     }
-  }
 
-  document.getElementById("num_secciones").addEventListener("change", generarFechas);
-  document.getElementById("fecha_inicio").addEventListener("change", generarFechas);
-  document.getElementById("fecha_fin").addEventListener("change", generarFechas);
+    html += `
+                </tbody>
+            </table>
+        </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+document.getElementById("num_secciones").addEventListener("change", generarFechas);
+document.getElementById("fecha_inicio").addEventListener("change", generarFechas);
+document.getElementById("fecha_fin").addEventListener("change", generarFechas);
+
+document.addEventListener("DOMContentLoaded", generarFechas);
 </script>
 
 
@@ -214,6 +269,112 @@ try {
                 </ul>
         </footer>
     </div>
+
+<?php
+session_start();
+
+if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
+    header("Location: ../sign-in/index.php"); 
+    exit();
+}
+
+require_once __DIR__ . '/../db/config.php';
+
+$mensaje = "";
+$tipoMensaje = "";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+   
+    $nombreDiplomado = $_POST["nombre_diplomado"];
+    $descripcion = $_POST["descripcion"];
+    $fechaInicio = $_POST["fecha_inicio"];
+    $fechaFin = $_POST["fecha_fin"];
+    $numSecciones = $_POST["num_secciones"];
+    $idPonente = $_POST["id_ponente"] ?? null;
+
+    try {
+        $conn->beginTransaction();
+
+        // 1) Actualizar diplomado
+        $sql = "UPDATE diplomados 
+                SET NombreDiplomado = ?, Descripcion = ?, Num = ?, FechaInicio = ?, FechaFin = ?
+                WHERE ID_Diplomado = ?";
+        $stmt = $conn->prepare($sql);
+        $resultado = $stmt->execute([$nombreDiplomado, $descripcion, $numSecciones, $fechaInicio, $fechaFin, $idDiplomado]);
+
+        if ($resultado) {
+            $mensaje = "Diplomado actualizado correctamente";
+            $tipoMensaje = "success";
+        } else {
+            $mensaje = "Error al actualizar Diplomado";
+            $tipoMensaje = "error";
+        }
+
+        // 2) Volver a generar secciones según fechas nuevas
+        $inicio = new DateTime($fechaInicio);
+        $fin = new DateTime($fechaFin);
+        $diferencia = $inicio->diff($fin)->days;
+        $intervalo = ($numSecciones > 1) ? floor($diferencia / ($numSecciones - 1)) : 0;
+
+        for ($i = 0; $i < $numSecciones; $i++) {
+            $fechaSeccion = clone $inicio;
+            $fechaSeccion->modify("+" . ($i * $intervalo) . " days");
+            if ($i === $numSecciones - 1) $fechaSeccion = $fin;
+
+            $sqlSec = "INSERT INTO secciones (DiplomadoID, NumSeccion, Fecha) VALUES (?, ?, ?)";
+            $stmtSec = $conn->prepare($sqlSec);
+            $stmtSec->execute([$idDiplomado, $i + 1, $fechaSeccion->format("Y-m-d")]);
+        }
+
+        // 3) Actualizar ponente asignado
+        if ($idPonente) {
+            $sqlCheck = "SELECT COUNT(*) FROM asignacionesdiplomado WHERE ID_Diplomado = ?";
+            $stmtCheck = $conn->prepare($sqlCheck);
+            $stmtCheck->execute([$idDiplomado]);
+            $existe = $stmtCheck->fetchColumn();
+
+            if ($existe) {
+                $sqlUpdatePonente = "UPDATE asignacionesdiplomado 
+                                     SET ID_Ponente = ? 
+                                     WHERE ID_Diplomado = ?";
+                $stmtUpdate = $conn->prepare($sqlUpdatePonente);
+                $stmtUpdate->execute([$idPonente, $idDiplomado]);
+            } else {
+                $sqlInsertPonente = "INSERT INTO asignacionesdiplomado (ID_Diplomado, ID_Ponente) 
+                                     VALUES (?, ?)";
+                $stmtInsert = $conn->prepare($sqlInsertPonente);
+                $stmtInsert->execute([$idDiplomado, $idPonente]);
+            }
+        }
+
+        $conn->commit();
+
+    } catch (PDOException $e) {
+        $conn->rollBack();
+        $mensaje = "Error: " . $e->getMessage();
+        $tipoMensaje = "error";
+    }
+}
+?>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<?php if (!empty($mensaje)): ?>
+<script>
+Swal.fire({
+    icon: "<?= $tipoMensaje ?>",
+    title: "<?= $mensaje ?>",
+    showConfirmButton: false,
+    timer: 3000
+}).then(() => {
+    window.location.href = "../pages/ver-diplomado.php";
+});
+</script>
+<?php endif; ?>
+
+
+
+
+
 
     <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 

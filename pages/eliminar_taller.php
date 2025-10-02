@@ -14,9 +14,9 @@ try {
     $stmt->bindValue(':id', $idTaller, PDO::PARAM_INT);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Taller eliminado correctamente'); window.location.href='lista_talleres.php';</script>";
+        echo "<script>alert('Taller eliminado correctamente'); window.location.href='./ver-taller.php';</script>";
     } else {
-        echo "<script>alert('Error al eliminar el taller'); window.location.href='lista_talleres.php';</script>";
+        echo "<script>alert('Error al eliminar el taller'); window.location.href='./ver-taller.php';</script>";
     }
 } catch (PDOException $e) {
     echo "Error en la base de datos: " . $e->getMessage();

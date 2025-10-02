@@ -35,6 +35,9 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 require_once __DIR__ . '/../db/config.php';
 
 try {
+
+    $mensaje = "";
+$tipoMensaje = "";
     $id = $_GET['id'];
     $stmt = $conn->prepare("SELECT * FROM Personal WHERE ID_Personal = :id");
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
@@ -110,10 +113,16 @@ $foto = subirArchivo('foto', $uploadDirFoto, $foto);
         $problemas_salud_considerables = $_POST["problemas_salud_considerables"];
         $problemas_movilidad = $_POST["problemas_movilidad"];
         $observaciones = $_POST["observaciones"];
-        $password = $_POST["password"];
+        $password = $_POST["password"] ?? null;
+
+// Si ingresaron una nueva contraseña, se hashea; si no, mantenemos la actual
+if (!empty($password)) {
+    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+} else {
+    $hashed_password = $personal['Password']; // Mantener la contraseña actual
+}
     
-        // Encriptar la contraseña
-        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+  
     
         try {
             // Preparamos la consulta SQL de actualización
@@ -191,12 +200,13 @@ $foto = subirArchivo('foto', $uploadDirFoto, $foto);
             $stmt_update->bindParam(34, $personal_id);
     
             // Ejecutamos la consulta de actualización
-            if ($stmt_update->execute()) {
-                echo '<script>alert("Datos actualizados correctamente.");</script>';
-                echo '<script>window.location.href = "/ERP/ERP_IRP/pages/ver-personal.php";</script>';
-            } else {
-                echo "Error al actualizar los datos: " . $stmt_update->errorInfo()[2];
-            }
+            if ($stmt->execute()) {
+            $mensaje = "Personal actualizado correctamente";
+            $tipoMensaje = "success";
+        } else {
+            $mensaje = "Error al actualizar Personal";
+            $tipoMensaje = "error";
+        }
         } catch (PDOException $e) {
             // Registro de errores en un archivo de registro
             $error_message = "Error al ejecutar la consulta SQL: " . $e->getMessage() . "\n";
@@ -248,6 +258,14 @@ $foto = subirArchivo('foto', $uploadDirFoto, $foto);
       </symbol>
     </svg>
 
+
+    
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
+
+
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
               id="bd-theme"
@@ -298,14 +316,14 @@ if ($personal && !empty($personal['foto']) && strtoupper($personal['foto']) !== 
         <div class="container">
         <main>
     <div class="py-5 text-center">
-       
-        <h2>Registro de Personal </h2>
+         <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
+      
        
     </div>
 
     <div class="row g-5">
     <div class="col-xxl-12 col-xxl-12">
-        <h4 class="mb-3">Datos Generales</h4>
+        
         <form action="" method="POST" enctype="multipart/form-data" >
     <div class="row g-3"> 
 
@@ -1257,18 +1275,22 @@ if (!empty($personal['foto']) && strpos($personal['foto'], "uploads/") !== false
     <div class="col-sm-12">
     <div class="mb-3">
         <label for="password" class="col-form-label">Contraseña</label>
-        <input type="password" id="password" class="form-control" name="password" aria-describedby="passwordHelpInline" required placeholder="Ingresa la nueva contraseña"><br>
-        <div class="invalid-feedback">Se requiere Problemas de Movilidad válido.</div>
+        <input type="password" id="password" class="form-control" name="password" 
+               placeholder="Deja vacío para mantener la actual">
+        <div class="invalid-feedback">Se requiere una contraseña válida.</div>
     </div>
 
     <div class="col-auto">
-        <span id="passwordHelpInline" class="form-text">Contraseña con la cual ingresara el personal al sistema.</span>
+        <span id="passwordHelpInline" class="form-text">
+            Contraseña con la cual ingresará el personal al sistema.
+        </span>
     </div>
-    </div>
+</div>
+
 
             <hr class="my-4">
 
-    <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar</button>
+    <button class="w-100 btn btn-primary btn-lg" type="submit">Actualizar</button>
     </form>
     </div>
     </div>
@@ -1283,6 +1305,21 @@ if (!empty($personal['foto']) && strpos($personal['foto'], "uploads/") !== false
         </footer>
     </div>
 
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <?php if (!empty($mensaje)): ?>
+<script>
+Swal.fire({
+    icon: "<?= $tipoMensaje ?>",
+    title: "<?= $mensaje ?>",
+    showConfirmButton: false,
+    timer: 3000
+}).then(() => {
+    window.location.href = "../pages/ver-personal.php";
+});
+</script>
+<?php endif; ?>
     <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="checkout.js"></script></body>

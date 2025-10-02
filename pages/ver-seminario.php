@@ -1,13 +1,4 @@
 <?php
-session_start();
-
-// Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    header("Location: ../sign-in/index.php");
-    exit();
-}
-
-// Conexión a la base de datos
 require_once __DIR__ . '/../db/config.php';
 
 try {
@@ -15,15 +6,29 @@ try {
     $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
     $offset = ($pagina - 1) * $registrosPorPagina;
 
-    $query = "SELECT ID_Seminario, Nombre, fecha, DuracionHoras, Estado FROM seminarios";
-    $countQuery = "SELECT COUNT(*) FROM seminarios";
+    // Consulta que incluye el JOIN para obtener el nombre del ponente
+    $query = "SELECT 
+                s.ID_Seminario, 
+                s.Nombre, 
+                s.Descripcion, 
+                s.Fecha, 
+                s.DuracionHoras, 
+                s.Estado,
+                p.Nombre AS NombrePonente, 
+                p.ApellidoPaterno AS ApellidoPonente
+              FROM Seminarios s
+              LEFT JOIN asignacion_ponente_seminario aps ON s.ID_Seminario = aps.ID_Seminario
+              LEFT JOIN ponentes p ON aps.ID_Ponente = p.ID_Ponente";
+              
+    $countQuery = "SELECT COUNT(*) FROM Seminarios"; // El count no necesita el join si no filtra por ponente
 
     $condiciones = [];
     $params = [];
 
     // Búsqueda por título
     if (!empty($_GET['search'])) {
-        $condiciones[] = "titulo LIKE :search";
+        // Se debe cambiar el campo "titulo" a "Nombre" ya que así se llama en la tabla 'seminarios'
+        $condiciones[] = "s.Nombre LIKE :search"; 
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
@@ -41,16 +46,17 @@ try {
     $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
     // Consulta con LIMIT
-    $query .= " ORDER BY fecha ASC LIMIT :limit OFFSET :offset";
+    $query .= " ORDER BY s.Fecha ASC LIMIT :limit OFFSET :offset"; // Ordenar y limitar
     $stmt = $conn->prepare($query);
     foreach ($params as $k => $v) $stmt->bindValue($k, $v);
     $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
     $seminarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
+    
 } catch (PDOException $e) {
-    die("Error al obtener seminarios: " . $e->getMessage());
+    echo "Error: " . $e->getMessage();
+    exit;
 }
 ?>
 
@@ -296,26 +302,11 @@ try {
 </svg>
 
 <!-- Menu de arriba -->
-<header class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow" data-bs-theme="dark">
-  <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="#">Ges Mujer</a>
 
-  <ul class="navbar-nav flex-row d-md-none">
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSearch" aria-controls="navbarSearch" aria-expanded="false" aria-label="Toggle search">
-        <svg class="bi"><use xlink:href=""/></svg>
-      </button>
-    </li>
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-        <svg class="bi"><use xlink:href="#list"/></svg>
-      </button>
-    </li>
-  </ul>
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
 
-  <div id="navbarSearch" class="navbar-search w-100 collapse">
-    <input class="form-control w-100 rounded-0 border-0" type="text" placeholder="" aria-label="Search">
-  </div>
-</header>
 
 
 
@@ -384,7 +375,7 @@ try {
     $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
-    $seminarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $seminarioss = $stmt->fetchAll(PDO::FETCH_ASSOC);
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
     exit;
@@ -398,6 +389,7 @@ try {
       <tr>
         <th>Título</th>
         <th>Descripción</th>
+        <th>Ponente</th>
         <th>Fecha</th>
         <th>Duracion</th>
         <th>Estado</th>
@@ -405,10 +397,13 @@ try {
       </tr>
     </thead>
     <tbody>
-      <?php foreach ($seminarios as $s): ?>
+      <?php foreach ($seminarios as $s): 
+        
+        ?>
         <tr>
           <td><?= htmlspecialchars($s['Nombre']) ?></td>
           <td><?= nl2br(htmlspecialchars($s['Descripcion'])) ?></td>
+          <td><?= htmlspecialchars($s['NombrePonente']) ?></td>
           <td><?= htmlspecialchars($s['Fecha']) ?></td>
           <td><?= htmlspecialchars($s['DuracionHoras']) ?></td>
           <td><?= htmlspecialchars($s['Estado']) ?></td>
@@ -444,6 +439,39 @@ try {
     <?php endif; ?>
   </ul>
 </nav>
+
+
+<?php if (isset($_GET['status'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['status'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['status'] === 'success' ? 'Seminario registrado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['status'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
+
+<?php if (isset($_GET['statuss'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['statuss'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['statuss'] === 'success' ? 'Asistencia Reguistrada correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['statuss'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
 
 <!-- Script para eliminar -->
 <script>

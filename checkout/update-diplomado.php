@@ -8,6 +8,9 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
 
 require_once __DIR__ . '/../db/config.php';
 
+$mensaje = "";
+$tipoMensaje = "";
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id = $_POST["id_diplomado"];
     $nombreDiplomado = $_POST["nombre_diplomado"];
@@ -15,6 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fechaInicio = $_POST["fecha_inicio"];
     $fechaFin = $_POST["fecha_fin"];
     $numSecciones = $_POST["num_secciones"];
+    $idPonente = $_POST["id_ponente"] ?? null;
 
     try {
         $conn->beginTransaction();
@@ -24,14 +28,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 SET NombreDiplomado = ?, Descripcion = ?, Num = ?, FechaInicio = ?, FechaFin = ?
                 WHERE ID_Diplomado = ?";
         $stmt = $conn->prepare($sql);
-        $stmt->execute([$nombreDiplomado, $descripcion, $numSecciones, $fechaInicio, $fechaFin, $id]);
+        $resultado = $stmt->execute([$nombreDiplomado, $descripcion, $numSecciones, $fechaInicio, $fechaFin, $id]);
 
-        // 2) Eliminar secciones anteriores
-        $sqlDel = "DELETE FROM secciones WHERE DiplomadoID = ?";
-        $stmtDel = $conn->prepare($sqlDel);
-        $stmtDel->execute([$id]);
+        if ($resultado) {
+            $mensaje = "Diplomado actualizado correctamente";
+            $tipoMensaje = "success";
+        } else {
+            $mensaje = "Error al actualizar Diplomado";
+            $tipoMensaje = "error";
+        }
 
-        // 3) Volver a generar secciones según fechas nuevas
+        // 2) Volver a generar secciones según fechas nuevas
         $inicio = new DateTime($fechaInicio);
         $fin = new DateTime($fechaFin);
         $diferencia = $inicio->diff($fin)->days;
@@ -40,21 +47,54 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         for ($i = 0; $i < $numSecciones; $i++) {
             $fechaSeccion = clone $inicio;
             $fechaSeccion->modify("+" . ($i * $intervalo) . " days");
-            if ($i === $numSecciones - 1) $fechaSeccion = $fin; // última sección = fecha fin
+            if ($i === $numSecciones - 1) $fechaSeccion = $fin;
 
             $sqlSec = "INSERT INTO secciones (DiplomadoID, NumSeccion, Fecha) VALUES (?, ?, ?)";
             $stmtSec = $conn->prepare($sqlSec);
             $stmtSec->execute([$id, $i + 1, $fechaSeccion->format("Y-m-d")]);
         }
 
-        $conn->commit();
+        // 3) Actualizar ponente asignado
+        if ($idPonente) {
+            $sqlCheck = "SELECT COUNT(*) FROM asignacionesdiplomado WHERE ID_Diplomado = ?";
+            $stmtCheck = $conn->prepare($sqlCheck);
+            $stmtCheck->execute([$id]);
+            $existe = $stmtCheck->fetchColumn();
 
-        echo '<script>alert("✅ Diplomado y secciones actualizados correctamente.");</script>';
-        echo '<script>window.location.href = "/ERP/ERP_IRP/pages/home.php";</script>';
+            if ($existe) {
+                $sqlUpdatePonente = "UPDATE asignacionesdiplomado 
+                                     SET ID_Ponente = ? 
+                                     WHERE ID_Diplomado = ?";
+                $stmtUpdate = $conn->prepare($sqlUpdatePonente);
+                $stmtUpdate->execute([$idPonente, $id]);
+            } else {
+                $sqlInsertPonente = "INSERT INTO asignacionesdiplomado (ID_Diplomado, ID_Ponente) 
+                                     VALUES (?, ?)";
+                $stmtInsert = $conn->prepare($sqlInsertPonente);
+                $stmtInsert->execute([$id, $idPonente]);
+            }
+        }
+
+        $conn->commit();
 
     } catch (PDOException $e) {
         $conn->rollBack();
-        echo '<script>alert("Error: ' . $e->getMessage() . '");</script>';
+        $mensaje = "Error: " . $e->getMessage();
+        $tipoMensaje = "error";
     }
 }
 ?>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<?php if (!empty($mensaje)): ?>
+<script>
+Swal.fire({
+    icon: "<?= $tipoMensaje ?>",
+    title: "<?= $mensaje ?>",
+    showConfirmButton: false,
+    timer: 3000
+}).then(() => {
+    window.location.href = "../pages/ver-donaciones.php";
+});
+</script>
+<?php endif; ?>

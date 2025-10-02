@@ -14,9 +14,9 @@ try {
     $stmt->bindValue(':id', $idAsignacion, PDO::PARAM_INT);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Asignación eliminada correctamente'); window.location.href='home.php';</script>";
+        echo "<script>alert('Asignación eliminada correctamente'); window.location.href='./ver-diplomado-ponente.php';</script>";
     } else {
-        echo "<script>alert('Error al eliminar la asignación'); window.location.href='lista_asignaciones_ponente.php';</script>";
+        echo "<script>alert('Error al eliminar la asignación'); window.location.href='./ver-diplomado-ponente.php';</script>";
     }
 } catch (PDOException $e) {
     echo "Error en la base de datos: " . $e->getMessage();

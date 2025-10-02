@@ -1,11 +1,11 @@
 <?php
 require_once __DIR__ . '/../db/config.php';
-require 'vendor/autoload.php'; // Asegúrate que apunte a tu autoload de Composer
+require_once __DIR__ . '/../vendor/autoload.php';
 
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
-// Crear nuevo documento
+// Crear documento Excel
 $spreadsheet = new Spreadsheet();
 $sheet = $spreadsheet->getActiveSheet();
 
@@ -43,20 +43,22 @@ $encabezados = [
     'LINK DE LA NOTA'
 ];
 
-// Escribir encabezados en la fila 1
-$col = 1;
+// Escribir encabezados
+$col = 'A';
 foreach ($encabezados as $titulo) {
-    $sheet->setCellValueByColumnAndRow($col, 1, $titulo);
+    $sheet->setCellValue($col . '1', $titulo);
     $col++;
 }
 
-// Poner en negritas la fila de encabezados
-$sheet->getStyle('A1:' . $sheet->getHighestColumn() . '1')->getFont()->setBold(true);
+// Poner encabezados en negritas
+$sheet->getStyle('A1:' . $sheet->getHighestColumn() . '1')
+      ->getFont()
+      ->setBold(true);
 
 // Función rango de edad
 function rangoEdad($edad) {
-    if ($edad === null || $edad === '') return 'No especificado';
-    $edad = intval($edad);
+    if (!$edad) return 'No especificado';
+    $edad = (int)$edad;
     if ($edad < 12) return 'Niñez';
     if ($edad < 18) return 'Adolescencia';
     if ($edad < 30) return 'Joven';
@@ -64,54 +66,88 @@ function rangoEdad($edad) {
     return 'Adulto Mayor';
 }
 
-// Consulta a la BD
-$query = "SELECT * FROM Feminicidios ORDER BY FechaHecho DESC";
+// Limpiar texto
+function limpiar($txt) {
+    if (!$txt) return '';
+    return trim(strip_tags(preg_replace('#<br\s*/?>#i', ' ', $txt)));
+}
+
+// Consulta BD
+$query = "SELECT *, YEAR(FechaHecho) AS Anio FROM feminicidios ORDER BY FechaHecho ASC, ID ASC";
 $stmt = $conn->prepare($query);
 $stmt->execute();
-$feminicidios = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Escribir datos desde la fila 2
-$fila = 2;
-foreach ($feminicidios as $f) {
-    $sheet->setCellValue("A$fila", $f['IDCasoAnual']);
-    $sheet->setCellValue("B$fila", $f['Numa']); // num de año
-    $sheet->setCellValue("C$fila", $f['ID']);   // num total feminicidios (ID incremental)
-    $sheet->setCellValue("D$fila", $f['FechaHecho']);
-    $sheet->setCellValue("E$fila", $f['NombreVictima'] . ' ' . $f['ApellidoPaterno'] . ' ' . $f['ApellidoMaterno']);
-    $sheet->setCellValue("F$fila", $f['Edad']);
-    $sheet->setCellValue("G$fila", rangoEdad($f['Edad']));
-    $sheet->setCellValue("H$fila", $f['Ocupacion']);
-    $sheet->setCellValue("I$fila", $f['LugarOrigen']);
-    $sheet->setCellValue("J$fila", $f['Calle'] . ' ' . $f['Numero']);
-    $sheet->setCellValue("K$fila", $f['Municipio']);
-    $sheet->setCellValue("L$fila", $f['ClaveMunicipio']);
-    $sheet->setCellValue("M$fila", $f['Region']);
-    $sheet->setCellValue("N$fila", $f['AlertaGenero'] == 1 ? 'Sí' : 'No');
-    $sheet->setCellValue("O$fila", $f['AlertaGenero'] == 1 ? $f['Municipio'] : '-');
-    $sheet->setCellValue("P$fila", $f['Desaparecida']);
-    $sheet->setCellValue("Q$fila", $f['FechaDesaparicion']);
-    $sheet->setCellValue("R$fila", $f['LugarEncontradoCuerpo']);
-    $sheet->setCellValue("S$fila", $f['DescripcionCuerpo']);
-    $sheet->setCellValue("T$fila", $f['FormaMuerte']);
-    $sheet->setCellValue("U$fila", $f['TipoArma']);
-    $sheet->setCellValue("V$fila", $f['Causas']);
-    $sheet->setCellValue("W$fila", $f['NombreAgresor']);
-    $sheet->setCellValue("X$fila", $f['ParentescoAgresor']);
-    $sheet->setCellValue("Y$fila", $f['SituacionJuridica']);
-    $sheet->setCellValue("Z$fila", $f['NumDescendencia']);
-    $sheet->setCellValue("AA$fila", $f['Descendencia']);
-    $sheet->setCellValue("AB$fila", $f['FuentePeriodistica']);
-    $sheet->setCellValue("AC$fila", $f['AutorNota']);
-    $sheet->setCellValue("AD$fila", $f['LinkNota']);
+// Contadores
+$idCasoAnual = 0;
+$numAlertaGenero = 0;
+$contadorPorAnio = [];
+
+$fila = 2; // fila inicial después del encabezado
+
+foreach ($rows as $f) {
+    $anio = $f['Anio'];
+
+    $idCasoAnual++;
+    $numAlertaGenero++;
+    if (!isset($contadorPorAnio[$anio])) {
+        $contadorPorAnio[$anio] = 1;
+    } else {
+        $contadorPorAnio[$anio]++;
+    }
+
+    $nombreCompleto = limpiar(($f['NombreVictima'] ?? '') . ' ' . ($f['ApellidoPaterno'] ?? '') . ' ' . ($f['ApellidoMaterno'] ?? ''));
+
+    $datos = [
+        $idCasoAnual,
+        $contadorPorAnio[$anio],
+        $numAlertaGenero,
+        limpiar($f['FechaHecho'] ?? ''),
+        $nombreCompleto,
+        $f['Edad'] ?? '',
+        rangoEdad($f['Edad'] ?? ''),
+        limpiar($f['Ocupacion'] ?? ''),
+        limpiar($f['LugarOrigen'] ?? ''),
+        limpiar(($f['Calle'] ?? '') . ' ' . ($f['Numero'] ?? '')),
+        limpiar($f['Municipio'] ?? ''),
+        limpiar($f['ClaveMunicipio'] ?? ''),
+        limpiar($f['Region'] ?? ''),
+        !empty($f['AlertaGenero']) ? 'Sí' : 'No',
+        !empty($f['AlertaGenero']) ? limpiar($f['Municipio'] ?? '') : '-',
+        limpiar($f['Desaparecida'] ?? ''),
+        limpiar($f['FechaDesaparicion'] ?? ''),
+        limpiar($f['LugarEncontradoCuerpo'] ?? ''),
+        limpiar($f['DescripcionCuerpo'] ?? ''),
+        limpiar($f['FormaMuerte'] ?? ''),
+        limpiar($f['TipoArma'] ?? ''),
+        limpiar($f['Causas'] ?? ''),
+        limpiar($f['NombreAgresor'] ?? ''),
+        limpiar($f['ParentescoAgresor'] ?? ''),
+        limpiar($f['SituacionJuridica'] ?? ''),
+        limpiar($f['NumDescendencia'] ?? ''),
+        limpiar($f['Descendencia'] ?? ''),
+        limpiar($f['FuentePeriodistica'] ?? ''),
+        limpiar($f['AutorNota'] ?? ''),
+        limpiar($f['LinkNota'] ?? '')
+    ];
+
+    // Escribir fila en Excel
+    $col = 'A';
+    foreach ($datos as $valor) {
+        $sheet->setCellValue($col . $fila, $valor);
+        $col++;
+    }
     $fila++;
 }
 
-// Ajustar ancho automático de columnas
+
+
+// Auto-ajustar ancho
 foreach (range('A', $sheet->getHighestColumn()) as $columna) {
     $sheet->getColumnDimension($columna)->setAutoSize(true);
 }
 
-// Enviar archivo al navegador
+// Descargar Excel
 header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
 header('Content-Disposition: attachment; filename="feminicidios.xlsx"');
 header('Cache-Control: max-age=0');
@@ -119,3 +155,4 @@ header('Cache-Control: max-age=0');
 $writer = new Xlsx($spreadsheet);
 $writer->save('php://output');
 exit;
+?>
