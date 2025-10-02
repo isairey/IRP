@@ -78,12 +78,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id_tipo_violencia"])) 
                 $stmt->execute([$ultimo_id_usuario, $id_tipo_violencia]);
             }
             
-            echo '<script>alert("Formulario enviado correctamente");</script>';
-            // Redirigir a otra página después de mostrar el mensaje de éxito
-            echo '<script>window.location.href = "/SYSGES/pages/ver-usuaria.php";</script>';
+                header("Location: ../pages/u-decendencia.php?status=success");
+exit();
         } catch(PDOException $e) {
             // Manejar errores de manera adecuada
-            echo "Error al insertar el registro: " . $e->getMessage();
+              header("Location: ../pages/u-decendencia.php?status=error&msg=" . urlencode($e->getMessage()));
+exit();
         }
     }
 } elseif ($_SERVER["REQUEST_METHOD"] == "POST") {

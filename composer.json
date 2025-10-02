@@ -6,5 +6,7 @@
             "email": "isaireyes2003@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "phpoffice/phpspreadsheet": "^5.1"
+    }
 }

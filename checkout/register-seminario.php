@@ -15,26 +15,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fecha = $_POST["fecha"];
     $duracionHoras = $_POST["duracion_horas"];
     $estado = $_POST["estado"];
+    $ponenteID = $_POST["ponente_id"]; // 🔹 viene del <select>
 
     try {
+        // Iniciar transacción
+        $conn->beginTransaction();
+
+        // 1. Insertar seminario
         $sql = "INSERT INTO seminarios (Nombre, Descripcion, Fecha, DuracionHoras, Estado, FechaCreacion, FechaActualizacion) 
                 VALUES (?, ?, ?, ?, ?, NOW(), NOW())";
-
         $stmt = $conn->prepare($sql);
-        $stmt->bindParam(1, $nombre);
-        $stmt->bindParam(2, $descripcion);
-        $stmt->bindParam(3, $fecha);
-        $stmt->bindParam(4, $duracionHoras);
-        $stmt->bindParam(5, $estado);
+        $stmt->execute([$nombre, $descripcion, $fecha, $duracionHoras, $estado]);
 
-        if ($stmt->execute()) {
-            echo '<script>alert("Seminario registrado correctamente.");</script>';
-            echo '<script>window.location.href = "/ERP/ERP_IRP/pages/home.php";</script>';
-        } else {
-            echo "Error al registrar el seminario: " . $stmt->errorInfo()[2];
-        }
+        // 2. Obtener ID del seminario insertado
+        $seminarioID = $conn->lastInsertId();
+
+        // 3. Insertar asignación del ponente al seminario
+        $sqlAsig = "INSERT INTO asignacion_ponente_seminario (ID_Seminario, ID_Ponente, FechaAsignacion) 
+                    VALUES (?, ?, NOW())";
+        $stmtAsig = $conn->prepare($sqlAsig);
+        $stmtAsig->execute([$seminarioID, $ponenteID]);
+
+        // Confirmar todo
+        $conn->commit();
+
+       header("Location: ../pages/ver-seminario.php?status=success");
+exit();
+
     } catch (PDOException $e) {
-        echo '<script>alert("Error: ' . $e->getMessage() . '");</script>';
+        $conn->rollBack();
+        header("Location: ../pages/ver-seminario.php?status=error&msg=" . urlencode($e->getMessage()));
+exit();
     }
 
     $conn = null;
@@ -79,6 +90,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
+
+
+
+
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
+
+
+
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
@@ -131,6 +153,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <input type="text" class="form-control" id="nombre" name="nombre" required>
         <div class="invalid-feedback">Este campo es obligatorio.</div>
     </div>
+
+
+<div class="col-sm-12">
+    <label class="form-label">Ponente:</label>
+    <select class="form-control" name="ponente_id" required>
+        <option value="">Seleccione un ponente</option>
+        <?php
+        // Obtener ponentes de la BD
+        $sqlPon = "SELECT ID_Ponente, Nombre FROM ponentes ORDER BY Nombre ASC";
+        $stmtPon = $conn->query($sqlPon);
+        while ($row = $stmtPon->fetch(PDO::FETCH_ASSOC)) {
+            echo "<option value='{$row['ID_Ponente']}'>{$row['Nombre']}</option>";
+        }
+        ?>
+    </select>
+</div>
+
+
 
     <div class="mb-3">
         <label for="descripcion" class="form-label">Descripción</label>

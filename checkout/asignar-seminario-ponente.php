@@ -10,13 +10,13 @@ require_once __DIR__ . '/../db/config.php'; // debe definir $conn (PDO)
 
 $mensaje = '';
 $error = '';
+$redirigir = false;
 
 // helpers para obtener títulos (flexible con nombre del campo)
 function tituloSeminarioFromRow($row) {
     return $row['titulo'] ?? $row['Nombre'] ?? $row['nombre'] ?? $row['NombreSeminario'] ?? ("Seminario " . ($row['ID_Seminario'] ?? ''));
 }
 function nombrePonenteFromRow($row) {
-    // maneja distintas columnas posibles
     if (isset($row['Nombre']) || isset($row['ApellidoPaterno']) || isset($row['ApellidoMaterno'])) {
         $n = ($row['Nombre'] ?? '') . ' ' . ($row['ApellidoPaterno'] ?? '') . ' ' . ($row['ApellidoMaterno'] ?? '');
         return trim(preg_replace('/\s+/', ' ', $n));
@@ -27,7 +27,6 @@ function nombrePonenteFromRow($row) {
 // manejar CREATE / UPDATE
 try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        // acción: create / update
         $accion = $_POST['accion'] ?? 'create';
         $id_seminario = isset($_POST['id_seminario']) ? (int)$_POST['id_seminario'] : 0;
         $id_ponente   = isset($_POST['id_ponente'])   ? (int)$_POST['id_ponente']   : 0;
@@ -46,6 +45,9 @@ try {
                 $upd->execute([':seminario'=>$id_seminario, ':ponente'=>$id_ponente, ':fecha'=>$fechaAsign, ':id'=>$id_asig]);
                 $mensaje = "Asignación actualizada correctamente.";
             }
+
+            // Marcar para redirección con alerta
+            $redirigir = true;
         }
     }
 
@@ -84,7 +86,19 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
     $editRecord = $stmt->fetch(PDO::FETCH_ASSOC);
     if ($editRecord) $editing = true;
 }
+
+// Si debe redirigir después del POST
+if ($redirigir) {
+           header("Location: ../pages/ver-seminario-ponente.php?status=success");
+exit();
+   
+}else{
+        //  header("Location: ../pages/ver-seminario-ponente.php?status=error&msg=" . urlencode($error));
+//exit();
+
+}
 ?>
+
 
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
@@ -124,6 +138,13 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
+
+
+    
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
@@ -213,9 +234,15 @@ if (isset($_GET['edit']) && is_numeric($_GET['edit'])) {
                 value="<?= $editing ? date('Y-m-d\TH:i', strtotime($editRecord['FechaAsignacion'])) : date('Y-m-d\TH:i') ?>">
           </div>
 
-          <div class="col-md-6 d-flex align-items-end">
-            <button class="btn btn-primary w-100" type="submit"><?= $editing ? 'Guardar cambios' : 'Registrar asignación' ?></button>
-          </div>
+       <div class="col-md-6 d-flex align-items-end gap-2">
+    <button class="btn btn-primary flex-grow-1" type="submit">
+        <?= $editing ? 'Guardar cambios' : 'Registrar asignación' ?>
+    </button>
+    <a href="../pages/ver-seminario-ponente.php" class="btn btn-secondary">
+        Salir
+    </a>
+</div>
+
         </div>
       </form>
     </div>

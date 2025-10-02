@@ -1,7 +1,7 @@
 <?php 
 session_start();
 
-// Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
+// Verificar sesión y rol
 if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
     header("Location: ../sign-in/index.php"); 
     exit();
@@ -10,43 +10,62 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
 require_once __DIR__ . '/../db/config.php';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+  
     $nombreDiplomado = $_POST["nombre_diplomado"];
     $descripcion = $_POST["descripcion"];
     $fechaInicio = $_POST["fecha_inicio"];
     $fechaFin = $_POST["fecha_fin"];
-    $numSecciones = $_POST["num_secciones"]; // nuevo campo
+    $numSecciones = $_POST["num_secciones"]; 
+    $ponenteID = $_POST["ponente_id"]; 
 
     try {
-        // Insertar diplomado
-        $sql = "INSERT INTO diplomados (NombreDiplomado, Descripcion, Num, FechaInicio, FechaFin ) 
+        $conn->beginTransaction();
+
+        // 1. Insertar diplomado
+        $sql = "INSERT INTO diplomados (NombreDiplomado, Descripcion, Num, FechaInicio, FechaFin) 
                 VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         $stmt->execute([$nombreDiplomado, $descripcion, $numSecciones, $fechaInicio, $fechaFin]);
 
-        // Obtener ID del diplomado insertado
         $diplomadoID = $conn->lastInsertId();
 
-        // Calcular fechas de secciones
-        $inicio = new DateTime($fechaInicio);
-        $fin = new DateTime($fechaFin);
-        $diferencia = $inicio->diff($fin)->days;
-        $intervalo = floor($diferencia / $numSecciones);
+        // 2. Insertar asignación del ponente
+        $sqlAsig = "INSERT INTO asignacionponente (ID_Diplomado, ID_Ponente, FechaAsignacion) 
+                    VALUES (?, ?, NOW())";
+        $stmtAsig = $conn->prepare($sqlAsig);
+        $stmtAsig->execute([$diplomadoID, $ponenteID]);
 
-        for ($i = 0; $i < $numSecciones; $i++) {
-            $fechaSeccion = clone $inicio;
-            $fechaSeccion->modify("+" . ($i * $intervalo) . " days");
-            if ($i === $numSecciones - 1) $fechaSeccion = $fin; // última sección = fecha fin
+       // 4. Insertar las fechas de las secciones enviadas por el formulario
+if (isset($_POST["seccion_fecha"]) && is_array($_POST["seccion_fecha"])) {
+    $fechasSecciones = $_POST["seccion_fecha"];
+    
+    if (count($fechasSecciones) != $numSecciones) {
+        throw new Exception("El número de fechas de secciones enviadas no coincide con el número de secciones.");
+    }
+    
+    for ($i = 0; $i < $numSecciones; $i++) {
+        $fechaSeccion = trim($fechasSecciones[$i]);
+        
+        $sqlSec = "INSERT INTO secciones (DiplomadoID, NumSeccion, Fecha) VALUES (?, ?, ?)";
+        $stmtSec = $conn->prepare($sqlSec);
+        $stmtSec->execute([$diplomadoID, $i + 1, $fechaSeccion]);
+    }
+} else {
+    throw new Exception("No se recibieron las fechas de las secciones.");
+}
 
-            $sqlSec = "INSERT INTO secciones (DiplomadoID, NumSeccion, Fecha) VALUES (?, ?, ?)";
-            $stmtSec = $conn->prepare($sqlSec);
-            $stmtSec->execute([$diplomadoID, $i + 1, $fechaSeccion->format("Y-m-d")]);
-        }
 
-        echo '<script>alert("Diplomado y secciones registrados correctamente.");</script>';
-        echo '<script>window.location.href = "/ERP/ERP_IRP/pages/home.php";</script>';
+        $conn->commit();
 
-    } catch (PDOException $e) {
-        echo '<script>alert("Error: ' . $e->getMessage() . '");</script>';
+   
+header("Location: ../pages/ver-diplomado.php?status=success");
+exit();
+
+
+    } catch (Exception $e) {
+        $conn->rollBack();
+          header("Location: ../pages/ver-diplomado.php?status=error&msg=" . urlencode($e->getMessage()));
+exit();
     }
 
     $conn = null;
@@ -92,6 +111,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
+
+
+
+
+
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
+
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
@@ -141,6 +170,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <input type="text" class="form-control" id="nombre_diplomado" name="nombre_diplomado" required>
           </div>
 
+
+          <div class="col-sm-12">
+    <label class="form-label">Ponente:</label>
+    <select class="form-control" name="ponente_id" required>
+        <option value="">Seleccione un ponente</option>
+        <?php
+        // Obtener ponentes de la BD
+        $sqlPon = "SELECT ID_Ponente, Nombre FROM ponentes ORDER BY Nombre ASC";
+        $stmtPon = $conn->query($sqlPon);
+        while ($row = $stmtPon->fetch(PDO::FETCH_ASSOC)) {
+            echo "<option value='{$row['ID_Ponente']}'>{$row['Nombre']}</option>";
+        }
+        ?>
+    </select>
+</div>
+
+
           <div class="mb-3">
             <label for="descripcion" class="form-label">Descripción</label>
             <textarea class="form-control" id="descripcion" name="descripcion" rows="3"></textarea>
@@ -164,66 +210,93 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
           </div>
 
           <!-- Vista previa -->
-          <div id="preview-fechas" class="mb-3"></div>
+ <div id="secciones-inputs-container" class="mt-4">
+                      </div>
 
           <button class="btn btn-primary w-100" type="submit">Registrar Diplomado</button>
         </form>
       </main>
 
 <!-- Vista previa -->
-<div id="preview-fechas" class="mt-4"></div>
+
 
 <script>
-  function generarFechas() {
-    let inicio = new Date(document.getElementById("fecha_inicio").value);
-    let fin = new Date(document.getElementById("fecha_fin").value);
+function generarFechas() {
+    const container = document.getElementById("secciones-inputs-container");
+    container.innerHTML = ""; // Limpiar el contenedor
+
+    let inicioStr = document.getElementById("fecha_inicio").value;
+    let finStr = document.getElementById("fecha_fin").value;
     let num = parseInt(document.getElementById("num_secciones").value);
 
-    if (!isNaN(inicio) && !isNaN(fin) && num > 0 && fin > inicio) {
-      // Diferencia total en milisegundos
-      let diff = fin.getTime() - inicio.getTime();
-      let intervalo = diff / (num - 1); // división equitativa
+    if (!inicioStr || !finStr || isNaN(num) || num <= 0) {
+        container.innerHTML = "";
+        return;
+    }
 
-      let html = `
-        <h5 class="mb-3">📅 Fechas sugeridas de las secciones</h5>
-        <div class="table-responsive">
-          <table class="table table-bordered table-striped text-center align-middle">
-            <thead class="table-dark">
-              <tr>
-                <th>Sección</th>
-                <th>Fecha</th>
-              </tr>
-            </thead>
-            <tbody>
-      `;
+    let inicio = new Date(inicioStr);
+    let fin = new Date(finStr);
 
-      for (let i = 0; i < num; i++) {
-        let fecha = new Date(inicio.getTime() + (intervalo * i));
-        let fechaStr = fecha.toISOString().split('T')[0];
+    if (fin <= inicio) {
+        container.innerHTML = "<p class='text-danger'>La fecha de fin debe ser mayor que la fecha de inicio.</p>";
+        return;
+    }
+
+    let diffTime = fin.getTime() - inicio.getTime();
+    let intervalo = diffTime / (num - 1); // intervalo equitativo
+
+    let html = `
+    <div class="text-center">
+      <h5 class="mb-3"> Fechas de Secciones </h5>
+      <p class="text-muted small">Puedes modificar cualquiera de las fechas sugeridas antes de guardar.</p>
+      <div class="table-responsive">
+        <table class="table table-bordered table-striped text-center align-middle">
+          <thead >
+            <tr>
+              <th>Sección</th>
+              <th>Fecha</th>
+            </tr>
+          </thead>
+          <tbody>
+    `;
+
+    for (let i = 0; i < num; i++) {
+        let fechaSugerida = new Date(inicio.getTime() + (intervalo * i));
+        let year = fechaSugerida.getFullYear();
+        let month = String(fechaSugerida.getMonth() + 1).padStart(2, '0');
+        let day = String(fechaSugerida.getDate()).padStart(2, '0');
+        let fechaStr = `${year}-${month}-${day}`;
+
         html += `
           <tr>
             <td><strong>${i + 1}</strong></td>
-            <td>${fechaStr}</td>
+            <td>
+              <input type="date" class="form-control" 
+                     name="seccion_fecha[]" 
+                     value="${fechaStr}" 
+                     required>
+            </td>
           </tr>
         `;
-      }
-
-      html += `
-            </tbody>
-          </table>
-        </div>
-      `;
-
-      document.getElementById("preview-fechas").innerHTML = html;
-    } else {
-      document.getElementById("preview-fechas").innerHTML = "";
     }
-  }
 
-  document.getElementById("num_secciones").addEventListener("change", generarFechas);
-  document.getElementById("fecha_inicio").addEventListener("change", generarFechas);
-  document.getElementById("fecha_fin").addEventListener("change", generarFechas);
+    html += `
+          </tbody>
+        </table>
+      </div>
+      </div>
+    `;
+
+    container.innerHTML = html;
+}
+
+// Event listeners
+document.getElementById("num_secciones").addEventListener("change", generarFechas);
+document.getElementById("fecha_inicio").addEventListener("change", generarFechas);
+document.getElementById("fecha_fin").addEventListener("change", generarFechas);
+document.addEventListener("DOMContentLoaded", generarFechas);
 </script>
+
 
 
         <footer class="my-5 pt-5 text-body-secondary text-center text-small">
@@ -239,6 +312,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     <script src="checkout.js"></script></body>
     <script src="validation-donante.js"></script>
+
+
+
+
+     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<?php if (!empty($mensaje)): ?>
+<script>
+Swal.fire({
+    icon: "<?= $tipoMensaje ?>",
+    title: "<?= $mensaje ?>",
+    showConfirmButton: false,
+    timer: 3000
+}).then(() => {
+    window.location.href = "../pages/ver-diplomado.php";
+});
+</script>
+<?php endif; ?>
         </html>
 
 

@@ -221,7 +221,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         if ($stmt->execute()) {
             echo '<script>alert("Ponente registrado correctamente.");</script>';
-            echo '<script>window.location.href = "/ERP/ERP_IRP/pages/ver-ponentes.php";</script>';
+            echo '<script>window.location.href = "../pages/ver-ponentes.php";</script>';
             exit;
         } else {
             echo "Error al registrar ponente: " . $stmt->errorInfo()[2];
@@ -367,6 +367,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       </symbol>
     </svg>
 
+
+
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
+
+
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
               id="bd-theme"
@@ -482,7 +490,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 </header>
 
     
-     
+      <div class="container">
+        <main>
+
     <div class="py-5 text-center">
     <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
     <h2>Registro de Ponentes</h2>
@@ -560,6 +570,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <option value="__otro__">➕ Otro…</option>
   </select>
   <div class="invalid-feedback">Selecciona una institución.</div>
+    </div>
 
         <div class="col-sm-12">
             <label class="form-label">Biografía:</label>
@@ -580,18 +591,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <input type="file" name="foto" class="form-control">
 </div>
 
+      <hr class="my-4">
 
-        <hr class="my-4">
-
-        <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar Ponente</button>
+    <button class="w-100 btn btn-primary btn-lg" type="submit"  >Registrar</button>
+        
     </div>
-</form>
 
 
 
-            <hr class="my-4">
 
-    <button class="w-100 btn btn-primary btn-lg" type="submit"  onclick="return confirmarEnvio();">Registrar</button>
+      
     </form>
     </div>
     </div>

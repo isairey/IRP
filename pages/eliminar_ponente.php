@@ -28,10 +28,10 @@ try {
 
     if ($stmt->execute()) {
         // Redirigir con mensaje de éxito
-        header("Location: listado_ponentes.php?msg=success");
+        header("Location: ./ver-ponente.php?msg=success");
         exit();
     } else {
-        header("Location: listado_ponentes.php?msg=error");
+        header("Location: ./ver-ponente.php?msg=error");
         exit();
     }
 

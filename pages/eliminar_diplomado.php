@@ -31,6 +31,7 @@ try {
                         ¡Diplomado eliminado correctamente!
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
                       </div>';
+                      echo "<script>window.location.href='../pages/ver-diplomado.php';</script>";
             } else {
                 echo '<div class="alert alert-danger">Error al eliminar el diplomado.</div>';
             }

@@ -252,26 +252,11 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
 </svg>
 
 <!-- Menu de arriba -->
-<header class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow" data-bs-theme="dark">
-  <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="#">Ges Mujer</a>
 
-  <ul class="navbar-nav flex-row d-md-none">
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSearch" aria-controls="navbarSearch" aria-expanded="false" aria-label="Toggle search">
-        <svg class="bi"><use xlink:href=""/></svg>
-      </button>
-    </li>
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-        <svg class="bi"><use xlink:href="#list"/></svg>
-      </button>
-    </li>
-  </ul>
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
 
-  <div id="navbarSearch" class="navbar-search w-100 collapse">
-    <input class="form-control w-100 rounded-0 border-0" type="text" placeholder="" aria-label="Search">
-  </div>
-</header>
 
 
 <?php
@@ -463,28 +448,38 @@ try {
     $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     // Mostrar usuarios
-    foreach ($usuarios as $usuario) {
-        echo "<tr>";
-        echo "<td>{$usuario['id']}</td>";
-        echo "<td>{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}</td>";
-        echo "<td>{$usuario['FechaNacimiento']}</td>";
-        echo "<td>{$usuario['Edad']} años</td>";
-        echo "<td>{$usuario['Sexo']}</td>";
-        echo "<td>{$usuario['OrientacionSexual']}</td>";
-        echo "<td>{$usuario['Estadocivil']}</td>";
-        echo "<td>{$usuario['LugarNacimiento']}</td>";
-        echo "<td>{$usuario['LenguaMaterna']}</td>";
-        echo "<td>{$usuario['LenguaIndigena']}</td>";
-        echo "<td>{$usuario['FechaRegistro']}</td>";
-        echo "<td>";
-        echo "<a href='../checkout/editar_usuaria.php?id={$usuario['id']}' class='btn btn-primary btn-sm'><i class='bi bi-pencil-square'></i></a> ";
-        echo "<button class='btn btn-danger btn-sm eliminar-usuario' data-id='{$usuario['id']}'><i class='bi bi-trash3-fill'></i></button> ";
-        echo "<button class='btn btn-success btn-sm registrar-cita' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Registrar Cita</button> ";
-        echo "<button class='btn btn-warning btn-sm registrar-atencion' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Registrar Atención</button> ";
-        echo "<button class='btn btn-secondary btn-sm registrar-proyecto' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Asignar proyecto</button>";
-        echo "</td>";
-        echo "</tr>";
-    }
+ foreach ($usuarios as $usuario) {
+    echo "<tr>";
+    echo "<td>{$usuario['id']}</td>";
+    echo "<td>{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}</td>";
+    echo "<td>{$usuario['FechaNacimiento']}</td>";
+    echo "<td>{$usuario['Edad']} años</td>";
+    echo "<td>{$usuario['Sexo']}</td>";
+    echo "<td>{$usuario['OrientacionSexual']}</td>";
+    echo "<td>{$usuario['Estadocivil']}</td>";
+    echo "<td>{$usuario['LugarNacimiento']}</td>";
+    echo "<td>{$usuario['LenguaMaterna']}</td>";
+    echo "<td>{$usuario['LenguaIndigena']}</td>";
+    echo "<td>{$usuario['FechaRegistro']}</td>";
+    echo "<td>";
+    
+    echo "<div class='container p-0'>";
+    echo "<div class='row g-1'>";
+
+    echo "<div class='col-6'><a href='../checkout/editar_usuaria.php?id={$usuario['id']}' class='btn btn-primary btn-sm w-100'><i class='bi bi-pencil-square'></i></a></div>";
+    echo "<div class='col-6'><button class='btn btn-danger btn-sm w-100 eliminar-usuario' data-id='{$usuario['id']}'><i class='bi bi-trash3-fill'></i></button></div>";
+    echo "<div class='col-6'><button class='btn btn-success btn-sm w-100 registrar-cita' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Registrar Citas</button></div>";
+    echo "<div class='col-6'><button class='btn btn-warning btn-sm w-100 registrar-atencion' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Registrar Atención</button></div>";
+    echo "<div class='col-6'><button class='btn btn-secondary btn-sm w-100 registrar-proyecto' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Asignar Proyecto</button></div>";
+    echo "<div class='col-6'><a href='citas.php?id={$usuario['id']}' class='btn btn-info btn-sm w-100'>Ver Plan de Empoderamiento</a></div>";
+
+    echo "</div>";
+    echo "</div>";
+
+    echo "</td>";
+    echo "</tr>";
+}
+
 
     // --- Paginación estilo ventana de 10 páginas ---
     $ventana = 10;
@@ -561,7 +556,7 @@ try {
 
             // Redirigir a la página de registro de citas con los parámetros necesarios en la URL
             //window.location.href = 'register-cita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
-            window.location.href = '/SYSGES/checkout/register-ucita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
+            window.location.href = '/ERP/ERP_IRP/checkout/register-ucita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
 
         }
     });
@@ -576,7 +571,7 @@ try {
 
             // Redirigir a la página de registro de citas con los parámetros necesarios en la URL
             //window.location.href = 'register-cita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
-            window.location.href = '/SYSGES/checkout/asignacion-uproyecto.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
+            window.location.href = '/ERP/ERP_IRP/checkout/asignacion-uproyecto.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
 
         }
     });
@@ -590,7 +585,7 @@ try {
 
             // Redirigir a la página de registro de citas con los parámetros necesarios en la URL
             //window.location.href = 'register-cita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
-            window.location.href = '/SYSGES/checkout/register-uatencion.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
+            window.location.href = '/ERP/ERP_IRP/checkout/register-uatencion.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
 
         }
     });
@@ -653,5 +648,21 @@ function filtrarPorTipotipo_Estadocivil() {
     }
 }
 </script>
+
+
+<?php if (isset($_GET['status'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['status'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['status'] === 'success' ? 'Usuario registrado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['status'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
 </body>
 </html>

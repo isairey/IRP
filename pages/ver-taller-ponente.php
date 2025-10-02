@@ -15,12 +15,19 @@ try {
     $offset = ($pagina - 1) * $registrosPorPagina;
 
     // Consulta principal
-    $query = "
-        SELECT at.ID, t.Nombre, p.Nombre, at.FechaAsignacion
-        FROM asignacion_ponentes_taller at
-        LEFT JOIN Talleres t ON at.ID_Taller = t.ID_Taller
-        LEFT JOIN Ponentes p ON at.ID_Ponente = p.ID_Ponente
-    ";
+  $query = "
+    SELECT 
+        at.ID, 
+        t.ID_Taller, 
+        t.Nombre AS NombreTaller, 
+        p.ID_Ponente, 
+        p.Nombre AS NombrePonente, 
+        at.FechaAsignacion
+    FROM asignacion_ponentes_taller at
+    LEFT JOIN Talleres t ON at.ID_Taller = t.ID_Taller
+    LEFT JOIN Ponentes p ON at.ID_Ponente = p.ID_Ponente
+";
+
 
     $countQuery = "SELECT COUNT(*) 
                    FROM asignacion_ponentes_taller at
@@ -311,27 +318,11 @@ try {
   </symbol>
 </svg>
 
-<!-- Menu de arriba -->
-<header class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow" data-bs-theme="dark">
-  <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="#">Ges Mujer</a>
 
-  <ul class="navbar-nav flex-row d-md-none">
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSearch" aria-controls="navbarSearch" aria-expanded="false" aria-label="Toggle search">
-        <svg class="bi"><use xlink:href=""/></svg>
-      </button>
-    </li>
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-        <svg class="bi"><use xlink:href="#list"/></svg>
-      </button>
-    </li>
-  </ul>
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
 
-  <div id="navbarSearch" class="navbar-search w-100 collapse">
-    <input class="form-control w-100 rounded-0 border-0" type="text" placeholder="" aria-label="Search">
-  </div>
-</header>
 
 
 
@@ -377,11 +368,11 @@ require_once __DIR__ . '/../pages/footer.php';
           <?php foreach ($asignaciones as $a): ?>
             <tr>
               <td><?= htmlspecialchars($a['ID']) ?></td>
-              <td><?= htmlspecialchars($a['Nombre']) ?></td>
-              <td><?= htmlspecialchars($a['Nombre']) ?></td>
+              <td><?= htmlspecialchars($a['NombreTaller']) ?></td>
+              <td><?= htmlspecialchars($a['NombrePonente']) ?></td>
               <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
               <td>
-                <button class="eliminar-asignacion-taller btn btn-danger" data-id="<?= $asignacion['ID'] ?>">Eliminar</button>
+                <button class="eliminar-asignacion-taller btn btn-danger" data-id="<?= $a['ID'] ?>">Eliminar</button>
 
               </td>
             </tr>
@@ -416,16 +407,36 @@ require_once __DIR__ . '/../pages/footer.php';
   </div>
 </main>
 
+
+
+<?php if (isset($_GET['statuss'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['statuss'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['statuss'] === 'success' ? 'Ponente Asignado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['statuss'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
 <script>
-document.querySelectorAll('.eliminar-asignacion-taller').forEach(btn => {
-    btn.addEventListener('click', () => {
-        if (confirm('¿Eliminar esta asignación?')) {
-            const id = btn.getAttribute('data-id');
-            location.href = `eliminar_asignacion_ponente_taller.php?id=${id}`;
-        }
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.eliminar-asignacion-taller').forEach(btn => {
+        btn.addEventListener('click', () => {
+            if (confirm('¿Eliminar esta asignación?')) {
+                const id = btn.getAttribute('data-id');
+                location.href = `./eliminar_asignacion_ponente_taller.php?id=${id}`;
+            }
+        });
     });
 });
 </script>
+
 
 
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>

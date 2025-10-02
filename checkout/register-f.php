@@ -102,11 +102,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         
         // Ejecutar la consulta
         $stmt->execute();
-        echo '<script>alert("Registro de Feminicidio insertado correctamente");</script>';
-        echo '<script>window.location.href = "../pages/ver-feminicidio.php";</script>';
+          header("Location: ../pages/ver-feminicidio.php?status=success");
+exit();
     } catch(PDOException $e) {
         // Manejar errores de manera adecuada
-        echo '<script>alert("Error al enviar el formulario: ' . $e->getMessage() . '");</script>';
+         header("Location: ../pages/ver-feminicidio.php?status=error&msg=" . urlencode($e->getMessage()));
+exit();
     }
 
     // Cerrar la conexión a la base de datos
@@ -151,6 +152,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
+
+
+
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
+
+
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"

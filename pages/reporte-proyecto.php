@@ -275,18 +275,16 @@ h3 {
   </symbol>
 </svg>
 
-<!-- Menu de arriba -->
-<header class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow" data-bs-theme="dark">
-<img src="../assets/img/logo 1.png" class="navbar-logo" alt="Logo" style="height: 100px; margin-right: 10px;">
-<h1 class="h2 text-center">Reporte de Proyectos</h1>
-<h1 class="h2 text-center">‎ ‎ ‎ ‎ </h1>
-  <!-- <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="#">Ges Mujer</a> -->
-      
 
-  <div id="navbarSearch" class="navbar-search w-100 collapse">
-    <input class="form-control w-100 rounded-0 border-0" type="text" placeholder="Search" aria-label="Search">
-  </div>
-</header>
+
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
+
+
+
+
 
 
 

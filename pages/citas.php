@@ -27,6 +27,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['logout'])) {
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
   <head><script src="../assets/js/color-modes.js"></script>
+<!-- AOS CSS -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" rel="stylesheet">
 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -153,6 +155,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['logout'])) {
     </svg>
 
 
+    
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
+
+
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
@@ -248,243 +257,76 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['logout'])) {
   </symbol>
 </svg>
 
-<!-- Menu de arriba -->
-<header class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow" data-bs-theme="dark">
-  <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="#">Ges Mujer</a>
 
-  <ul class="navbar-nav flex-row d-md-none">
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSearch" aria-controls="navbarSearch" aria-expanded="false" aria-label="Toggle search">
-        <svg class="bi"><use xlink:href=""/></svg>
-      </button>
-    </li>
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-        <svg class="bi"><use xlink:href="#list"/></svg>
-      </button>
-    </li>
-  </ul>
 
-  <div id="navbarSearch" class="navbar-search w-100 collapse">
-    <input class="form-control w-100 rounded-0 border-0" type="text" placeholder="" aria-label="Search">
-  </div>
-</header>
 
-<div class="container">
-        <main>
+       
 
 <?php
  
 require_once __DIR__ . '/../pages/footer.php';
 ?>
     <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-    <?php
+   <?php
 require_once __DIR__ . '/../db/config.php';
 
 try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $usuario_id = 1; // ejemplo
+    // Obtener ID de usuario desde GET (plan de empoderamiento)
+    $usuario_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-    $query = "SELECT TipoAtencion, SUM(Num_citas) AS total 
-              FROM citas 
-              WHERE ID_Personal = :usuario_id
-              GROUP BY TipoAtencion";
+    if ($usuario_id <= 0) {
+        throw new Exception("ID de usuario no válido");
+    }
+
+    // Consulta resumen del usuario
+    $query = "SELECT Nombre, ApellidoPaterno, ApellidoMaterno, FechaNacimiento, Edad, Sexo, 
+                     OrientacionSexual, Estadocivil, LugarNacimiento, LenguaMaterna, LenguaIndigena, FechaRegistro
+              FROM usuario 
+              WHERE id = :usuario_id
+              LIMIT 1";
+
     $statement = $conn->prepare($query);
     $statement->bindParam(':usuario_id', $usuario_id, PDO::PARAM_INT);
     $statement->execute();
 
-    echo "<div style='max-width:600px; margin:20px auto;'>";
-    echo "<h2 class='text-center'>📊 Resumen de Citas</h2>";
+    $usuario = $statement->fetch(PDO::FETCH_ASSOC);
 
-    // Tabla con clases de Bootstrap que responden al tema
-    echo "<table class='table table-striped table-hover theme-table text-center'>";
-    echo "<thead class='table-header'><tr><th>Tipo de Atención</th><th>Total de Citas</th></tr></thead>";
-    echo "<tbody>";
+    if ($usuario) {
+        echo "<div style='max-width:600px; margin:20px auto;'>";
+        echo "<h2 class='text-center'> Resumen del Usuario</h2>";
 
-    while ($fila = $statement->fetch(PDO::FETCH_ASSOC)) {
-        echo "<tr>";
-        echo "<td>" . htmlspecialchars($fila['TipoAtencion']) . "</td>";
-        echo "<td>" . htmlspecialchars($fila['total']) . "</td>";
-        echo "</tr>";
+        echo "<table class='table table-striped table-hover theme-table text-center'>";
+        echo "<thead class='table-header'><tr><th>Campo</th><th>Valor</th></tr></thead>";
+        echo "<tbody>";
+
+        foreach ($usuario as $campo => $valor) {
+            echo "<tr>";
+            echo "<td>" . htmlspecialchars($campo) . "</td>";
+            echo "<td>" . htmlspecialchars($valor) . "</td>";
+            echo "</tr>";
+        }
+
+        echo "</tbody></table>";
+        echo "</div>";
+    } else {
+        echo "<p class='text-center text-danger'>Usuario no encontrado</p>";
     }
-
-    echo "</tbody></table>";
-    echo "</div>";
 
 } catch (PDOException $e) {
     echo "Error de conexión o consulta: " . $e->getMessage();
+} catch (Exception $e) {
+    echo "<p class='text-center text-danger'>" . $e->getMessage() . "</p>";
 }
 ?>
 
+
+
     <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
    
-  <style>
-  
 
-    .usuario {
-      margin: 20px 0;
-    }
-
-    .usuario p {
-      font-weight: bold;
-      margin-bottom: 20px;
-    }
-
-    .barra-pasos {
-      display: flex;
-      justify-content: space-between;
-      position: relative;
-      padding: 0 10px;
-      align-items: center;
-    }
-
-    /* Línea de fondo gris */
-    .barra-pasos::before {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 10px;
-      right: 10px;
-      height: 4px;
-      background-color: #eee;
-      transform: translateY(-50%);
-      z-index: 1;
-      border-radius: 2px;
-    }
-
-    /* Línea de progreso morada */
-    .barra-pasos::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 10px;
-      height: 4px;
-      background-color: #6a0dad;
-      transform: translateY(-50%);
-      z-index: 2;
-      border-radius: 2px;
-      width: 0%; /* Se actualizará con JS */
-      transition: width 0.5s ease;
-    }
-
-    .paso {
-      width: 20px;
-      height: 20px;
-      background-color: #eee;
-      border-radius: 50%;
-      z-index: 3;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-size: 12px;
-      color: white;
-      font-weight: bold;
-      transition: background-color 0.3s ease;
-    }
-
-    .paso.completado {
-      background-color: #6a0dad; /* Morado chido */
-    }
-    .titulo {
-    text-align: center;   /* Centrar horizontalmente */
-    margin-top: 20px;     /* Espacio superior */
-    font-family: Arial, sans-serif;
-  }
-
-
-  /* Línea vertical */
-.timeline-line {
-    width: 6px;
-    top: 0;
-    bottom: 0;
-    background: #e0e0e0;
-}
-
-/* Círculos */
-.timeline-circle {
-    width: 30px;
-    height: 30px;
-    border-radius: 50%;
-    background: #e0e0e0;
-    color: #fff;
-    line-height: 30px;
-    text-align: center;
-    position: absolute;
-    left: -50px;
-    top: 0;
-}
-.timeline-circle.completed {
-    background: #00a650;
-}
-
-/* Texto */
-.timeline-text .fecha {
-    font-size: 12px;
-    color: #555;
-}
-.timeline-text .personal {
-    font-size: 12px;
-    color: #777;
-}
-
-/* Modal */
-.modal-timeline {
-    display: none;
-    position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background: rgba(0,0,0,0.5);
-    justify-content:center;
-    align-items:center;
-}
-.modal-content-timeline {
-    background:#fff;
-    padding:20px;
-    border-radius:8px;
-    max-width:400px;
-    text-align:center;
-}
-.modal-content-timeline button {
-    padding:8px 16px;
-    background:#00a650;
-    color:#fff;
-    border:none;
-    border-radius:4px;
-    cursor:pointer;
-}
-
-/* Tema oscuro */
-[data-bs-theme="dark"] .timeline-container {
-    color: #f1f1f1;
-}
-[data-bs-theme="dark"] .timeline-line {
-    background: #555;
-}
-[data-bs-theme="dark"] .timeline-circle {
-    background: #777;
-}
-[data-bs-theme="dark"] .timeline-circle.completed {
-    background: #28a745;
-}
-[data-bs-theme="dark"] .timeline-text .fecha {
-    color: #ccc;
-}
-[data-bs-theme="dark"] .timeline-text .personal {
-    color: #aaa;
-}
-[data-bs-theme="dark"] .modal-content-timeline {
-    background: #2b2b2b;
-    color: #f1f1f1;
-}
-[data-bs-theme="dark"] .modal-content-timeline button {
-    background: #28a745;
-}
-
-  </style>
 <!--
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -559,14 +401,12 @@ try {
     $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // ID del usuario (puede venir de sesión)
-    $usuario_id = 1; // ejemplo
+    $usuario_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
-    // Consulta para obtener las citas del usuario
     $query = "SELECT c.TipoAtencion, c.Num_citas, c.Fecha, p.Nombre AS Personal 
               FROM citas c
               INNER JOIN personal p ON c.ID_Personal = p.ID_Personal
-              WHERE c.ID_Personal = :usuario_id 
+              WHERE c.ID_Usuario = :usuario_id 
               ORDER BY c.ID_Cita ASC 
               LIMIT 10";
 
@@ -576,146 +416,273 @@ try {
     $citas = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch(PDOException $e) {
-    echo "Error: " . $e->getMessage();
+    echo "<div class='alert alert-danger'>Error: " . $e->getMessage() . "</div>";
     $citas = [];
 }
 ?>
 
-<div class="timeline-container" style="max-width:400px; margin:40px auto; font-family:Arial, sans-serif;">
-  <h2 class="text-center mb-4">📅 Avance de Citas</h2>
-
-  <div class="position-relative ms-5 ps-3">
-    <!-- Línea vertical -->
-    <div class="timeline-line position-absolute rounded" style="left:35px;"></div>
-
-    <?php 
-    for($i=0; $i<10; $i++): 
-        $cita = isset($citas[$i]) ? $citas[$i] : null;
-        $texto = $cita ? $cita['TipoAtencion'] : "Vacía";
-        $fecha = $cita ? $cita['Fecha'] : "";
-        $personal = $cita ? $cita['Personal'] : "";
-        $completada = $cita && $cita['Num_citas'] > 0 ? true : false;
-    ?>
-    <div id="step<?php echo $i+1; ?>" 
-         class="timeline-step" 
-         data-fecha="<?php echo htmlspecialchars($fecha); ?>" 
-         data-tipo="<?php echo htmlspecialchars($texto); ?>"
-         data-personal="<?php echo htmlspecialchars($personal); ?>"
-         style="position:relative; margin-bottom:40px; cursor:pointer;">
-         
-      <!-- Círculo -->
-      <div class="timeline-circle <?php echo $completada ? 'completed' : ''; ?>">
-        <?php echo $i+1; ?>
-      </div>
-      
-      <!-- Texto -->
-      <div class="timeline-text">
-        <strong><?php echo $texto; ?></strong><br>
-        <span class="fecha"><?php echo $fecha; ?></span><br>
-        <span class="personal">👤 <?php echo $personal; ?></span>
-      </div>
-    </div>
-    <?php endfor; ?>
-  </div>
-</div>
-
-<!-- Modal para detalles -->
-<div id="modal" class="modal-timeline">
-  <div class="modal-content-timeline">
-    <p id="modalContent"></p>
-    <button onclick="cerrarModal()">Cerrar</button>
-  </div>
-</div>
-
 <style>
-/* Timeline */
-.timeline-line {
-    width: 6px;
-    top: 0;
-    bottom: 0;
-    background: #e0e0e0;
-    position: absolute;
+.timeline-container {
+    max-width: 700px;
+    margin: 40px auto;
+    font-family: 'Segoe UI', sans-serif;
 }
+
+.timeline-step {
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+    margin-bottom: 30px;
+    transition: all 0.3s ease;
+}
+
 .timeline-circle {
-    width: 30px;
-    height: 30px;
+    width: 50px;
+    height: 50px;
+    background: #6c63ff;
+    color: white;
     border-radius: 50%;
-    background: #e0e0e0;
-    color: #fff;
-    line-height: 30px;
-    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    flex-shrink: 0;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.2);
+    transition: all 0.3s ease;
+}
+
+.timeline-circle.completed {
+    background: #28a745;
+}
+
+.timeline-line {
     position: absolute;
-    left: -50px;
+    left: 25px;
+    width: 4px;
+    height: 100%;
+    background: #ddd;
     top: 0;
 }
-.timeline-circle.completed {
-    background: #00a650;
+
+.timeline-text {
+    margin-left: 25px;
+    background: white;
+    padding: 15px 20px;
+    border-radius: 8px;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
 }
+
+.timeline-text strong {
+    display: block;
+    font-size: 18px;
+    color: #333;
+}
+
 .timeline-text .fecha {
-    font-size: 12px;
+    font-size: 14px;
     color: #555;
 }
+
 .timeline-text .personal {
-    font-size: 12px;
+    font-size: 14px;
     color: #777;
 }
 
-/* Modal */
+.no-citas {
+    text-align: center;
+    font-size: 18px;
+    padding: 20px;
+    background: #f0f4ff;
+    border-radius: 8px;
+    box-shadow: 0px 2px 8px rgba(0,0,0,0.1);
+}
+
+
 .modal-timeline {
     display: none;
     position: fixed;
-    top:0;
-    left:0;
-    width:100%;
-    height:100%;
-    background: rgba(0,0,0,0.5);
-    justify-content:center;
-    align-items:center;
-    z-index: 9999;
-}
-.modal-content-timeline {
-    background:#fff;
-    padding:20px;
-    border-radius:8px;
-    max-width:400px;
-    text-align:center;
-}
-.modal-content-timeline button {
-    padding:8px 16px;
-    background:#00a650;
-    color:#fff;
-    border:none;
-    border-radius:4px;
-    cursor:pointer;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background: rgba(0,0,0,0.6);
 }
 
-/* Tema oscuro */
-[data-bs-theme="dark"] .timeline-container {
-    color: #f1f1f1;
+.modal-content-timeline {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 400px;
+    animation: slideIn 0.4s ease;
 }
-[data-bs-theme="dark"] .timeline-line {
-    background: #555;
-}
-[data-bs-theme="dark"] .timeline-circle {
-    background: #777;
-}
-[data-bs-theme="dark"] .timeline-circle.completed {
-    background: #28a745;
-}
-[data-bs-theme="dark"] .timeline-text .fecha {
-    color: #ccc;
-}
-[data-bs-theme="dark"] .timeline-text .personal {
+
+
+
+.close {
     color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
 }
-[data-bs-theme="dark"] .modal-content-timeline {
-    background: #2b2b2b;
-    color: #f1f1f1;
+
+.close:hover {
+    color: black;
 }
-[data-bs-theme="dark"] .modal-content-timeline button {
-    background: #28a745;
+
+@keyframes slideIn {
+    from {transform: translateY(-50px); opacity: 0;}
+    to {transform: translateY(0); opacity: 1;}
 }
+
+.modal-timeline {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(2px);
+}
+
+.modal-content-timeline {
+    background: white;
+    border-radius: 12px;
+    margin: 5% auto;
+    max-width: 450px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+    animation: slideIn 0.3s ease;
+    font-family: 'Segoe UI', sans-serif;
+    text-align: center;
+    overflow: hidden;
+}
+
+.modal-header {
+    background: #4CAF50; /* Verde tipo círculo */
+    padding: 15px 20px;
+    color: white;
+    text-align: center;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.close {
+    position: absolute;
+    right: 15px;
+    top: 15px;
+    color: white;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close:hover {
+    color: #ff1744;
+}
+
+.modal-body {
+    padding: 20px;
+    color: #333;
+    font-size: 15px;
+}
+
+.modal-body p {
+    margin: 10px 0;
+    font-size: 16px;
+}
+
+.modal-footer {
+    padding: 10px 20px;
+    border-top: 1px solid #eee;
+}
+
+.btn-close-modal {
+    background: #4CAF50;
+    border: none;
+    padding: 10px 20px;
+    color: white;
+    border-radius: 6px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.3s ease;
+}
+
+.btn-close-modal:hover {
+    background: #45a049;
+}
+
+@keyframes slideIn {
+    from {transform: translateY(-50px); opacity: 0;}
+    to {transform: translateY(0); opacity: 1;}
+}
+
+.timeline-step:hover {
+    transform: translateX(5px);
+    box-shadow: 0px 4px 12px rgba(0,0,0,0.2);
+}
+.modal-header {
+    background: #4CAF50; /* verde del modal */
+    padding: 15px 20px;
+    color: white;
+    text-align: center; /* centra el contenido */
+    position: relative; /* para el botón cerrar */
+}
+
+.modal-title {
+    margin: 0 auto; /* centra el título */
+    font-size: 22px; /* tamaño más visible */
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-align: center; /* asegura que el texto esté centrado */
+}
+
+
+
 </style>
+
+<div class="timeline-container">
+    <h2 class="text-center mb-4" data-aos="fade-down">Avance de Citas</h2>
+
+    <?php if (empty($citas)): ?>
+        <div class="no-citas" data-aos="fade-up"> No hay citas registradas para este usuario.</div>
+    <?php else: ?>
+        <div class="position-relative">
+            <div class="timeline-line"></div>
+
+            <?php foreach ($citas as $i => $cita): 
+                $texto = $cita['TipoAtencion'];
+                $fecha = date("d M Y", strtotime($cita['Fecha']));
+                $personal = $cita['Personal'];
+                $numCitas = $cita['Num_citas'];
+                $completada = $numCitas > 0;
+            ?>
+                <div class="timeline-step" data-aos="fade-right" data-aos-delay="<?php echo $i * 100; ?>">
+                    <div class="timeline-circle <?php echo $completada ? 'completed' : ''; ?>">
+                        <?php echo $i+1; ?>
+                    </div>
+                    <div class="timeline-text" style="cursor:pointer;"
+                         onclick="abrirModal('<?php echo addslashes($texto); ?>', '<?php echo $fecha; ?>', '<?php echo addslashes($personal); ?>', '<?php echo $numCitas; ?>')">
+                        <strong><?php echo htmlspecialchars($texto); ?></strong>
+                        <div class="fecha"><?php echo $fecha; ?></div>
+                        <div class="personal">👤 <?php echo htmlspecialchars($personal); ?></div>
+                    </div>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</div>
+
+
 
 <script>
 const totalCitas = 10;
@@ -744,7 +711,57 @@ function cerrarModal(){
 
 
 
+<script>
+function abrirModal(titulo, fecha, personal, numCitas) {
+    document.getElementById("modalTitulo").textContent = titulo;
+    document.getElementById("modalFecha").textContent = fecha;
+    document.getElementById("modalPersonal").textContent = personal;
+    document.getElementById("modalNumCitas").textContent = numCitas;
+    document.getElementById("modalCita").style.display = "block";
+}
 
+function cerrarModal() {
+    document.getElementById("modalCita").style.display = "none";
+}
+
+window.onclick = function(event) {
+    if (event.target == document.getElementById("modalCita")) {
+        cerrarModal();
+    }
+}
+</script>
+
+
+<!-- AOS JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script>
+  AOS.init({
+    duration: 800,
+    easing: 'ease-in-out',
+    once: true
+  });
+</script>
+
+
+<!-- Modal -->
+<!-- Modal Mejorado -->
+<!-- Modal Mejorado -->
+<div id="modalCita" class="modal-timeline">
+    <div class="modal-content-timeline">
+        <div class="modal-header">
+            <h3 id="modalTitulo" class="modal-title">Título</h3>
+            <span class="close" onclick="cerrarModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <p><strong> Fecha:</strong> <span id="modalFecha"></span></p>
+            <p><strong> Personal:</strong> <span id="modalPersonal"></span></p>
+            <p><strong> Número de Citas:</strong> <span id="modalNumCitas"></span></p>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-close-modal" onclick="cerrarModal()">Cerrar</button>
+        </div>
+    </div>
+</div>
 
 
 

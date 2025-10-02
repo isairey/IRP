@@ -47,6 +47,7 @@ $apellidoMaterno = isset($_POST['apellido_materno']) ? trim($_POST['apellido_mat
         } else {
             $response['message'] = "No se pudo registrar el participante.";
         }
+        echo '<script>window.location.href = "../pages/ver-participante.php";</script>';
     } catch(PDOException $e) {
         $response['message'] = "Error de base de datos: " . $e->getMessage();
     }

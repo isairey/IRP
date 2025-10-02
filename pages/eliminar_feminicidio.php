@@ -34,6 +34,7 @@ if(isset($_GET['eliminar_id'])) {
         echo "<script>window.location.href='../pages/ver-feminicidio.php';</script>"; // Redirigir a la página deseada
     } else {
         echo "<script>alert('Error al eliminar el registro de personal');</script>";
+         echo "<script>window.location.href='../pages/ver-feminicidio.php';</script>";
     }
 }
 ?>

@@ -16,6 +16,8 @@ require_once __DIR__ . '/../db/config.php';
 
 // Verificar si se recibieron datos del formulario
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+   $mensaje = "";
+$tipoMensaje = "";
     // Recibir los datos del formulario
     $id_usuario = $_POST["id_usuario"];
     $id_personal = $_POST["id_personal"];
@@ -39,16 +41,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $stmt->bindParam(5, $hora);
 
         // Ejecutar la consulta
-        if ($stmt->execute()) {
-            echo '<script>alert("Nueva cita registrada correctamente.");</script>';
-            echo '<script>window.location.href = "/SYSGES/pages/ver-citas.php";</script>';
+       if ($stmt->execute()) {
+            $mensaje = "Cita Registrada correctamente";
+            $tipoMensaje = "success";
         } else {
-            echo "Error al registrar la nueva cita: " . $stmt->errorInfo()[2];
+            $mensaje = "Error al Registrar Cita";
+            $tipoMensaje = "error";
         }
     } catch (PDOException $e) {
         // Manejar errores de manera adecuada
         //echo "Error al registrar la nueva cita: " . $e->getMessage();
-        echo '<script>alert("Error al registrar la nueva cita: ' . $e->getMessage() . '");</script>';
+       $mensaje = "Error " . $e->getMessage() . "";
+            $tipoMensaje = "error";
     }
 
     // Cerrar la conexión
@@ -92,6 +96,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
+
+
+
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
+
+
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
@@ -256,6 +269,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 </ul>
         </footer>
     </div>
+
+ <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<?php if (!empty($mensaje)): ?>
+<script>
+Swal.fire({
+    icon: "<?= $tipoMensaje ?>",
+    title: "<?= $mensaje ?>",
+    showConfirmButton: false,
+    timer: 3000
+}).then(() => {
+    window.location.href = "../pages/ver-citas.php";
+});
+</script>
+<?php endif; ?>
+
+
 
     <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 

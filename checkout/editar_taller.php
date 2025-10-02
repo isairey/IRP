@@ -7,19 +7,26 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
     exit();
 }
 
-// Conexión BD
 require_once __DIR__ . '/../db/config.php';
 
-// Validar ID
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     die("ID inválido.");
 }
 
 $id = (int)$_GET['id'];
+$mensaje = "";
+$tipoMensaje = "";
+
 
 try {
-    // Obtener datos del taller
-    $stmt = $conn->prepare("SELECT * FROM talleres WHERE ID_Taller = :id");
+    // Obtener datos del taller junto con ponente asignado
+    $stmt = $conn->prepare("
+        SELECT t.*, p.ID_Ponente, p.Nombre AS NombrePonente
+        FROM talleres t
+        LEFT JOIN asignacion_ponentes_taller apt ON t.ID_Taller = apt.ID_Taller
+        LEFT JOIN ponentes p ON apt.ID_Ponente = p.ID_Ponente
+        WHERE t.ID_Taller = :id
+    ");
     $stmt->bindParam(':id', $id, PDO::PARAM_INT);
     $stmt->execute();
     $taller = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -28,7 +35,10 @@ try {
         die("Taller no encontrado.");
     }
 
-    // Si se envió el formulario
+    // Traer todos los ponentes para el select
+    $stmtPonentes = $conn->query("SELECT ID_Ponente, Nombre FROM ponentes ORDER BY Nombre ASC");
+    $ponentes = $stmtPonentes->fetchAll(PDO::FETCH_ASSOC);
+
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $nombre = $_POST['Nombre'] ?? '';
         $descripcion = $_POST['Descripcion'] ?? '';
@@ -36,12 +46,16 @@ try {
         $horaInicio = $_POST['HoraInicio'] ?? '';
         $horaFin = $_POST['HoraFin'] ?? '';
         $lugar = $_POST['Lugar'] ?? '';
+        $idPonente = $_POST['ID_Ponente'] ?? null;
 
-        $update = $conn->prepare("UPDATE talleres 
-                                  SET Nombre = :nombre, Descripcion = :descripcion, Fecha = :fecha, 
-                                      HoraInicio = :horaInicio, HoraFin = :horaFin, Lugar = :lugar 
-                                  WHERE ID_Taller = :id");
-        $update->execute([
+        // Actualizar taller
+        $update = $conn->prepare("
+            UPDATE talleres 
+            SET Nombre = :nombre, Descripcion = :descripcion, Fecha = :fecha, 
+                HoraInicio = :horaInicio, HoraFin = :horaFin, Lugar = :lugar 
+            WHERE ID_Taller = :id
+        ");
+       $resultado = $update->execute([
             ':nombre' => $nombre,
             ':descripcion' => $descripcion,
             ':fecha' => $fecha,
@@ -50,9 +64,32 @@ try {
             ':lugar' => $lugar,
             ':id' => $id
         ]);
+if ($resultado) {
+            $mensaje = "Taller actualizado correctamente";
+            $tipoMensaje = "success";
+        } else {
+            $mensaje = "Error al actualizar Taller";
+            $tipoMensaje = "error";
+        }
+        // Actualizar ponente asignado
+        $stmtCheck = $conn->prepare("SELECT COUNT(*) FROM asignacion_ponentes_taller WHERE ID_Taller = :id");
+        $stmtCheck->execute([':id' => $id]);
 
-        header("Location: /ERP/ERP_IRP/pages/ver-taller.php?msg=editado");
-        exit();
+        if ($stmtCheck->fetchColumn() > 0) {
+            $stmtUpdatePonente = $conn->prepare("
+                UPDATE asignacion_ponentes_taller SET ID_Ponente = :idPonente WHERE ID_Taller = :id
+            ");
+            $stmtUpdatePonente->execute([':idPonente' => $idPonente, ':id' => $id]);
+            
+        } else {
+            $stmtInsertPonente = $conn->prepare("
+                INSERT INTO asignacion_ponentes_taller (ID_Taller, ID_Ponente) VALUES (:id, :idPonente)
+            ");
+            $stmtInsertPonente->execute([':id' => $id, ':idPonente' => $idPonente]);
+        }
+
+       
+      
     }
 } catch (PDOException $e) {
     die("Error: " . $e->getMessage());
@@ -97,6 +134,15 @@ try {
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
+
+
+
+
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
+
+
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
@@ -150,11 +196,25 @@ try {
 </head>
 <body class="container mt-5">
  
-<form method="post">
+<form method="POST" action="" enctype="multipart/form-data">
     <div class="mb-3">
         <label class="form-label">Título</label>
         <input type="text" name="Nombre" class="form-control" value="<?= htmlspecialchars($taller['Nombre']) ?>" required>
     </div>
+
+    <div class="mb-3">
+    <label class="form-label"><strong>Ponente Asignado</strong></label>
+    <select name="ID_Ponente" class="form-control" required>
+        <option value="">-- Selecciona un ponente --</option>
+        <?php foreach ($ponentes as $p): ?>
+            <option value="<?= $p['ID_Ponente'] ?>" 
+                <?= ($p['ID_Ponente'] == $taller['ID_Ponente']) ? 'selected' : '' ?>>
+                <?= htmlspecialchars($p['Nombre']) ?>
+            </option>
+        <?php endforeach; ?>
+    </select>
+</div>
+
 
     <div class="mb-3">
         <label class="form-label">Descripción</label>
@@ -194,6 +254,23 @@ try {
         <?php require_once __DIR__ . '/../checkout/CR.php'; ?>
     </footer>
 </div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<?php if (!empty($mensaje)): ?>
+<script>
+Swal.fire({
+    icon: "<?= $tipoMensaje ?>",
+    title: "<?= $mensaje ?>",
+    showConfirmButton: false,
+    timer: 3000
+}).then(() => {
+    window.location.href = "../pages/ver-taller.php";
+});
+</script>
+<?php endif; ?>
+
+
 
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 <script src="checkout.js"></script>

@@ -253,26 +253,11 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['r
 </svg>
 
 <!-- Menu de arriba -->
-<header class="navbar sticky-top bg-dark flex-md-nowrap p-0 shadow" data-bs-theme="dark">
-  <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-6 text-white" href="#">Ges Mujer</a>
 
-  <ul class="navbar-nav flex-row d-md-none">
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSearch" aria-controls="navbarSearch" aria-expanded="false" aria-label="Toggle search">
-        <svg class="bi"><use xlink:href=""/></svg>
-      </button>
-    </li>
-    <li class="nav-item text-nowrap">
-      <button class="nav-link px-3 text-white" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarMenu" aria-controls="sidebarMenu" aria-expanded="false" aria-label="Toggle navigation">
-        <svg class="bi"><use xlink:href="#list"/></svg>
-      </button>
-    </li>
-  </ul>
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
 
-  <div id="navbarSearch" class="navbar-search w-100 collapse">
-    <input class="form-control w-100 rounded-0 border-0" type="text" placeholder="" aria-label="Search">
-  </div>
-</header>
 
 
 
@@ -326,7 +311,7 @@ require_once __DIR__ . '/../pages/footer.php';
                 <th>Nombre del Donante</th>
                 <th>Monto de Donación</th>
                 <th>Tipo de Donación</th>
-                <!-- <th>Acciones</th> -->
+                <th>Acciones</th> 
             </tr>
         </thead>
         <tbody>
@@ -395,6 +380,7 @@ try {
         echo "<td>{$donativo['MontoDonacion']}</td>";
         echo "<td>{$donativo['TipoDonacion']}</td>";
         echo "<td>";
+         echo "<a href='../checkout/editar-donativo.php?id={$donativo['ID_Donativo']}' class='btn btn-primary btn-sm'><i class='bi bi-pencil-square'></i></a> ";
         echo "<button class='btn btn-danger btn-sm eliminar-donativo' data-id='{$donativo['ID_Donativo']}'><i class='bi bi-trash3-fill'></i></button>";
         echo "</td>";
         echo "</tr>";
@@ -453,21 +439,89 @@ try {
     </main>
   </div>
 </div>
-<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Librería SweetAlert2 -->
+<!-- SweetAlert2 -->
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-        // Agregar un controlador de eventos click para los botones de eliminación
-        document.querySelectorAll('.eliminar-personal').forEach(button => {
-            button.addEventListener('click', () => {
-                // Preguntar al usuario si está seguro de eliminar
-                if (confirm('¿Estás seguro de que deseas eliminar este personal?')) {
-                    // Obtener el ID del usuario de los datos del botón
-                    const userId = button.getAttribute('data-id');
-                    // Redirigir a la página de PHP para eliminar el usuario
-                    window.location.href = `eliminar_personal.php?eliminar_id=${userId}`;
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-donativo').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    // Si el mouse pasa sobre "Sí, eliminar" → carita triste
+                    confirmBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😢";
+                    });
+                    confirmBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+
+                    // Si el mouse pasa sobre "No, cancelar" → carita feliz
+                    cancelBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😁";
+                    });
+                    cancelBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const donacionId = button.getAttribute('data-id');
+        window.location.href = `./eliminar-donativo.php?id=${donacionId}`;
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'La donación fue eliminada correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    
+                      
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La donación no fue eliminada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 }
             });
         });
+    });
+});
+</script>
+
+<?php if (isset($_GET['status'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['status'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['status'] === 'success' ? 'Donacion registrada correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['status'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
     </script>
+<?php endif; ?>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
       
