@@ -1,6 +1,10 @@
 <?php
-// Inicia sesión, verifica permisos si es necesario
-session_start();
+require_once __DIR__ . '/../pages/seccion.php';
+
+?>
+
+<?php
+
 require_once __DIR__ . '/../db/config.php';
 
 // --- Aquí va todo tu código de consulta de asistentes y secciones ---

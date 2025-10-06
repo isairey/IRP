@@ -1,5 +1,7 @@
 <?php
-session_start();
+require_once __DIR__ . '/../pages/seccion.php';
+
+
 
 // Destruir todas las variables de sesión
 $_SESSION = array();

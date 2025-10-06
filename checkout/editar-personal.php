@@ -1,12 +1,5 @@
 <?php
-session_start();
-
-// Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    // Si el usuario no ha iniciado sesión o no tiene el rol adecuado, redirigirlo a otra página
-    header("Location: ../sign-in/index.php"); // O a una página de acceso denegado
-    exit();
-}
+require_once __DIR__ . '/../pages/seccion.php';
 
 ?>
 <?php
@@ -312,7 +305,7 @@ if ($personal && !empty($personal['foto']) && strtoupper($personal['foto']) !== 
     }
 }
 ?>
-    ?>
+    
         <div class="container">
         <main>
     <div class="py-5 text-center">
@@ -337,7 +330,7 @@ if ($personal && !empty($personal['foto']) && strtoupper($personal['foto']) !== 
          width="150" height="150"
          style="object-fit: cover;">
 
-    <h2 class="mt-3">Registro de Personal</h2>
+    <h2 class="mt-3">Editar Personal</h2>
     <?php if ($personal): ?>
         <h5><?= htmlspecialchars($personal['Nombre'] . " " . $personal['ApellidoPaterno'] . " " . $personal['ApellidoMaterno']) ?></h5>
     <?php endif; ?>

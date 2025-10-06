@@ -1,4 +1,9 @@
 <?php
+require_once __DIR__ . '/../pages/seccion.php';
+
+?>
+
+<?php
 // ajax_add_especialidad.php
 header('Content-Type: application/json; charset=utf-8');
 

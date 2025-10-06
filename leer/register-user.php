@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $rutaINE = $_FILES['rutaINE']['name'];
     $rutaComDomicilio = $_FILES['rutaComDomicilio']['name'];
 
-    $carpeta_destino = '/xampp/htdocs/SYSGES/documents/';  // Ruta donde guardar los archivos subidos
+    $carpeta_destino = '../../uploads/documents';  // Ruta donde guardar los archivos subidos
     move_uploaded_file($_FILES['rutaCURP']['tmp_name'], $carpeta_destino . $rutaCURP);
     move_uploaded_file($_FILES['rutaINE']['tmp_name'], $carpeta_destino . $rutaINE);
     move_uploaded_file($_FILES['rutaComDomicilio']['tmp_name'], $carpeta_destino . $rutaComDomicilio);
