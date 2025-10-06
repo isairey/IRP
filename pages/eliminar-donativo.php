@@ -1,3 +1,9 @@
+
+<?php
+require_once __DIR__ . '/../pages/seccion.php';
+
+?>
+
 <?php
 require_once __DIR__ . '/../db/config.php'; // Ajusta la ruta si es diferente
 

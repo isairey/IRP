@@ -1,4 +1,10 @@
 <?php
+require_once __DIR__ . '/../pages/seccion.php';
+
+?>
+
+
+<?php
 header('Content-Type: application/json; charset=utf-8');
 require_once __DIR__ . '/../db/config.php';
 

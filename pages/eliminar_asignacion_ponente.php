@@ -1,4 +1,9 @@
 <?php
+require_once __DIR__ . '/../pages/seccion.php';
+
+?>
+
+<?php
 require_once __DIR__ . '/../db/config.php';
 
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {

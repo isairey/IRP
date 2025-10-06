@@ -1,12 +1,5 @@
 <?php
-session_start();
-
-// Verificar si el usuario ha iniciado sesión y tiene el rol adecuado
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    // Si el usuario no ha iniciado sesión o no tiene el rol adecuado, redirigirlo a otra página
-    header("Location: ../sign-in/index.php"); // O a una página de acceso denegado
-    exit();
-}
+require_once __DIR__ . '/../pages/seccion.php';
 
 ?>
 
@@ -420,6 +413,9 @@ try {
         echo "<td>{$feminicidio['Longitud']}</td>";
         echo "<td>{$feminicidio['Sexenio']}</td>";
         echo "<td>";
+        
+   echo "<a href='../checkout/editar-fem.php?id={$feminicidio['ID']}' class='btn btn-primary btn-sm'><i class='bi bi-pencil-square'></i></a> ";
+  
         echo "<button class='btn btn-danger btn-sm eliminar-feminicidio' data-id='{$feminicidio['ID']}'>Eliminar</button>";
         echo "</td>";
         echo "</tr>";
@@ -477,6 +473,24 @@ try {
     </main>
   </div>
 </div>
+
+
+
+
+<?php if (isset($_GET['statuss'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['statuss'] === 'updated' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['statuss'] === 'updated' ? 'Feminicidio Actualizado correctamente' : 'Error al Actualizar' ?>",
+            text: "<?= $_GET['statuss'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
 
 
 <?php if (isset($_GET['status'])): ?>

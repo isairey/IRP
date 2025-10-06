@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT ID_Personal, Password, ID_Rol FROM Personal WHERE Email = :email");
+    $stmt = $conn->prepare("SELECT ID_Personal, Password, ID_Rol FROM Personal WHERE Email = :email ");
     $stmt->bindParam(':email', $email);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -29,8 +29,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         if ($_SESSION['role_id'] == 1) {
             header("Location: ../pages/home.php"); // Redirige al usuario a la página 1
         } elseif ($_SESSION['role_id'] == 2) {
-            header("Location: ../modals/index.php"); // Redirige al usuario a la página 2
-        } else {
+            header("Location: ../leer/pages/home.php"); // Redirige al usuario a la página 2
+        }elseif ($_SESSION['role_id'] == 3) {
+            header("Location: ../psicologia/pages/home.php"); // Redirige al usuario a la página 2
+        } elseif ($_SESSION['role_id'] == 4) {
+            header("Location: ../Justicia/pages/home.php"); // Redirige al usuario a la página 3
+        }else {
             // En caso de que el rol no coincida con ninguno de los roles esperados
             // Puedes redirigir a una página de error o mostrar un mensaje de error
             echo "Rol no válido.";

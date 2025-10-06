@@ -1,11 +1,7 @@
 <?php
-session_start();
+require_once __DIR__ . '/../pages/seccion.php';
 
-// Verificar sesión y rol
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    header("Location: ../sign-in/index.php");
-    exit();
-}
+
 
 require_once __DIR__ . '/../db/config.php';
 
@@ -402,7 +398,9 @@ require_once __DIR__ . '/../pages/header.php';
 
 <!-- Scripts Bootstrap -->
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" crossorigin="anonymous"></script>
-<script src="dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
+      
+    </script>
+    <script src="dashboard.js"></script>
 </body>
 </html>

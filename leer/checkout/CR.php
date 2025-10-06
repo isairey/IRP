@@ -1,0 +1,1 @@
+<p class="mb-1">Copyright GESMujer &copy; 2024 IRP && IZR</p>

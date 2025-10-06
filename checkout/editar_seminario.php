@@ -1,11 +1,6 @@
 <?php
-session_start();
+require_once __DIR__ . '/../pages/seccion.php';
 
-// Verificación de sesión
-if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id']) || $_SESSION['role_id'] != 1) {
-    header("Location: ../sign-in/index.php");
-    exit();
-}
 
 // Conexión BD
 require_once __DIR__ . '/../db/config.php';
