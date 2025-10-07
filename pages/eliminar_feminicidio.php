@@ -36,11 +36,11 @@ if(isset($_GET['eliminar_id'])) {
 
     // Llamar a la función para eliminar el registro de personal
     if(eliminarPersonal($id)) {
-        echo "<script>alert('Registro eliminado con éxito');</script>";
-        echo "<script>window.location.href='../pages/ver-feminicidio.php';</script>"; // Redirigir a la página deseada
+      header("Location: ./ver-feminicidio.php?msg=success");
+        exit(); // Redirigir a la página deseada
     } else {
-        echo "<script>alert('Error al eliminar el registro de personal');</script>";
-         echo "<script>window.location.href='../pages/ver-feminicidio.php';</script>";
+        header("Location: ./ver-feminicidio.php?msg=error");
+        exit();
     }
 }
 ?>

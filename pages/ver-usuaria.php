@@ -525,20 +525,93 @@ try {
     </main>
   </div>
 </div>
-<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+<?php if (isset($_GET['msg'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['msg'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['msg'] === 'success' ? 'Usuario Eliminado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['msg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-        // Agregar un controlador de eventos click para los botones de eliminación
-        document.querySelectorAll('.eliminar-usuario').forEach(button => {
-            button.addEventListener('click', () => {
-                // Preguntar al usuario si está seguro de eliminar
-                if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-                    // Obtener el ID del usuario de los datos del botón
-                    const userId = button.getAttribute('data-id');
-                    // Redirigir a la página de PHP para eliminar el usuario
-                    window.location.href = `eliminar_usuario.php?eliminar_id=${userId}`;
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-usuario').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    // Si el mouse pasa sobre "Sí, eliminar" → carita triste
+                    confirmBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😢";
+                    });
+                    confirmBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+
+                    // Si el mouse pasa sobre "No, cancelar" → carita feliz
+                    cancelBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😁";
+                    });
+                    cancelBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const donacionId = button.getAttribute('data-id');
+        window.location.href = `./eliminar_usuario.php?eliminar_id=${donacionId}`;
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'La donación fue eliminada correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    
+                      
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La donación no fue eliminada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 }
             });
         });
+    });
+});
+</script>
+
+
+
+<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+        // Agregar un controlador de eventos click para los botones de eliminación
+      
 
          // Función para manejar el clic en el botón de registrar cita
     document.addEventListener('click', function(event) {
@@ -549,7 +622,7 @@ try {
 
             // Redirigir a la página de registro de citas con los parámetros necesarios en la URL
             //window.location.href = 'register-cita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
-            window.location.href = '/ERP/ERP_IRP/checkout/register-ucita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
+            window.location.href = '../checkout/register-ucita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
 
         }
     });
@@ -564,7 +637,7 @@ try {
 
             // Redirigir a la página de registro de citas con los parámetros necesarios en la URL
             //window.location.href = 'register-cita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
-            window.location.href = '/ERP/ERP_IRP/checkout/asignacion-uproyecto.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
+            window.location.href = '../checkout/asignacion-uproyecto.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
 
         }
     });
@@ -578,7 +651,7 @@ try {
 
             // Redirigir a la página de registro de citas con los parámetros necesarios en la URL
             //window.location.href = 'register-cita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
-            window.location.href = '/ERP/ERP_IRP/checkout/register-uatencion.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
+            window.location.href = '../checkout/register-uatencion.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
 
         }
     });

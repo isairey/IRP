@@ -35,11 +35,11 @@ if(isset($_GET['eliminar_id'])) {
 
     // Llamar a la función para eliminar el registro de personal
     if(eliminarPersonal($id)) {
-        echo "<script>alert('Personal eliminado con éxito');</script>";
-        echo "<script>window.location.href='./ver-personal.php';</script>"; // Redirigir a la página deseada
+         header("Location: ./ver-personal.php?msg=success");
+        exit();
     } else {
-        echo "<script>alert('Error al eliminar el registro de personal');</script>";
-         echo "<script>window.location.href='./ver-personal.php';</script>";
+        header("Location: ./ver-personal.php?msg=error");
+        exit();
     }
 }
 ?>

@@ -8,9 +8,23 @@ require_once __DIR__ . '/../db/config.php';
 $conn->exec("SET NAMES utf8");
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+
+
+
     $id_taller   = $_POST['id_taller'] ?? null;
-    $id_persona  = $_POST['id_asistente'] ?? null;
-    $tipo        = $_POST['tipo'] ?? null;
+$id_asistente = $_POST['id_asistente'] ?? null;
+$tipo        = $_POST['tipo'] ?? null;
+$id_persona  = null;
+
+if ($id_asistente) {
+    if (strpos($id_asistente, '_') !== false) {
+        list($tipo, $id_real) = explode('_', $id_asistente);
+        $id_persona = $id_real;
+    } else {
+        $id_persona = $id_asistente;
+    }
+}
+
 
     try {
         $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
@@ -129,42 +143,64 @@ require_once __DIR__ . '/../pages/header.php';
 
         <form class="needs-validation" action="asignar-taller.php" method="POST" enctype="multipart/form-data" novalidate>
 
-            <!-- Buscar asistente -->
-            <div class="col-sm-12">
-                <label for="buscar_asistente" class="form-label">Buscar Asistente</label>
-                <div class="input-group mb-3">
-                    <input type="text" id="buscar_asistente" class="form-control" placeholder="Ingresa el nombre">
-                    <button class="btn btn-outline-secondary" type="button" id="btnBuscarAsistente">Buscar</button>
-                    <button class="btn btn-outline-secondary" type="button" id="btnRefreshAsistente">Refresh</button>
-                </div>
+        <!-- Buscar asistente -->
+<div class="col-sm-12">
+    <label for="buscar_asistente" class="form-label">Buscar Asistente</label>
+    <div class="input-group mb-3">
+        <input type="text" id="buscar_asistente" class="form-control" placeholder="Ingresa el nombre">
+        <button class="btn btn-outline-secondary" type="button" id="btnBuscarAsistente">Buscar</button>
+        <button class="btn btn-outline-secondary" type="button" id="btnRefreshAsistente">Refresh</button>
+    </div>
 
-                <label for="id_asistente" class="form-label">Asistente</label>
-                <select name="id_asistente" class="form-select" id="id_asistente">
-                    <option value="">-- Selecciona un asistente --</option>
-                    <?php
-                    try {
-                        $sql = "
-                            SELECT ID_Participante AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
-                            FROM Participante
-                            UNION
-                            SELECT ID_Personal AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
-                            FROM Personal
-                            UNION
-                            SELECT id AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
-                            FROM Usuario
-                            ORDER BY NombreCompleto
-                        ";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->execute();
-                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                            echo "<option value='{$row['id']}'>{$row['NombreCompleto']}</option>";
-                        }
-                    } catch(PDOException $e) {
-                        echo "<option value=''>Error al obtener asistentes</option>";
-                    }
-                    ?>
-                </select>
-            </div>
+    <label for="id_asistente" class="form-label">Asistente</label>
+    <select name="id_asistente" class="form-select" id="id_asistente">
+        <option value="">-- Selecciona un asistente --</option>
+        <?php
+        try {
+            $sqls = [
+                ['tabla' => 'Participante', 'campo' => 'ID_Participante', 'tipo' => 'participante'],
+                ['tabla' => 'Personal', 'campo' => 'ID_Personal', 'tipo' => 'personal'],
+                ['tabla' => 'Usuario', 'campo' => 'id', 'tipo' => 'usuario']
+            ];
+
+            foreach ($sqls as $s) {
+                $stmt = $conn->query("
+                    SELECT '{$s['tipo']}' AS tipo, {$s['campo']} AS id,
+                    CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
+                    FROM {$s['tabla']}
+                ");
+                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    echo "<option value='{$s['tipo']}_{$row['id']}'>" . htmlspecialchars($row['NombreCompleto']) . "</option>";
+                }
+            }
+        } catch(PDOException $e) {
+            echo "<option value=''>Error al obtener asistentes</option>";
+        }
+        ?>
+        <option value="_otro_">Otro...</option>
+    </select>
+
+    <input type="hidden" name="tipo" id="tipo">
+</div>
+
+<script>
+// Detectar tipo automáticamente según el prefijo del valor
+document.getElementById('id_asistente').addEventListener('change', function() {
+    const valor = this.value;
+    const tipoInput = document.getElementById('tipo');
+
+    if (valor.startsWith("participante_")) tipoInput.value = "participante";
+    else if (valor.startsWith("usuario_")) tipoInput.value = "usuario";
+    else if (valor.startsWith("personal_")) tipoInput.value = "personal";
+    else tipoInput.value = "";
+});
+</script>
+
+
+
+
+
+
 
             <!-- Seleccionar Taller -->
             <div class="col-sm-12 mt-3">
@@ -186,16 +222,7 @@ require_once __DIR__ . '/../pages/header.php';
                 </select>
             </div>
 
-            <!-- Tipo -->
-            <div class="col-sm-12 mt-3">
-                <label for="tipo" class="form-label">Tipo de Persona</label>
-                <select name="tipo" class="form-select" id="tipo">
-                    <option value="">-- Selecciona Tipo --</option>
-                    <option value="participante">Participante</option>
-                    <option value="usuario">Usuario</option>
-                    <option value="personal">Personal</option>
-                </select>
-            </div>
+       
 
             <hr class="my-4">
             <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar Asignación</button>

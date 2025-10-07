@@ -23,19 +23,19 @@ try {
             $delete->bindParam(':id', $id, PDO::PARAM_INT);
 
             if ($delete->execute()) {
-                echo '<div class="alert alert-success alert-dismissible fade show" role="alert">
-                        ¡Diplomado eliminado correctamente!
-                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
-                      </div>';
-                      echo "<script>window.location.href='../pages/ver-diplomado.php';</script>";
+                header("Location: ./ver-diplomado.php?msg=success");
+        exit();
             } else {
-                echo '<div class="alert alert-danger">Error al eliminar el diplomado.</div>';
+                header("Location: ./ver-diplomado.php?msg=error");
+        exit();
             }
         } else {
-            echo '<div class="alert alert-warning">El diplomado no existe.</div>';
+             header("Location: ./ver-diplomado.php?msg=error");
+        exit();
         }
     } else {
-        echo '<div class="alert alert-danger">No se recibió ningún ID válido.</div>';
+          header("Location: ./ver-diplomado.php?msg=error");
+        exit();
     }
 
 } catch (PDOException $e) {

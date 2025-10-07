@@ -35,11 +35,11 @@ if(isset($_GET['eliminar_id'])) {
 
     // Llamar a la función para eliminar el usuario
     if(eliminarUsuario($id)) {
-        echo "<script>alert('Usuario eliminado con éxito');</script>";
-        echo "<script>window.location.href='./ver-usuaria.php';</script>"; // Redirigir a la página
+        header("Location: ./ver-usuaria.php?msg=success");
+        exit();
     } else {
-        echo "<script>alert('Error al eliminar el usuario');</script>";
-         echo "<script>window.location.href='./ver-usuaria.php';</script>"; 
+         header("Location: ./ver-usuaria.php?msg=error");
+        exit();
     }
 }
 ?>

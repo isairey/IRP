@@ -6,51 +6,90 @@ require_once __DIR__ . '/../pages/seccion.php';
 <?php
 require_once __DIR__ . '/../db/config.php';
 
-if (!isset($_GET['id'])) {
-    echo "ID de donativo no especificado.";
-    exit();
+$id_persona = $_GET['id_persona'] ?? null;
+$tipo       = $_GET['tipo'] ?? null;
+$id_seminario  = $_GET['id_taller'] ?? null;
+
+
+
+// Obtener registro actual
+$sql = "SELECT * FROM asignaciones_seminario 
+        WHERE ID_Persona = :id_persona 
+          AND Tipo = :tipo 
+          AND ID_Seminario = :id_seminario";
+$stmt = $conn->prepare($sql);
+$stmt->execute([
+    ':id_persona' => $id_persona,
+    ':tipo' => $tipo,
+    ':id_seminario' => $id_seminario
+]);
+$asistente = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$asistente) {
+    die("Registro no encontrado.");
 }
 
-$id_donativo = $_GET['id'];
-$mensaje = "";
-$tipoMensaje = "";
+// Obtener lista de seminarios
+$sqlSeminarios = "SELECT ID_Seminario, Nombre FROM Seminarios ORDER BY Nombre ASC";
+$stmtSeminarios = $conn->prepare($sqlSeminarios);
+$stmtSeminarios->execute();
+$seminarios = $stmtSeminarios->fetchAll(PDO::FETCH_ASSOC);
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id_donante = $_POST["id_donante"];
-    $monto_donacion = $_POST["monto_donacion"];
-    $tipo_donacion = $_POST["tipo_donacion"];
+// Obtener lista de personas
+$personas = [];
+$stmt = $conn->query("SELECT ID_Participante AS ID, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS Nombre, 'participante' AS Tipo FROM participante");
+$personas = array_merge($personas, $stmt->fetchAll(PDO::FETCH_ASSOC));
+$stmt = $conn->query("SELECT ID_Personal AS ID, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS Nombre, 'personal' AS Tipo FROM personal");
+$personas = array_merge($personas, $stmt->fetchAll(PDO::FETCH_ASSOC));
+$stmt = $conn->query("SELECT ID AS ID, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS Nombre, 'usuario' AS Tipo FROM usuario");
+$personas = array_merge($personas, $stmt->fetchAll(PDO::FETCH_ASSOC));
 
-    try {
-        $sql = "UPDATE Donativos 
-                SET ID_Donante = ?, MontoDonacion = ?, TipoDonacion = ?
-                WHERE ID_Donativo = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(1, $id_donante);
-        $stmt->bindParam(2, $monto_donacion);
-        $stmt->bindParam(3, $tipo_donacion);
-        $stmt->bindParam(4, $id_donativo);
-
-        if ($stmt->execute()) {
-            $mensaje = "Donativo actualizado correctamente";
-            $tipoMensaje = "success";
-        } else {
-            $mensaje = "Error al actualizar donativo";
-            $tipoMensaje = "error";
-        }
-    } catch (PDOException $e) {
-        $mensaje = "Error: " . $e->getMessage();
-        $tipoMensaje = "error";
+// Obtener nombres actuales
+$nombreSeminario = '';
+foreach ($seminarios as $s) {
+    if ($s['ID_Seminario'] == $id_seminario) {
+        $nombreSeminario = $s['Nombre'];
+        break;
     }
 }
 
-$sql = "SELECT * FROM Donativos WHERE ID_Donativo = ?";
-$stmt = $conn->prepare($sql);
-$stmt->execute([$id_donativo]);
-$donativo = $stmt->fetch(PDO::FETCH_ASSOC);
+$nombrePersona = '';
+foreach ($personas as $p) {
+    if ($p['ID'] == $id_persona && $p['Tipo'] == $tipo) {
+        $nombrePersona = $p['Nombre'];
+        break;
+    }
+}
 
-if (!$donativo) {
-    echo "Donativo no encontrado.";
-    exit();
+// Guardar cambios
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nuevo_seminario = $_POST['ID_Seminario'];
+    $nuevo_persona = $_POST['ID_Persona'];
+    $nuevo_tipo = $_POST['TipoPersona'];
+
+    if ($nuevo_persona == $id_persona) {
+        $nuevo_tipo = $tipo;
+    }
+
+    $sqlUpdate = "UPDATE asignaciones_seminario 
+                  SET ID_Seminario = :nuevo_seminario, 
+                      ID_Persona = :nuevo_persona, 
+                      Tipo = :nuevo_tipo 
+                  WHERE ID_Persona = :id_persona 
+                    AND Tipo = :tipo 
+                    AND ID_Seminario = :id_seminario";
+    $stmt = $conn->prepare($sqlUpdate);
+    $stmt->execute([
+        ':nuevo_seminario' => $nuevo_seminario,
+        ':nuevo_persona' => $nuevo_persona,
+        ':nuevo_tipo' => $nuevo_tipo,
+        ':id_persona' => $id_persona,
+        ':tipo' => $tipo,
+        ':id_seminario' => $id_seminario
+    ]);
+
+   header("Location: ../pages/ver-asistentes_seminario.php?status=success");
+exit();
 }
 ?>
 
@@ -63,7 +102,7 @@ if (!$donativo) {
     <meta name="description" content="">
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.122.0">
-    <title>Registro de Donativos</title>
+    <title>Registro de Donantes</title>
     <script src="register.js"></script>
     <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/checkout/">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
@@ -75,9 +114,6 @@ if (!$donativo) {
 
 
     <body class="bg-body-tertiary">
-
-
-
     <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
       <symbol id="check2" viewBox="0 0 16 16">
         <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
@@ -93,6 +129,7 @@ if (!$donativo) {
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
+
 
 
 
@@ -137,12 +174,13 @@ require_once __DIR__ . '/../pages/header.php';
       </ul>
     </div>
 
+    
     <div class="container">
     <main>
         <div class="py-5 text-center">
             <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
-            <h2>Editar Asistente del Taller</h2>
-            <p class="lead">Modifica los datos del asistente asignado a este taller.</p>
+            <h2>Editar Asistente del Seminario</h2>
+            <p class="lead">Modifica los datos del asistente asignado a este seminario.</p>
         </div>
 
         <div class="row g-5">
@@ -150,17 +188,17 @@ require_once __DIR__ . '/../pages/header.php';
                 <form class="needs-validation" action="" method="POST" enctype="multipart/form-data" novalidate>
                     <div class="row g-3">
 
-                        <!-- Selección Taller -->
+                        <!-- Selección Seminario -->
                         <div class="col-sm-12">
-                            <label for="ID_Taller" class="form-label">Taller</label>
-                            <select name="ID_Taller" class="form-select" required>
-                                <option value="<?= $id_taller ?>" selected>
-                                    <?= htmlspecialchars($nombreTaller) ?> (Actual)
+                            <label for="ID_Seminario" class="form-label">Seminario</label>
+                            <select name="ID_Seminario" class="form-select" required>
+                                <option value="<?= $id_seminario ?>" selected>
+                                    <?= htmlspecialchars($nombreSeminario) ?> (Actual)
                                 </option>
                                 <option disabled>───────────────</option>
-                                <?php foreach ($talleres as $t): ?>
-                                    <option value="<?= $t['ID_Taller'] ?>">
-                                        <?= htmlspecialchars($t['Nombre']) ?>
+                                <?php foreach ($seminarios as $s): ?>
+                                    <option value="<?= $s['ID_Seminario'] ?>">
+                                        <?= htmlspecialchars($s['Nombre']) ?>
                                     </option>
                                 <?php endforeach; ?>
                             </select>
@@ -204,34 +242,11 @@ document.querySelector('select[name="ID_Persona"]').addEventListener('change', f
     document.getElementById('tipoPersona').value = tipo || '';
 });
 </script>
-        <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-           <?php
-          require_once __DIR__ . '/../checkout/CR.php';
-          ?>
-                <ul class="list-inline">
-                </ul>
-        </footer>
-    </div> 
 
-    <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-    const montoInput = document.getElementById('monto_donacion');
-
-    montoInput.addEventListener('input', function () {
-        let value = parseFloat(this.value);
-
-        // Verificar si el valor es un número válido y está dentro del rango permitido
-        if (isNaN(value) || value < 0 || value > 1000000000) {
-            this.setCustomValidity('El monto de financiamiento debe ser un número válido entre 0 y 5,000,000.');
-            this.classList.add('is-invalid');
-        } else {
-            this.setCustomValidity('');
-            this.classList.remove('is-invalid');
-        }
-    });
-});
-    </script>
+    <footer class="my-5 pt-5 text-body-secondary text-center text-small">
+        <?php require_once __DIR__ . '/../checkout/CR.php'; ?>
+    </footer>
+</div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -243,14 +258,16 @@ Swal.fire({
     showConfirmButton: false,
     timer: 3000
 }).then(() => {
-    window.location.href = "../pages/ver-donaciones.php";
+    window.location.href = "../pages/ver-taller.php";
 });
 </script>
 <?php endif; ?>
 
 
 
-    <script src="checkout.js"></script></body>
+<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+<script src="checkout.js"></script>
+<script src="validation-donante.js"></script>
         </html>
 
 

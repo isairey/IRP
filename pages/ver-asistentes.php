@@ -436,6 +436,21 @@ require_once __DIR__ . '/../pages/footer.php';
 <?php endif; ?>
 
 
+<?php if (isset($_GET['statuss'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['statuss'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['statuss'] === 'success' ? 'Asistente Actualizado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['statuss'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
 
 <script>
   document.querySelectorAll('.eliminar-asignacion').forEach(btn => {

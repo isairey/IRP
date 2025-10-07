@@ -48,6 +48,19 @@ $stmtCount->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
 $stmtCount->execute();
 $totalRegistros = $stmtCount->fetchColumn();
 $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
+
+
+// 🟩 Consulta para obtener el nombre del diplomado
+$stmtNombre = $conn->prepare("
+    SELECT NombreDiplomado 
+    FROM diplomados 
+    WHERE ID_Diplomado = :idTaller
+");
+$stmtNombre->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
+$stmtNombre->execute();
+$diplomado = $stmtNombre->fetch(PDO::FETCH_ASSOC);
+
+$nombreDiplomado = $diplomado ? $diplomado['NombreDiplomado'] : 'Diplomado no encontrado';
 ?>
 
 
@@ -362,7 +375,7 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Asistentes del Taller #<?= htmlspecialchars($idTaller) ?></h1>
+    <h1 class="h2">Asistentes del Taller: <?= htmlspecialchars($nombreDiplomado) ?></h1>
     <p>Fecha del Taller: <?= htmlspecialchars($taller['fecha']) ?></p>
   </div>
 
@@ -370,16 +383,20 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
     <table class="table table-striped">
         <thead>
             <tr>
+              <th>ID</th>
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Tipo</th>
                 <th>Fecha Asignación</th>
                 <th>Asistencia</th>
+                <th>Acciones</th>
+                
             </tr>
         </thead>
         <tbody>
 <?php foreach ($asistentes as $a): ?>
 <tr>
+   <td><?= htmlspecialchars($a['ID_Persona']) ?></td>
     <td><?= htmlspecialchars($a['Nombre']) ?></td>
     <td><?= htmlspecialchars($a['Email']) ?></td>
     <td><?= htmlspecialchars($a['TipoPersona']) ?></td>
@@ -389,6 +406,21 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
                data-persona="<?= $a['ID_Persona'] ?>"
                <?= isset($asistencias[$a['ID_Persona']]) && $asistencias[$a['ID_Persona']] ? 'checked' : '' ?> >
     </td>
+<td>
+    <a href="../checkout/editar-asistente-taller.php?id_persona=<?= $a['ID_Persona'] ?>&tipo=<?= $a['TipoPersona'] ?>&id_taller=<?= $idTaller ?>" 
+       class="btn btn-primary btn-sm">
+        <i class="bi bi-pencil-square"></i>
+    </a>
+
+    <button class="btn btn-danger btn-sm eliminar-asistente-taller"
+            data-id="<?= $a['ID_Persona'] ?>"
+            data-tipo="<?= $a['TipoPersona'] ?>"
+            data-taller="<?= $idTaller ?>">
+        <i class="bi bi-trash3-fill"></i>
+    </button>
+</td>
+
+
 </tr>
 <?php endforeach; ?>
         </tbody>
@@ -421,6 +453,96 @@ document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
 });
 
 </script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-asistente-taller').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    confirmBtn.addEventListener("mouseenter", () => emoji.textContent = "😢");
+                    confirmBtn.addEventListener("mouseleave", () => emoji.textContent = "😃");
+                    cancelBtn.addEventListener("mouseenter", () => emoji.textContent = "😁");
+                    cancelBtn.addEventListener("mouseleave", () => emoji.textContent = "😃");
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const idPersona = button.getAttribute('data-id');
+                    const tipo = button.getAttribute('data-tipo');
+                    const idTaller = button.getAttribute('data-taller');
+
+                    // Redirige con los tres parámetros
+                    window.location.href = `./eliminar-asistentes-taller.php?id_persona=${idPersona}&tipo=${tipo}&id_taller=${idTaller}`;
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'El asistente fue eliminado correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La eliminación fue cancelada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+    });
+});
+</script>
+
+
+
+<?php if (isset($_GET['statusss'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['statusss'] === 'deleted' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['statusss'] === 'deleted' ? 'Asistente Eliminado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['statusss'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+<?php if (isset($_GET['status'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['status'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['status'] === 'success' ? 'Asistente Actualizado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['status'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
       

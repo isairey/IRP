@@ -281,11 +281,9 @@ try {
 
     // Obtener ID de usuario desde GET (plan de empoderamiento)
     $usuario_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
-
     if ($usuario_id <= 0) {
         throw new Exception("ID de usuario no válido");
     }
-
     // Consulta resumen del usuario
     $query = "SELECT Nombre, ApellidoPaterno, ApellidoMaterno, FechaNacimiento, Edad, Sexo, 
                      OrientacionSexual, Estadocivil, LugarNacimiento, LenguaMaterna, LenguaIndigena, FechaRegistro

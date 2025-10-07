@@ -9,11 +9,32 @@ require_once __DIR__ . '/../db/config.php';
 $conn->exec("SET NAMES utf8");
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $id_persona = $_POST['id_usuario'] ?? null;
+
+
+
+$id_usuario = $_POST['id_usuario'] ?? null;
+$tipo = $_POST['tipo'] ?? null;
+$id_persona = null;
+
+if ($id_usuario) {
+    if (strpos($id_usuario, '_') !== false) {
+        list($tipo, $id_real) = explode('_', $id_usuario);
+        $id_persona = $id_real;
+    } else {
+        $id_persona = $id_usuario;
+    }
+}
+
+
+
+
+
+   
     $id_seminario = $_POST['id_seminario'] ?? null;
-    $tipo = $_POST['tipo'] ?? null;
+    
 
   $id_ponente = $_POST['id_ponente'] ?? null;
+
 
 
     try {
@@ -136,6 +157,11 @@ require_once __DIR__ . '/../pages/header.php';
       <form class="needs-validation" action="asignar-seminario.php" method="POST" enctype="multipart/form-data" novalidate>
             
 
+
+
+
+
+
 <div class="col-sm-12">
     <label for="buscar_usuario" class="form-label">Buscar Participante</label>
     <div class="input-group mb-3">
@@ -150,26 +176,24 @@ require_once __DIR__ . '/../pages/header.php';
         <?php
         require_once __DIR__ . '/../db/config.php';
         $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-   $conn->exec("SET NAMES utf8");
+        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $conn->exec("SET NAMES utf8");
 
         try {
-            $sql = "
-                SELECT ID_Participante AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
-                FROM Participante
-                UNION
-                SELECT ID_Personal AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
-                FROM Personal
-                UNION
-                SELECT id AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
-                FROM Usuario
-                ORDER BY NombreCompleto
-            ";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            if ($stmt->rowCount() > 0) {
-                while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<option value='" . $row['id'] . "'>" . $row['NombreCompleto'] . "</option>";
+            $sqls = [
+                ['tabla' => 'Participante', 'campo' => 'ID_Participante', 'tipo' => 'participante'],
+                ['tabla' => 'Personal', 'campo' => 'ID_Personal', 'tipo' => 'personal'],
+                ['tabla' => 'Usuario', 'campo' => 'id', 'tipo' => 'usuario']
+            ];
+
+            foreach ($sqls as $s) {
+                $stmt = $conn->query("
+                    SELECT '{$s['tipo']}' AS tipo, {$s['campo']} AS id,
+                    CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
+                    FROM {$s['tabla']}
+                ");
+                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                    echo "<option value='{$s['tipo']}_{$row['id']}'>" . htmlspecialchars($row['NombreCompleto']) . "</option>";
                 }
             }
         } catch(PDOException $e) {
@@ -178,7 +202,24 @@ require_once __DIR__ . '/../pages/header.php';
         ?>
         <option value="_otro_">Otro...</option>
     </select>
+    <input type="hidden" name="tipo" id="tipo">
 </div>
+
+<script>
+// Detectar tipo automáticamente según el prefijo del valor
+document.getElementById('id_usuario').addEventListener('change', function() {
+    const valor = this.value;
+    const tipoInput = document.getElementById('tipo');
+    if (valor.startsWith("participante_")) tipoInput.value = "participante";
+    else if (valor.startsWith("usuario_")) tipoInput.value = "usuario";
+    else if (valor.startsWith("personal_")) tipoInput.value = "personal";
+    else tipoInput.value = "";
+});
+</script>
+
+
+
+
 
 <script>
 // Filtrar opciones del select según el input
@@ -233,15 +274,6 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
 
 
 
-<div class="col-sm-12">
-    <label for="tipo" class="form-label">Tipo de Persona</label>
-    <select name="tipo" class="form-select" id="tipo">
-        <option value="">-- Selecciona Tipo --</option>
-        <option value="participante">Participante</option>
-        <option value="usuario">Usuario</option>
-        <option value="personal">Personal</option>
-    </select>
-</div>
 
   <hr class="my-4">
                     <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar Asignación</button>
