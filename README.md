@@ -52,9 +52,9 @@ o, si es PHP puro, colocar el proyecto en htdocs y acceder vía navegador.
 
 2. Iniciar sesión con las credenciales de administrador por defecto:
     ```bash
-    Usuario: admin
+    Usuario: **********
 
-    Contraseña: admin123
+    Contraseña: *********
 
 3. Configurar los datos de la institución y agregar usuarios, beneficiarias, proyectos y actividades.
 
