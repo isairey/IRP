@@ -5,52 +5,63 @@ require_once __DIR__ . '/../pages/seccion.php';
 
 <?php
 require_once __DIR__ . '/../db/config.php';
+$conn->exec("SET NAMES utf8");
 
-if (!isset($_GET['id'])) {
-    echo "ID de donativo no especificado.";
-    exit();
-}
+try {
+    $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
+    $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$id_donativo = $_GET['id'];
-$mensaje = "";
-$tipoMensaje = "";
+    // --- Guardar cambios si se envía el formulario ---
+    if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        $id_asignacion    = $_POST['id_asignacion'] ?? null;
+        $id_diplomado     = $_POST['ID_Diplomado'] ?? null;
+        $id_ponente       = $_POST['ID_Ponente'] ?? null;
+        $fecha_asignacion = $_POST['FechaAsignacion'] ?? null;
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $id_donante = $_POST["id_donante"];
-    $monto_donacion = $_POST["monto_donacion"];
-    $tipo_donacion = $_POST["tipo_donacion"];
+        if ($id_asignacion && $id_diplomado && $id_ponente && $fecha_asignacion) {
+            $sql = "UPDATE asignacionponente 
+                    SET ID_Diplomado = :id_diplomado,
+                        ID_Ponente = :id_ponente,
+                        FechaAsignacion = :fecha 
+                    WHERE ID_Asignacion = :id";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':id_diplomado', $id_diplomado);
+            $stmt->bindParam(':id_ponente', $id_ponente);
+            $stmt->bindParam(':fecha', $fecha_asignacion);
+            $stmt->bindParam(':id', $id_asignacion);
+            $stmt->execute();
 
-    try {
-        $sql = "UPDATE Donativos 
-                SET ID_Donante = ?, MontoDonacion = ?, TipoDonacion = ?
-                WHERE ID_Donativo = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(1, $id_donante);
-        $stmt->bindParam(2, $monto_donacion);
-        $stmt->bindParam(3, $tipo_donacion);
-        $stmt->bindParam(4, $id_donativo);
-
-        if ($stmt->execute()) {
-            $mensaje = "Donativo actualizado correctamente";
-            $tipoMensaje = "success";
+             header("Location: ../pages/ver-diplomado-ponente.php?mssg=success");
+exit();
         } else {
-            $mensaje = "Error al actualizar donativo";
-            $tipoMensaje = "error";
+             header("Location: ../pages/ver-diplomado-ponente.php?mssg=error");
+exit();
         }
-    } catch (PDOException $e) {
-        $mensaje = "Error: " . $e->getMessage();
-        $tipoMensaje = "error";
     }
-}
 
-$sql = "SELECT * FROM Donativos WHERE ID_Donativo = ?";
-$stmt = $conn->prepare($sql);
-$stmt->execute([$id_donativo]);
-$donativo = $stmt->fetch(PDO::FETCH_ASSOC);
+    // --- Obtener ID de asignación ---
+    $id_asignacion = $_GET['id'] ?? ($_POST['id_asignacion'] ?? null);
 
-if (!$donativo) {
-    echo "Donativo no encontrado.";
-    exit();
+    if (!$id_asignacion) {
+        die("Falta el ID de asignación.");
+    }
+
+    // --- Obtener datos actuales ---
+    $stmt = $conn->prepare("SELECT * FROM asignacionponente WHERE ID_Asignacion = :id");
+    $stmt->bindParam(':id', $id_asignacion);
+    $stmt->execute();
+    $asignacion = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    if (!$asignacion) {
+        die("No se encontró la asignación.");
+    }
+
+    // --- Obtener listas para los selects ---
+    $diplomados = $conn->query("SELECT ID_Diplomado, NombreDiplomado FROM diplomados ORDER BY NombreDiplomado ASC")->fetchAll(PDO::FETCH_ASSOC);
+    $ponentes   = $conn->query("SELECT ID_Ponente, Nombre FROM ponentes ORDER BY Nombre ASC")->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    die("Error: " . $e->getMessage());
 }
 ?>
 
@@ -63,7 +74,7 @@ if (!$donativo) {
     <meta name="description" content="">
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.122.0">
-    <title>Registro de Donativos</title>
+    <title>Registro de Donantes</title>
     <script src="register.js"></script>
     <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/checkout/">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
@@ -75,9 +86,6 @@ if (!$donativo) {
 
 
     <body class="bg-body-tertiary">
-
-
-
     <svg xmlns="http://www.w3.org/2000/svg" class="d-none">
       <symbol id="check2" viewBox="0 0 16 16">
         <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
@@ -93,6 +101,7 @@ if (!$donativo) {
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
+
 
 
 
@@ -137,66 +146,69 @@ require_once __DIR__ . '/../pages/header.php';
       </ul>
     </div>
 
+    
     <div class="container">
     <main>
-        <div class="py-5 text-center">
-            <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
-            <h2>Editar Asistente del Taller</h2>
-            <p class="lead">Modifica los datos del asistente asignado a este taller.</p>
-        </div>
+      <div class="py-5 text-center">
+        <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="Logo" width="100" height="100">
+        <h2>Editar Asignación Ponente-Diplomado</h2>
+        <p class="lead">Modifica la relación entre el diplomado y su ponente.</p>
+      </div>
 
-        <div class="row g-5">
-            <div class="col-xxl-12">
-                <form class="needs-validation" action="" method="POST" enctype="multipart/form-data" novalidate>
-                    <div class="row g-3">
+      <div class="row g-5 justify-content-center">
+        <div class="col-xxl-8 col-xl-8 col-lg-9">
+          <form class="needs-validation" action="" method="POST" novalidate>
+            <input type="hidden" name="id_asignacion" value="<?= htmlspecialchars($asignacion['ID_Asignacion']) ?>">
 
-                        <!-- Selección Taller -->
-                        <div class="col-sm-12">
-                            <label for="ID_Taller" class="form-label">Taller</label>
-                            <select name="ID_Taller" class="form-select" required>
-                                <option value="<?= $id_taller ?>" selected>
-                                    <?= htmlspecialchars($nombreTaller) ?> (Actual)
-                                </option>
-                                <option disabled>───────────────</option>
-                                <?php foreach ($talleres as $t): ?>
-                                    <option value="<?= $t['ID_Taller'] ?>">
-                                        <?= htmlspecialchars($t['Nombre']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+            <?php if (!empty($mensaje)): ?>
+              <div class="alert alert-info text-center"><?= htmlspecialchars($mensaje) ?></div>
+            <?php endif; ?>
 
-                        <!-- Selección Asistente -->
-                        <div class="col-sm-12">
-                            <label for="ID_Persona" class="form-label">Asistente</label>
-                            <select name="ID_Persona" class="form-select" id="personaSelect" required>
-                                <option value="<?= $id_persona ?>" data-tipo="<?= $tipo ?>" selected>
-                                    <?= htmlspecialchars($nombrePersona) ?> (<?= ucfirst($tipo) ?> - Actual)
-                                </option>
-                                <option disabled>───────────────</option>
-                                <?php foreach ($personas as $p): ?>
-                                    <option value="<?= $p['ID'] ?>" data-tipo="<?= $p['Tipo'] ?>">
-                                        <?= htmlspecialchars($p['Nombre']) ?> (<?= ucfirst($p['Tipo']) ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
+            <div class="row g-3">
 
-                        <!-- Tipo de Persona -->
-                        <div class="col-sm-12">
-                            <label for="TipoPersona" class="form-label">Tipo de Persona</label>
-                            <input type="text" name="TipoPersona" id="tipoPersona" class="form-control" value="<?= htmlspecialchars($tipo) ?>" readonly>
-                        </div>
+              <!-- Selección de Diplomado -->
+              <div class="col-sm-12">
+                <label for="ID_Diplomado" class="form-label">Diplomado</label>
+                <select name="ID_Diplomado" id="ID_Diplomado" class="form-select" required>
+                  <option value="">Selecciona un diplomado</option>
+                  <?php foreach ($diplomados as $d): ?>
+                    <option value="<?= $d['ID_Diplomado'] ?>" <?= $d['ID_Diplomado'] == $asignacion['ID_Diplomado'] ? 'selected' : '' ?>>
+                      <?= htmlspecialchars($d['NombreDiplomado']) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
 
-                    </div>
+              <!-- Selección de Ponente -->
+              <div class="col-sm-12">
+                <label for="ID_Ponente" class="form-label">Ponente</label>
+                <select name="ID_Ponente" id="ID_Ponente" class="form-select" required>
+                  <option value="">Selecciona un ponente</option>
+                  <?php foreach ($ponentes as $p): ?>
+                    <option value="<?= $p['ID_Ponente'] ?>" <?= $p['ID_Ponente'] == $asignacion['ID_Ponente'] ? 'selected' : '' ?>>
+                      <?= htmlspecialchars($p['Nombre']) ?>
+                    </option>
+                  <?php endforeach; ?>
+                </select>
+              </div>
 
-                    <hr class="my-4">
-                    <button class="w-100 btn btn-primary btn-lg" type="submit">Actualizar</button>
-                </form>
+              <!-- Fecha -->
+              <div class="col-sm-12">
+                <label for="FechaAsignacion" class="form-label">Fecha de Asignación</label>
+                <input type="datetime-local" class="form-control" id="FechaAsignacion" 
+                  name="FechaAsignacion" value="<?= date('Y-m-d\TH:i', strtotime($asignacion['FechaAsignacion'])) ?>" required>
+              </div>
+
             </div>
+
+            <hr class="my-4">
+
+            <button class="w-100 btn btn-primary btn-lg" type="submit">Actualizar</button>
+          </form>
         </div>
+      </div>
     </main>
-</div>
+  </div>
 
 <script>
 document.querySelector('select[name="ID_Persona"]').addEventListener('change', function() {
@@ -204,34 +216,11 @@ document.querySelector('select[name="ID_Persona"]').addEventListener('change', f
     document.getElementById('tipoPersona').value = tipo || '';
 });
 </script>
-        <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-           <?php
-          require_once __DIR__ . '/../checkout/CR.php';
-          ?>
-                <ul class="list-inline">
-                </ul>
-        </footer>
-    </div> 
 
-    <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-      document.addEventListener('DOMContentLoaded', function () {
-    const montoInput = document.getElementById('monto_donacion');
-
-    montoInput.addEventListener('input', function () {
-        let value = parseFloat(this.value);
-
-        // Verificar si el valor es un número válido y está dentro del rango permitido
-        if (isNaN(value) || value < 0 || value > 1000000000) {
-            this.setCustomValidity('El monto de financiamiento debe ser un número válido entre 0 y 5,000,000.');
-            this.classList.add('is-invalid');
-        } else {
-            this.setCustomValidity('');
-            this.classList.remove('is-invalid');
-        }
-    });
-});
-    </script>
+    <footer class="my-5 pt-5 text-body-secondary text-center text-small">
+        <?php require_once __DIR__ . '/../checkout/CR.php'; ?>
+    </footer>
+</div>
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -243,16 +232,15 @@ Swal.fire({
     showConfirmButton: false,
     timer: 3000
 }).then(() => {
-    window.location.href = "../pages/ver-donaciones.php";
+    window.location.href = "../pages/ver-taller.php";
 });
 </script>
 <?php endif; ?>
 
 
 
-    <script src="checkout.js"></script></body>
+<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+<script src="checkout.js"></script>
+<script src="validation-donante.js"></script>
         </html>
-
-
-
 

@@ -33,11 +33,11 @@ try {
 
     if ($stmt->execute()) {
         // Redirigir con mensaje de éxito
-        echo "<script>alert('Donante eliminado correctamente'); </script>";
+     
         header("Location: ./ver-donantes.php?msg=success");
         exit();
     } else {
-          echo "<script>alert('Error'); </script>";
+         
         header("Location: ./ver-donantes.php?msg=error");
         exit();
     }

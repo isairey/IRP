@@ -20,9 +20,11 @@ try {
     $stmt->bindValue(':id', $idSeminario, PDO::PARAM_INT);
 
     if ($stmt->execute()) {
-        echo "<script>alert('Seminario eliminado correctamente'); window.location.href='./ver-seminario.php';</script>";
+        header("Location: ./ver-seminario.php?msg=success");
+        exit();
     } else {
-        echo "<script>alert('Error al eliminar el seminario'); window.location.href='./ver-seminario.php';</script>";
+          header("Location: ./ver-seminario.php?msg=error");
+        exit();
     }
 } catch (PDOException $e) {
     echo "Error en la base de datos: " . $e->getMessage();

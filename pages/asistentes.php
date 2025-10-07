@@ -54,6 +54,22 @@ $stmtCount->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
 $stmtCount->execute();
 $totalRegistros = $stmtCount->fetchColumn();
 $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
+
+
+
+
+// 🟩 Consulta para obtener el nombre del diplomado
+$stmtNombre = $conn->prepare("
+    SELECT NombreDiplomado 
+    FROM diplomados 
+    WHERE ID_Diplomado = :idDiplomado
+");
+$stmtNombre->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmtNombre->execute();
+$diplomado = $stmtNombre->fetch(PDO::FETCH_ASSOC);
+
+$nombreDiplomado = $diplomado ? $diplomado['NombreDiplomado'] : 'Diplomado no encontrado';
+
 ?>
 
 
@@ -325,7 +341,8 @@ require_once __DIR__ . '/../pages/footer.php';
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Asistentes del Diplomado #<?= htmlspecialchars($idDiplomado) ?></h1>
+   <h2 class="text-center my-3">Participantes del Diplomado: <?= htmlspecialchars($nombreDiplomado) ?></h2>
+
   </div>
 
   <!-- Buscador opcional si decides agregarlo en el futuro -->
@@ -430,6 +447,7 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
                 <?php foreach ($fechasDiplomados as $fecha): ?>
                     <th><?= htmlspecialchars($fecha) ?></th>
                 <?php endforeach; ?>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -447,6 +465,20 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
                                <?= isset($asistencias[$asistente['ID_Usuario']][$idSeccion]) && $asistencias[$asistente['ID_Usuario']][$idSeccion] ? 'checked' : '' ?>>
                     </td>
                 <?php endforeach; ?>
+
+              <td>
+<a href="../checkout/editar-asistente-diplomado.php?id_persona=<?= $asistente['ID_Usuario'] ?>&tipo=<?= $asistente['TipoUsuario'] ?>&id_taller=<?= $idDiplomado ?>" 
+       class="btn btn-primary btn-sm">
+        <i class="bi bi-pencil-square"></i>
+    </a>
+
+    <button class="btn btn-danger btn-sm eliminar-asistente-diplomado"
+            data-id="<?= $asistente['ID_Usuario'] ?>"
+            data-tipo="<?= $asistente['TipoUsuario'] ?>"
+            data-taller="<?= $idDiplomado ?>">
+        <i class="bi bi-trash3-fill"></i>
+    </button>
+    </td>
             </tr>
         <?php endforeach; ?>
         </tbody>
@@ -476,6 +508,86 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
     </ul>
   </nav>
 </main>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-asistente-diplomado').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    confirmBtn.addEventListener("mouseenter", () => emoji.textContent = "😢");
+                    confirmBtn.addEventListener("mouseleave", () => emoji.textContent = "😃");
+                    cancelBtn.addEventListener("mouseenter", () => emoji.textContent = "😁");
+                    cancelBtn.addEventListener("mouseleave", () => emoji.textContent = "😃");
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const idPersona = button.getAttribute('data-id');
+                    const tipo = button.getAttribute('data-tipo');
+                    const idTaller = button.getAttribute('data-taller');
+
+                    // Redirige con los tres parámetros
+                    window.location.href = `./eliminar-asistentes-diplomado.php?id_persona=${idPersona}&tipo=${tipo}&id_diplomado=${idTaller}`;
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'El asistente fue eliminado correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La eliminación fue cancelada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+    });
+});
+</script>
+
+
+
+<?php if (isset($_GET['statusss'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['statusss'] === 'deleted' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['statusss'] === 'deleted' ? 'Asistente Eliminado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['statusss'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
+
+
+
 
 
 

@@ -352,6 +352,7 @@ require_once __DIR__ . '/../pages/footer.php';
             <td><?= htmlspecialchars($a['Nombre'] ?: '—') ?></td>
             <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
              <td>
+               <a href="./../checkout/editar-asignacion-ponente-diplomado.php?id=<?= $a['ID_Asignacion'] ?>" class="btn btn btn-warning">Editar</a>
             <button class="eliminar-asignacion btn btn-danger" data-id="<?= $a['ID_Asignacion'] ?>">Eliminar</button>
 
           </td>
@@ -391,15 +392,108 @@ require_once __DIR__ . '/../pages/footer.php';
   </nav>
 </main>
 
+
+
+<?php if (isset($_GET['mssg'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['mssg'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['mssg'] === 'success' ? 'Asignacion Actualizada correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['mssg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
+
+
+<?php if (isset($_GET['msg'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['msg'] === 'deleted' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['msg'] === 'deleted' ? 'Asignacion Eliminado correctamente' : 'Error al Actualizar' ?>",
+            text: "<?= $_GET['msg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-  document.querySelectorAll('.eliminar-asignacion').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (confirm('¿Eliminar esta asignación?')) {
-        location.href = `eliminar_asignacion_ponente.php?id=${btn.dataset.id}`;
-      }
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-asignacion').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    // Si el mouse pasa sobre "Sí, eliminar" → carita triste
+                    confirmBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😢";
+                    });
+                    confirmBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+
+                    // Si el mouse pasa sobre "No, cancelar" → carita feliz
+                    cancelBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😁";
+                    });
+                    cancelBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const donacionId = button.getAttribute('data-id');
+        window.location.href = `./eliminar-diplomado-ponente.php?id=${donacionId}`;
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'La donación fue eliminada correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    
+                      
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La donación no fue eliminada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
     });
-  });
+});
 </script>
+
+
+
+
 
 <!-- Aquí tus scripts de Bootstrap y dashboard.js si aplica -->
 <?php if (isset($_GET['status'])): ?>

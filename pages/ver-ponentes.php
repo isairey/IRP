@@ -474,14 +474,10 @@ require_once __DIR__ . '/../db/config.php';
           <td>
                 <a href="/ERP/ERP_IRP/checkout/editar_ponente.php?id=<?= htmlspecialchars($row['ID_Ponente']) ?>" 
                    class="btn btn-primary btn-sm mb-1">
-                   <i class="bi bi-pencil-square"></i> Editar
+                   <i ></i> Editar....
                 </a>
 
-                <a href="eliminar_ponente.php?id=<?= htmlspecialchars($row['ID_Ponente']) ?>" 
-                   class="btn btn-danger btn-sm" 
-                   onclick="return confirm('¿Seguro que deseas eliminar este ponente?');">
-                   <i class="bi bi-trash3-fill"></i> Eliminar
-                </a>
+                 <button class="btn btn-sm btn-danger eliminar-ponente" data-id="<?= $row['ID_Ponente'] ?>">Eliminar</button>
           </td>
         </tr>
 
@@ -504,21 +500,98 @@ require_once __DIR__ . '/../db/config.php';
 </div>
 
 </main>
+  
+</div>
+
+
 
 <?php if (isset($_GET['msg'])): ?>
-    <?php if ($_GET['msg'] === 'success'): ?>
-        <div class="alert alert-success">✅ Ponente eliminado correctamente.</div>
-    <?php elseif ($_GET['msg'] === 'error'): ?>
-        <div class="alert alert-danger">❌ Error al eliminar el ponente.</div>
-    <?php endif; ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['msg'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['msg'] === 'success' ? 'Personal Eliminado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['msg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
 <?php endif; ?>
 
 
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-ponente').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    // Si el mouse pasa sobre "Sí, eliminar" → carita triste
+                    confirmBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😢";
+                    });
+                    confirmBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+
+                    // Si el mouse pasa sobre "No, cancelar" → carita feliz
+                    cancelBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😁";
+                    });
+                    cancelBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const donacionId = button.getAttribute('data-id');
+        window.location.href = `./eliminar_ponente.php?id=${donacionId}`;
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'La donación fue eliminada correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    
+                      
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La donación no fue eliminada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+    });
+});
+</script>
 
 
-  
-</div>
+
+
+
+
+
+
 
 <script>
 document.querySelectorAll('.btn-eliminar-ponente').forEach(btn => {

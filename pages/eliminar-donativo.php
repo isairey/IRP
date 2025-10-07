@@ -34,11 +34,11 @@ try {
 
     if ($stmt->execute()) {
         // Redirigir con mensaje de éxito
-        echo "<script>alert('Donativo eliminado correctamente'); </script>";
+      
         header("Location: ./ver-donaciones.php?msg=success");
         exit();
     } else {
-        echo "<script>alert('Error'); </script>";
+        
         header("Location: ./ver-donaciones.php?msg=error");
         exit();
     }
