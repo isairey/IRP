@@ -287,11 +287,11 @@ require_once __DIR__ . '/../pages/footer.php';
       <button class="btn btn-link rounded-pill px-3" type="button" ></button>
   
      
-      <!-- <form for="search" class="d-flex" role="search">
+       <form for="search" class="d-flex" role="search">
         <input class="form-control me-2" type="text" placeholder="Search" id="search" name="search" aria-label="Search">
         <button class="btn btn-outline-success" type="submit">Search</button>
-        
-      </form> -->
+        <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-proyectos-asignados.php'"><i class="bi bi-arrow-repeat"></i></button>
+      </form> 
 
 </div>
 <div class="table-responsive small">

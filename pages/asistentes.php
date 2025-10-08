@@ -4,73 +4,133 @@ require_once __DIR__ . '/../pages/seccion.php';
 ?>
 
 <?php
-
 require_once __DIR__ . '/../db/config.php';
 
-// --- Aquí va todo tu código de consulta de asistentes y secciones ---
+// Validar ID del diplomado
 if (!isset($_GET['id_diplomado']) || !is_numeric($_GET['id_diplomado'])) {
     die("ID de diplomado inválido.");
 }
 $idDiplomado = (int) $_GET['id_diplomado'];
+$busqueda = trim($_GET['search'] ?? '');
 
 $registrosPorPagina = 8;
 $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
 $offset = ($pagina - 1) * $registrosPorPagina;
 
-// 1️⃣ Consulta de asistentes
-$stmt = $conn->prepare("
-    SELECT u.ID, u.Nombre, u.Email, aa.FechaAsignacion
-    FROM asignacionesdiplomado aa
-    INNER JOIN usuario u ON aa.ID_Usuario = u.ID
-    WHERE aa.ID_Diplomado = :idDiplomado
-    ORDER BY aa.FechaAsignacion DESC
-    LIMIT :limit OFFSET :offset
-");
-$stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+// 🔍 Consulta principal (Usuarios + Participantes + Personal)
+$sql = "
+SELECT ID_Usuario, NombreCompleto, Email, FechaAsignacion, TipoUsuario FROM (
+    SELECT 
+        u.ID AS ID_Usuario,
+        u.Nombre AS NombreCompleto,
+        u.Email,
+        ad.FechaAsignacion,
+        'Usuario' AS TipoUsuario
+    FROM asignacionesdiplomado ad
+    INNER JOIN usuario u ON ad.ID_Usuario = u.ID
+    WHERE ad.ID_Diplomado = :id1
+    " . (!empty($busqueda) ? "AND u.Nombre LIKE :busqueda1" : "") . "
+
+    UNION ALL
+
+    SELECT 
+        p.ID_Participante AS ID_Usuario,
+        p.Nombre AS NombreCompleto,
+        p.Email,
+        ad.FechaAsignacion,
+        'Participante' AS TipoUsuario
+    FROM asignacionesdiplomado ad
+    INNER JOIN participante p ON ad.ID_Usuario = p.ID_Participante
+    WHERE ad.ID_Diplomado = :id2
+    " . (!empty($busqueda) ? "AND p.Nombre LIKE :busqueda2" : "") . "
+
+    UNION ALL
+
+    SELECT 
+        pe.ID_Personal AS ID_Usuario,
+        pe.Nombre AS NombreCompleto,
+        pe.Email,
+        ad.FechaAsignacion,
+        'Personal' AS TipoUsuario
+    FROM asignacionesdiplomado ad
+    INNER JOIN personal pe ON ad.ID_Usuario = pe.ID_Personal
+    WHERE ad.ID_Diplomado = :id3
+    " . (!empty($busqueda) ? "AND pe.Nombre LIKE :busqueda3" : "") . "
+) AS total
+ORDER BY FechaAsignacion DESC
+LIMIT :limit OFFSET :offset
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bindValue(':id1', $idDiplomado, PDO::PARAM_INT);
+$stmt->bindValue(':id2', $idDiplomado, PDO::PARAM_INT);
+$stmt->bindValue(':id3', $idDiplomado, PDO::PARAM_INT);
+if (!empty($busqueda)) {
+    $stmt->bindValue(':busqueda1', "%$busqueda%", PDO::PARAM_STR);
+    $stmt->bindValue(':busqueda2', "%$busqueda%", PDO::PARAM_STR);
+    $stmt->bindValue(':busqueda3', "%$busqueda%", PDO::PARAM_STR);
+}
 $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 2️⃣ Traer fechas de secciones de cada participante
-// 2️⃣ Traer fechas de secciones para este diplomado
-foreach ($asistentes as &$asistente) {
-    $stmt2 = $conn->prepare("
-        SELECT fecha 
-        FROM secciones 
-        WHERE DiplomadoID = :idDiplomado
-        ORDER BY fecha ASC
-    ");
-    $stmt2->execute([
-        ':idDiplomado' => $idDiplomado
-    ]);
-    $asistente['fechas_secciones'] = $stmt2->fetchAll(PDO::FETCH_COLUMN);
+// 🟨 Si no hay resultados, tabla vacía
+if (!$asistentes) {
+    $asistentes = [];
 }
 
+// 📅 Fechas de secciones del diplomado
+$stmtFechas = $conn->prepare("
+    SELECT ID, fecha 
+    FROM secciones 
+    WHERE DiplomadoID = :id
+    ORDER BY fecha ASC
+");
+$stmtFechas->execute([':id' => $idDiplomado]);
+$fechasDiplomados = $stmtFechas->fetchAll(PDO::FETCH_KEY_PAIR);
 
-// Conteo total para paginación
-$stmtCount = $conn->prepare("SELECT COUNT(*) FROM asignacionesdiplomado WHERE ID_Diplomado = :idDiplomado");
-$stmtCount->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+// 🔢 Conteo total con búsqueda
+$sqlCount = "
+SELECT COUNT(*) FROM (
+    SELECT u.ID FROM asignacionesdiplomado ad
+    INNER JOIN usuario u ON ad.ID_Usuario = u.ID
+    WHERE ad.ID_Diplomado = :id
+    " . (!empty($busqueda) ? "AND u.Nombre LIKE :busqueda" : "") . "
+    
+    UNION ALL
+    
+    SELECT p.ID_Participante FROM asignacionesdiplomado ad
+    INNER JOIN participante p ON ad.ID_Usuario = p.ID_Participante
+    WHERE ad.ID_Diplomado = :id
+    " . (!empty($busqueda) ? "AND p.Nombre LIKE :busqueda" : "") . "
+    
+    UNION ALL
+    
+    SELECT pe.ID_Personal FROM asignacionesdiplomado ad
+    INNER JOIN personal pe ON ad.ID_Usuario = pe.ID_Personal
+    WHERE ad.ID_Diplomado = :id
+    " . (!empty($busqueda) ? "AND pe.Nombre LIKE :busqueda" : "") . "
+) AS total
+";
+
+$stmtCount = $conn->prepare($sqlCount);
+$stmtCount->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
+if (!empty($busqueda)) {
+    $stmtCount->bindValue(':busqueda', "%$busqueda%", PDO::PARAM_STR);
+}
 $stmtCount->execute();
 $totalRegistros = $stmtCount->fetchColumn();
 $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
-
-
-
-// 🟩 Consulta para obtener el nombre del diplomado
-$stmtNombre = $conn->prepare("
-    SELECT NombreDiplomado 
-    FROM diplomados 
-    WHERE ID_Diplomado = :idDiplomado
-");
-$stmtNombre->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+// 🏷️ Obtener nombre del diplomado
+$stmtNombre = $conn->prepare("SELECT NombreDiplomado FROM diplomados WHERE ID_Diplomado = :id");
+$stmtNombre->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
 $stmtNombre->execute();
 $diplomado = $stmtNombre->fetch(PDO::FETCH_ASSOC);
-
 $nombreDiplomado = $diplomado ? $diplomado['NombreDiplomado'] : 'Diplomado no encontrado';
-
 ?>
+
 
 
 
@@ -346,15 +406,19 @@ require_once __DIR__ . '/../pages/footer.php';
   </div>
 
   <!-- Buscador opcional si decides agregarlo en el futuro -->
-  <!--
-  <div class="d-flex justify-content-center py-4">
-    <form class="d-flex" role="search">
-      <input class="form-control me-2" type="text" placeholder="Buscar nombre o correo" name="search"
-             value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
-      <button class="btn btn-outline-success" type="submit">Buscar</button>
-    </form>
-  </div>
-  -->
+  <div class="d-flex gap-2 justify-content-center py-5">
+<form for="search" class="d-flex mb-3" role="search" method="GET">
+    <input type="hidden" name="id_diplomado" value="<?= $idDiplomado ?>">
+    <input class="form-control me-2" type="text" placeholder="Buscar por nombre o email" id="search" name="search" 
+           value="<?= htmlspecialchars($busqueda) ?>" aria-label="Search">
+    <button class="btn btn-outline-success" type="submit">Buscar</button>
+    <button class="btn btn-outline-secondary" type="button" 
+            onclick="window.location.href='../pages/asistentes.php?id_diplomado=<?= $idDiplomado ?>'">
+        <i class="bi bi-arrow-repeat"></i>
+    </button>
+</form>
+
+</div>
 
 <?php
 require_once __DIR__ . '/../db/config.php';
@@ -364,6 +428,7 @@ if (!isset($_GET['id_diplomado']) || !is_numeric($_GET['id_diplomado'])) {
     die("ID de diplomado inválido.");
 }
 $idDiplomado = (int) $_GET['id_diplomado'];
+$busqueda = trim($_GET['search'] ?? '');
 
 // 1️⃣ Obtener todas las fechas de secciones de este diplomado
 $stmtFechas = $conn->prepare("
@@ -379,7 +444,7 @@ while ($row = $stmtFechas->fetch(PDO::FETCH_ASSOC)) {
     $fechasDiplomados[$row['ID']] = $row['fecha'];
 }
 
-// 2️⃣ Obtener asistentes con UNION ALL para respetar el tipo
+// 2️⃣ Consulta principal con búsqueda opcional
 $sql = "
 (
     SELECT 
@@ -416,10 +481,24 @@ UNION ALL
     INNER JOIN usuario u ON a.ID_Usuario = u.ID
     WHERE a.ID_Diplomado = :idDiplomado AND a.TipoUsuario = 'usuario'
 )
-ORDER BY FechaAsignacion DESC
 ";
+
+// Si hay búsqueda, aplicamos el filtro en la consulta envolvente
+if ($busqueda !== '') {
+    $sql = "SELECT * FROM ($sql) AS todos 
+            WHERE todos.NombreCompleto LIKE :busqueda 
+               OR todos.Email LIKE :busqueda
+            ORDER BY FechaAsignacion DESC";
+} else {
+    $sql = "SELECT * FROM ($sql) AS todos ORDER BY FechaAsignacion DESC";
+}
+
+// Ejecutar consulta
 $stmt = $conn->prepare($sql);
 $stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+if ($busqueda !== '') {
+    $stmt->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
+}
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -436,6 +515,7 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
     $asistencias[$a['id_usu']][$a['ID_Seccion']] = $a['presente'];
 }
 ?>
+
 <div class="table-responsive small">
     <table class="table table-striped">
         <thead>

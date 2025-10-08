@@ -284,11 +284,13 @@ require_once __DIR__ . '/../pages/footer.php';
     <button class="boton-morado" type="button" onclick="window.location.href='../pages/reporte-feminicidios-csv.php'">CSV</button>
       <button class="btn btn-link rounded-pill px-3" type="button" ></button>
       
+      
       <form for="search" class="d-flex" role="search"> 
         <input class="form-control me-2" type="text" placeholder="Buscar" id="search" name="search" aria-label="Search">
         <button class="btn btn-outline-success" type="submit">Buscar</button>
         <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-feminicidio.php'"><i class="bi bi-arrow-repeat"></i></button>
       </form> 
+
 
 </div>
 

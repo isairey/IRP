@@ -47,6 +47,19 @@ $stmtCount->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
 $stmtCount->execute();
 $totalRegistros = $stmtCount->fetchColumn();
 $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
+
+
+// 🟩 Consulta para obtener el nombre del diplomado
+$stmtNombre = $conn->prepare("
+    SELECT Nombre
+    FROM talleres
+    WHERE ID_Taller = :idTaller
+");
+$stmtNombre->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
+$stmtNombre->execute();
+$diplomado = $stmtNombre->fetch(PDO::FETCH_ASSOC);
+
+$nombreDiplomado = $diplomado ? $diplomado['Nombre'] : 'Diplomado no encontrado';
 ?>
 
 
@@ -376,7 +389,7 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Asistentes del Taller #<?= htmlspecialchars($idTaller) ?></h1>
+    <h1 class="h2">Asistentes del Taller: <?= htmlspecialchars($nombreDiplomado) ?></h1>
     <p>Fecha del Taller: <?= htmlspecialchars($taller['fecha']) ?></p>
   </div>
 

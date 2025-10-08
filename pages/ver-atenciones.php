@@ -292,6 +292,7 @@ require_once __DIR__ . '/../pages/footer.php';
         <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-atenciones.php'"><i class="bi bi-arrow-repeat"></i></button>
       </form>
 
+
 </div>
 
 <div>
@@ -441,6 +442,7 @@ try {
         echo "<td>{$detalle['Descripcion']}</td>";
         echo "<td>{$detalle['FechaRegistro']}</td>";
         echo "<td>";
+        echo "<a href='../checkout/editar-atenciones.php?id={$detalle['ID_Detalle']}' class='btn btn-primary btn-sm'><i class='bi bi-pencil-square'></i></a> ";
         echo "<button class='btn btn-danger btn-sm eliminar-detalle' data-id='{$detalle['ID_Detalle']}'><i class='bi bi-trash3-fill'></i></button>";
         echo "</td>";
         echo "</tr>";
@@ -581,6 +583,20 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 </script>
 
+
+<?php if (isset($_GET['status'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['status'] === 'updated' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['status'] === 'updated' ? 'Personal Actualizado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['status'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
 
 
 
