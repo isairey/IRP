@@ -28,7 +28,7 @@ try {
 
     // Buscador
     if (!empty($_GET['search'])) {
-        $condiciones[] = "(s.NombreSeminario LIKE :search OR p.NombrePonente LIKE :search)";
+        $condiciones[] = "(s.Nombre LIKE :search OR p.Nombre LIKE :search)";
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
@@ -332,14 +332,13 @@ require_once __DIR__ . '/../pages/footer.php';
 
   <div class="container mt-4">
 
-
-  <!-- Buscador -->
-  <form method="get" class="mb-3 d-flex">
-    <input type="text" name="search" class="form-control me-2" 
-           placeholder="Buscar seminario o ponente..." 
-           value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-    <button type="submit" class="btn btn-primary">Buscar</button>
-  </form>
+<div class="d-flex gap-2 justify-content-center py-5">
+<form for="search" class="d-flex" role="search">
+        <input class="form-control me-2" type="text" placeholder="Buscar" id="search" name="search" aria-label="Search">
+        <button class="btn btn-outline-success" type="submit">Buscar</button>
+        <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-seminario-ponente.php'"><i class="bi bi-arrow-repeat"></i></button>
+      </form>
+</div>
 
   <!-- Tabla -->
   <table class="table table-striped table-sm">

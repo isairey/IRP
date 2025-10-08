@@ -51,6 +51,26 @@ $stmtCount->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
 $stmtCount->execute();
 $totalRegistros = $stmtCount->fetchColumn();
 $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
+
+
+
+
+// 🟩 Consulta para obtener el nombre del diplomado
+$stmtNombre = $conn->prepare("
+    SELECT NombreDiplomado 
+    FROM diplomados 
+    WHERE ID_Diplomado = :idDiplomado
+");
+$stmtNombre->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmtNombre->execute();
+$diplomado = $stmtNombre->fetch(PDO::FETCH_ASSOC);
+
+$nombreDiplomado = $diplomado ? $diplomado['NombreDiplomado'] : 'Diplomado no encontrado';
+
+
+
+
+
 ?>
 
 
@@ -322,7 +342,7 @@ require_once __DIR__ . '/../pages/footer.php';
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Asistentes del Diplomado #<?= htmlspecialchars($idDiplomado) ?></h1>
+     <h2 class="text-center my-3">Participantes del Diplomado: <?= htmlspecialchars($nombreDiplomado) ?></h2>
   </div>
 
   <!-- Buscador opcional si decides agregarlo en el futuro -->

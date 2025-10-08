@@ -52,15 +52,15 @@ $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
 // 🟩 Consulta para obtener el nombre del diplomado
 $stmtNombre = $conn->prepare("
-    SELECT NombreDiplomado 
-    FROM diplomados 
-    WHERE ID_Diplomado = :idTaller
+    SELECT Nombre
+    FROM talleres
+    WHERE ID_Taller = :idTaller
 ");
 $stmtNombre->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
 $stmtNombre->execute();
 $diplomado = $stmtNombre->fetch(PDO::FETCH_ASSOC);
 
-$nombreDiplomado = $diplomado ? $diplomado['NombreDiplomado'] : 'Diplomado no encontrado';
+$nombreDiplomado = $diplomado ? $diplomado['Nombre'] : 'Diplomado no encontrado';
 ?>
 
 
@@ -328,44 +328,83 @@ if (!isset($_GET['id_taller']) || !is_numeric($_GET['id_taller'])) {
     die("ID de taller inválido.");
 }
 $idTaller = (int) $_GET['id_taller'];
+$busqueda = trim($_GET['search'] ?? '');
 
-// Obtener fecha del taller
-$stmtTaller = $conn->prepare("SELECT fecha FROM talleres WHERE ID_taller = :idTaller");
+// Obtener fecha y nombre del taller
+$stmtTaller = $conn->prepare("SELECT fecha, Nombre FROM talleres WHERE ID_taller = :idTaller");
 $stmtTaller->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
 $stmtTaller->execute();
 $taller = $stmtTaller->fetch(PDO::FETCH_ASSOC);
 
 if (!$taller) die("Taller no encontrado.");
 
-// Obtener asistentes según tipo
-$stmt = $conn->prepare("
-    SELECT a.ID_Persona, a.TipoPersona, a.FechaRegistro,
-        CASE 
-            WHEN a.TipoPersona = 'participante' THEN p.Nombre
-            WHEN a.TipoPersona = 'usuario' THEN u.Nombre
-            WHEN a.TipoPersona = 'personal' THEN pe.Nombre
-            ELSE 'Desconocido'
-        END AS Nombre,
-        CASE 
-            WHEN a.TipoPersona = 'participante' THEN p.Email
-            WHEN a.TipoPersona = 'usuario' THEN u.Email
-            WHEN a.TipoPersona = 'personal' THEN pe.Email
-            ELSE ''
-        END AS Email
+$nombreTaller = $taller['NombreTaller'] ?? 'Taller sin nombre';
+
+// 1️⃣ Consulta base con UNION ALL (para unificar los tres tipos de asistentes)
+$sql = "
+(
+    SELECT 
+        a.ID_Persona,
+        a.TipoPersona,
+        a.FechaRegistro,
+        CONCAT(p.Nombre, ' ', p.ApellidoPaterno, ' ', p.ApellidoMaterno) AS NombreCompleto,
+        p.Email
     FROM asistentes_taller a
-    LEFT JOIN participante p ON a.TipoPersona = 'participante' AND a.ID_Persona = p.ID_Participante
-    LEFT JOIN usuario u ON a.TipoPersona = 'usuario' AND a.ID_Persona = u.ID
-    LEFT JOIN personal pe ON a.TipoPersona = 'personal' AND a.ID_Persona = pe.ID_Personal
+    INNER JOIN participante p ON a.TipoPersona = 'participante' AND a.ID_Persona = p.ID_Participante
     WHERE a.ID_Taller = :idTaller
-    ORDER BY a.FechaRegistro DESC
-");
+)
+UNION ALL
+(
+    SELECT 
+        a.ID_Persona,
+        a.TipoPersona,
+        a.FechaRegistro,
+        CONCAT(u.Nombre, ' ', u.ApellidoPaterno, ' ', u.ApellidoMaterno) AS NombreCompleto,
+        u.Email
+    FROM asistentes_taller a
+    INNER JOIN usuario u ON a.TipoPersona = 'usuario' AND a.ID_Persona = u.ID
+    WHERE a.ID_Taller = :idTaller
+)
+UNION ALL
+(
+    SELECT 
+        a.ID_Persona,
+        a.TipoPersona,
+        a.FechaRegistro,
+        CONCAT(pe.Nombre, ' ', pe.ApellidoPaterno, ' ', pe.ApellidoMaterno) AS NombreCompleto,
+        pe.Email
+    FROM asistentes_taller a
+    INNER JOIN personal pe ON a.TipoPersona = 'personal' AND a.ID_Persona = pe.ID_Personal
+    WHERE a.ID_Taller = :idTaller
+)
+";
+
+// 2️⃣ Aplicar búsqueda si el usuario escribió algo
+if ($busqueda !== '') {
+    $sql = "SELECT * FROM ($sql) AS todos
+            WHERE todos.NombreCompleto LIKE :busqueda
+               OR todos.Email LIKE :busqueda
+            ORDER BY FechaRegistro DESC";
+} else {
+    $sql = "SELECT * FROM ($sql) AS todos ORDER BY FechaRegistro DESC";
+}
+
+// Ejecutar consulta
+$stmt = $conn->prepare($sql);
 $stmt->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
+if ($busqueda !== '') {
+    $stmt->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
+}
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Traer asistencias si existe la tabla (opcional)
+// 3️⃣ Traer asistencias registradas
 $asistencias = [];
-$stmtAsis = $conn->prepare("SELECT ID_Persona, Asistio FROM asistencias_taller WHERE ID_Taller = :idTaller");
+$stmtAsis = $conn->prepare("
+    SELECT ID_Persona, Asistio 
+    FROM asistencias_taller 
+    WHERE ID_Taller = :idTaller
+");
 $stmtAsis->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
 $stmtAsis->execute();
 foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
@@ -375,9 +414,26 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Asistentes del Taller: <?= htmlspecialchars($nombreDiplomado) ?></h1>
+    <h1 class="h2">Asistentes del Taller: <?= htmlspecialchars($nombreTaller) ?></h1>
     <p>Fecha del Taller: <?= htmlspecialchars($taller['fecha']) ?></p>
   </div>
+
+
+  <div class="d-flex gap-2 justify-content-center py-5">
+  <form for="search" class="d-flex mb-3" role="search" method="GET">
+      <input type="hidden" name="id_taller" value="<?= $idTaller ?>">
+      <input class="form-control me-2" type="text" placeholder="Buscar por nombre o email" id="search" name="search" 
+             value="<?= htmlspecialchars($busqueda) ?>" aria-label="Search">
+      <button class="btn btn-outline-success" type="submit">Buscar</button>
+      <button class="btn btn-outline-secondary" type="button" 
+              onclick="window.location.href='ver-asistentes-taller.php?id_taller=<?= $idTaller ?>'">
+          <i class="bi bi-arrow-repeat"></i>
+      </button>
+  </form>
+</div>
+
+
+
 
   <div class="table-responsive small">
     <table class="table table-striped">
@@ -397,7 +453,7 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
 <?php foreach ($asistentes as $a): ?>
 <tr>
    <td><?= htmlspecialchars($a['ID_Persona']) ?></td>
-    <td><?= htmlspecialchars($a['Nombre']) ?></td>
+    <td><?= htmlspecialchars($a['NombreCompleto']) ?></td>
     <td><?= htmlspecialchars($a['Email']) ?></td>
     <td><?= htmlspecialchars($a['TipoPersona']) ?></td>
     <td><?= htmlspecialchars($a['FechaRegistro']) ?></td>
@@ -455,7 +511,6 @@ document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
 </script>
 
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

@@ -301,15 +301,16 @@ require_once __DIR__ . '/../pages/footer.php';
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">📋 Listado de Ponentes</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
+    <h1 class="h2"> Listado de Ponentes</h1>
+</div>
+   <div class="d-flex gap-2 justify-content-center py-3">
       <form class="d-flex" role="search" method="get">
         <input class="form-control me-2" type="text" placeholder="Buscar Ponente" name="search" aria-label="Search" value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
         <button class="btn btn-outline-success" type="submit">Buscar</button>
         <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='ver-ponentes.php'"><i class="bi bi-arrow-repeat"></i></button>
       </form>
     </div> 
-  </div>
+  
 <?php
 require_once __DIR__ . '/../db/config.php';
   try {

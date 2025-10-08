@@ -280,7 +280,7 @@ require_once __DIR__ . '/../pages/footer.php';
 
       <!-- <canvas class="my-4 w-100" id="myChart" width="900" height="380"></canvas> -->
 
-    <div class="d-flex gap- justify-content-center py-5">
+    <div class="d-flex gap- justify-content-center py-3">
     <!-- <button class="btn btn-warning rounded-pill px-3" type="button" onclick="window.location.href='../pages/ver-personal.php'">General</button>
     <button class="btn btn-primary rounded-pill px-3" type="button" onclick="window.location.href='../pages/p-domicilio.php'">Datos de Domicilio</button>
       <button class="btn btn-success rounded-pill px-3" type="button" onclick="window.location.href='../pages/p-contacto.php'">Datos de Contacto</button>
@@ -288,7 +288,7 @@ require_once __DIR__ . '/../pages/footer.php';
       <button class="btn btn-warning rounded-pill px-3" type="button" onclick="window.location.href='../pages/p-salud.php'">Datos de Salud</button>
       <button class="btn btn-link rounded-pill px-3" type="button" ></button> -->
 
-      
+     
       <form for="search" class="d-flex" role="search">
         <input class="form-control me-2" type="text" placeholder="Buscar" id="search" name="search" aria-label="Search">
         <button class="btn btn-outline-success" type="submit">Buscar</button>

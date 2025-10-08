@@ -332,44 +332,83 @@ if (!isset($_GET['id_seminario']) || !is_numeric($_GET['id_seminario'])) {
     die("ID de seminario inválido.");
 }
 $idSeminario = (int) $_GET['id_seminario'];
+$busqueda = trim($_GET['search'] ?? '');
 
 // Obtener fecha del seminario
-$stmtSem = $conn->prepare("SELECT fecha FROM seminarios WHERE ID_seminario = :idSeminario");
+$stmtSem = $conn->prepare("SELECT fecha, Nombre FROM seminarios WHERE ID_seminario = :idSeminario");
 $stmtSem->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
 $stmtSem->execute();
 $seminario = $stmtSem->fetch(PDO::FETCH_ASSOC);
 
 if (!$seminario) die("Seminario no encontrado.");
 
-// Obtener asistentes según tipo
-$stmt = $conn->prepare("
-    SELECT a.ID_Persona, a.Tipo, a.FechaAsignacion,
-        CASE 
-            WHEN a.Tipo = 'participante' THEN p.Nombre
-            WHEN a.Tipo = 'usuario' THEN u.Nombre
-            WHEN a.Tipo = 'personal' THEN pe.Nombre
-            ELSE 'Desconocido'
-        END AS Nombre,
-        CASE 
-            WHEN a.Tipo = 'participante' THEN p.Email
-            WHEN a.Tipo = 'usuario' THEN u.Email
-            WHEN a.Tipo = 'personal' THEN pe.Email
-            ELSE ''
-        END AS Email
+$nombreSeminario = $seminario['Nombre'] ?? 'Seminario sin nombre';
+
+// 1️⃣ Consulta base con UNION ALL (unificando los tres tipos)
+$sql = "
+(
+    SELECT 
+        a.ID_Persona,
+        a.Tipo,
+        a.FechaAsignacion,
+        CONCAT(p.Nombre, ' ', p.ApellidoPaterno, ' ', p.ApellidoMaterno) AS NombreCompleto,
+        p.Email
     FROM asignaciones_seminario a
-    LEFT JOIN participante p ON a.Tipo = 'participante' AND a.ID_Persona = p.ID_Participante
-    LEFT JOIN usuario u ON a.Tipo = 'usuario' AND a.ID_Persona = u.ID
-    LEFT JOIN personal pe ON a.Tipo = 'personal' AND a.ID_Persona = pe.ID_Personal
+    INNER JOIN participante p ON a.Tipo = 'participante' AND a.ID_Persona = p.ID_Participante
     WHERE a.ID_Seminario = :idSeminario
-    ORDER BY a.FechaAsignacion DESC
-");
+)
+UNION ALL
+(
+    SELECT 
+        a.ID_Persona,
+        a.Tipo,
+        a.FechaAsignacion,
+        CONCAT(u.Nombre, ' ', u.ApellidoPaterno, ' ', u.ApellidoMaterno) AS NombreCompleto,
+        u.Email
+    FROM asignaciones_seminario a
+    INNER JOIN usuario u ON a.Tipo = 'usuario' AND a.ID_Persona = u.ID
+    WHERE a.ID_Seminario = :idSeminario
+)
+UNION ALL
+(
+    SELECT 
+        a.ID_Persona,
+        a.Tipo,
+        a.FechaAsignacion,
+        CONCAT(pe.Nombre, ' ', pe.ApellidoPaterno, ' ', pe.ApellidoMaterno) AS NombreCompleto,
+        pe.Email
+    FROM asignaciones_seminario a
+    INNER JOIN personal pe ON a.Tipo = 'personal' AND a.ID_Persona = pe.ID_Personal
+    WHERE a.ID_Seminario = :idSeminario
+)
+";
+
+// 2️⃣ Si hay búsqueda, se aplica sobre los resultados combinados
+if ($busqueda !== '') {
+    $sql = "SELECT * FROM ($sql) AS todos
+            WHERE todos.NombreCompleto LIKE :busqueda
+               OR todos.Email LIKE :busqueda
+            ORDER BY FechaAsignacion DESC";
+} else {
+    $sql = "SELECT * FROM ($sql) AS todos ORDER BY FechaAsignacion DESC";
+}
+
+// Ejecutar consulta
+$stmt = $conn->prepare($sql);
 $stmt->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
+if ($busqueda !== '') {
+    $stmt->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
+}
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Traer asistencias si existe la tabla (opcional)
+// 3️⃣ Traer asistencias si existe la tabla (opcional)
 $asistencias = [];
-$stmtAsis = $conn->prepare("SELECT ID_Persona, Asistio FROM asistencias_seminario WHERE ID_Seminario = :idSeminario");
+$stmtAsis = $conn->prepare("
+    SELECT ID_Persona, Asistio 
+    FROM asistencias_seminario 
+    WHERE ID_Seminario = :idSeminario
+");
 $stmtAsis->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
 $stmtAsis->execute();
 foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
@@ -379,9 +418,27 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Asistentes del Seminario: <?= htmlspecialchars($nombreDiplomado) ?></h1>
+    <h1 class="h2">Asistentes del Seminario: <?= htmlspecialchars($nombreSeminario) ?></h1>
     <p>Fecha del Seminario: <?= htmlspecialchars($seminario['fecha']) ?></p>
   </div>
+
+  <div class="d-flex gap-2 justify-content-center py-5">
+  <form for="search" class="d-flex mb-3" role="search" method="GET">
+      <input type="hidden" name="id_seminario" value="<?= $idSeminario ?>">
+      <input class="form-control me-2" type="text" placeholder="Buscar por nombre o email" id="search" name="search" 
+             value="<?= htmlspecialchars($busqueda) ?>" aria-label="Search">
+      <button class="btn btn-outline-success" type="submit">Buscar</button>
+      <button class="btn btn-outline-secondary" type="button" 
+              onclick="window.location.href='./ver-asistentes-seminario.php?id_seminario=<?= $idSeminario ?>'">
+          <i class="bi bi-arrow-repeat"></i>
+      </button>
+  </form>
+</div>
+
+
+
+
+
 
   <div class="table-responsive small">
     <table class="table table-striped">
@@ -398,7 +455,7 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
         <tbody>
 <?php foreach ($asistentes as $a): ?>
 <tr>
-    <td><?= htmlspecialchars($a['Nombre']) ?></td>
+    <td><?= htmlspecialchars($a['NombreCompleto']) ?></td>
     <td><?= htmlspecialchars($a['Email']) ?></td>
     <td><?= htmlspecialchars($a['Tipo']) ?></td>
     <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>

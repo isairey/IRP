@@ -327,7 +327,7 @@ require_once __DIR__ . '/../pages/footer.php';
       <input class="form-control me-2" type="text" placeholder="Buscar diplomado o ponente" name="search"
              value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
       <button class="btn btn-outline-success" type="submit">Buscar</button>
-      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='tu-vista.php'">
+      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='./ver-diplomado-ponente.php'">
         <i class="bi bi-arrow-repeat"></i>
       </button>
     </form>
