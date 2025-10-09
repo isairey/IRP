@@ -2,6 +2,7 @@
 require_once __DIR__ . '/seccion.php';
 
 
+
 // Conexión a la base de datos
 require_once __DIR__ . '/../db/config.php';
 
@@ -10,22 +11,36 @@ try {
     $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
     $offset = ($pagina - 1) * $registrosPorPagina;
 
+    // Consulta principal
     $query = "
-        SELECT t.ID_Taller, t.Nombre, t.Fecha, t.HoraInicio, t.HoraFin, t.Lugar,
-               p.Nombre AS Ponente, t.Descripcion
+        SELECT 
+            t.ID_Taller, 
+            t.Nombre, 
+            t.Fecha, 
+            t.HoraInicio, 
+            t.HoraFin, 
+            t.Lugar,
+            p.Nombre AS Ponente, 
+            t.Descripcion
         FROM talleres t
         LEFT JOIN asignacion_ponentes_taller apt ON t.ID_Taller = apt.ID_Taller
         LEFT JOIN ponentes p ON apt.ID_Ponente = p.ID_Ponente
     ";
 
-    $countQuery = "SELECT COUNT(*) FROM talleres t";
+    // Consulta para contar registros (incluyendo JOIN para filtrar)
+    $countQuery = "
+        SELECT COUNT(DISTINCT t.ID_Taller)
+        FROM talleres t
+        LEFT JOIN asignacion_ponentes_taller apt ON t.ID_Taller = apt.ID_Taller
+        LEFT JOIN ponentes p ON apt.ID_Ponente = p.ID_Ponente
+    ";
 
     $condiciones = [];
     $params = [];
 
-    // Búsqueda por nombre
+    // Búsqueda por nombre del taller o del ponente
     if (!empty($_GET['search'])) {
-        $condiciones[] = "t.Nombre LIKE :search";
+        $condiciones[] = "(t.Nombre LIKE :search OR p.Nombre LIKE :search)";
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
@@ -37,24 +52,28 @@ try {
 
     // Total de registros
     $stmtCount = $conn->prepare($countQuery);
-    foreach ($params as $k => $v) $stmtCount->bindValue($k, $v);
+    foreach ($params as $k => $v) {
+        $stmtCount->bindValue($k, $v);
+    }
     $stmtCount->execute();
     $totalRegistros = $stmtCount->fetchColumn();
     $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
-    // Consulta con LIMIT
+    // Consulta con LIMIT y orden
     $query .= " ORDER BY t.Fecha ASC LIMIT :limit OFFSET :offset";
     $stmt = $conn->prepare($query);
-    foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+    foreach ($params as $k => $v) {
+        $stmt->bindValue($k, $v);
+    }
     $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
+
     $talleres = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
     die("Error al obtener talleres: " . $e->getMessage());
 }
-
 ?>
 
 

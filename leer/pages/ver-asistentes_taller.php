@@ -324,7 +324,7 @@ require_once __DIR__ . '/../pages/header.php';
       <input class="form-control me-2" type="text" placeholder="Buscar taller o ponente" name="search"
              value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
       <button class="btn btn-outline-success" type="submit">Buscar</button>
-      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='vista-talleres.php'">
+      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='./ver-asistentes_taller.php'">
         <i class="bi bi-arrow-repeat"></i>
       </button>
     </form>

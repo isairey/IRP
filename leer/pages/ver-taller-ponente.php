@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/seccion.php';
+require_once __DIR__ . '/../pages/seccion.php';
+
 
 
 require_once __DIR__ . '/../db/config.php';
@@ -34,7 +35,7 @@ try {
 
     // Buscador
     if (!empty($_GET['search'])) {
-        $condiciones[] = "(t.NombreTaller LIKE :search OR p.NombrePonente LIKE :search)";
+        $condiciones[] = "(t.Nombre LIKE :search OR p.Nombre LIKE :search)";
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
@@ -340,12 +341,13 @@ require_once __DIR__ . '/../pages/footer.php';
     
 
     <!-- Buscador -->
-    <form method="get" class="mb-3 d-flex">
-      <input type="text" name="search" class="form-control me-2"
-             placeholder="Buscar taller o ponente..."
-             value="<?= htmlspecialchars($_GET['search'] ?? '') ?>">
-      <button type="submit" class="btn btn-primary">Buscar</button>
-    </form>
+     <div class="d-flex gap-2 justify-content-center py-5">
+ <form for="search" class="d-flex" role="search">
+        <input class="form-control me-2" type="text" placeholder="Buscar" id="search" name="search" aria-label="Search">
+        <button class="btn btn-outline-success" type="submit">Buscar</button>
+        <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-taller-ponente.php'"><i class="bi bi-arrow-repeat"></i></button>
+      </form>
+</div>
 
     <!-- Tabla -->
 <table class="table table-striped table-sm">
@@ -355,7 +357,7 @@ require_once __DIR__ . '/../pages/footer.php';
           <th>Taller</th>
           <th>Ponente</th>
           <th>Fecha Asignación</th>
-        <!--   <th>Acciones</th>  -->
+        
         </tr>
       </thead>
       <tbody>
@@ -366,7 +368,7 @@ require_once __DIR__ . '/../pages/footer.php';
               <td><?= htmlspecialchars($a['NombreTaller']) ?></td>
               <td><?= htmlspecialchars($a['NombrePonente']) ?></td>
               <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
-             
+              
             </tr>
           <?php endforeach; ?>
         <?php else: ?>
@@ -400,13 +402,111 @@ require_once __DIR__ . '/../pages/footer.php';
 </main>
 
 
-        <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-           <?php
-          require_once __DIR__ . '/../checkout/CR.php';
-          ?>
-                <ul class="list-inline">
-                </ul>
-        </footer>
+
+
+
+<?php if (isset($_GET['msg'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['msg'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['msg'] === 'success' ? 'Personal Eliminado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['msg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-asignacion-taller').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    // Si el mouse pasa sobre "Sí, eliminar" → carita triste
+                    confirmBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😢";
+                    });
+                    confirmBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+
+                    // Si el mouse pasa sobre "No, cancelar" → carita feliz
+                    cancelBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😁";
+                    });
+                    cancelBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const donacionId = button.getAttribute('data-id');
+        window.location.href = `./eliminar_asignacion_ponente_taller.php?id=${donacionId}`;
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'La donación fue eliminada correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    
+                      
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La donación no fue eliminada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+    });
+});
+</script>
+
+
+
+
+
+
+
+
+
+<?php if (isset($_GET['mssg'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['mssg'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['mssg'] === 'success' ? 'Asignacion Actualizada correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['mssg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
 
 <?php if (isset($_GET['statuss'])): ?>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -423,18 +523,7 @@ require_once __DIR__ . '/../pages/footer.php';
 <?php endif; ?>
 
 
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-    document.querySelectorAll('.eliminar-asignacion-taller').forEach(btn => {
-        btn.addEventListener('click', () => {
-            if (confirm('¿Eliminar esta asignación?')) {
-                const id = btn.getAttribute('data-id');
-                location.href = `./eliminar_asignacion_ponente_taller.php?id=${id}`;
-            }
-        });
-    });
-});
-</script>
+
 
 
 

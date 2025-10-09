@@ -11,28 +11,32 @@ try {
     $offset = ($pagina - 1) * $registrosPorPagina;
 
     // Consulta principal: asignaciones de seminario
-   $query = "
-    SELECT aps.ID_Asignacion, s.ID_Seminario, s.Nombre, p.Nombre AS NombrePonente, aps.FechaAsignacion
-    FROM asignacion_ponente_seminario aps
-    LEFT JOIN Seminarios s ON aps.ID_Seminario = s.ID_Seminario
-    LEFT JOIN Ponentes p ON aps.ID_Ponente = p.ID_Ponente
-";
+    $query = "
+        SELECT 
+            aps.ID_Asignacion, 
+            s.ID_Seminario, 
+            s.Nombre, 
+            p.Nombre AS NombrePonente, 
+            aps.FechaAsignacion
+        FROM asignacion_ponente_seminario aps
+        LEFT JOIN Seminarios s ON aps.ID_Seminario = s.ID_Seminario
+        LEFT JOIN Ponentes p ON aps.ID_Ponente = p.ID_Ponente
+    ";
 
-// Consulta para contar registros
-// Consulta para contar registros
-$countQuery = "
-    SELECT COUNT(*)
-    FROM asignacion_ponente_seminario
-";
-
-
+    // Consulta para contar registros (también con JOIN si hay búsqueda)
+    $countQuery = "
+        SELECT COUNT(DISTINCT aps.ID_Asignacion)
+        FROM asignacion_ponente_seminario aps
+        LEFT JOIN Seminarios s ON aps.ID_Seminario = s.ID_Seminario
+        LEFT JOIN Ponentes p ON aps.ID_Ponente = p.ID_Ponente
+    ";
 
     $condiciones = [];
     $params = [];
 
     // Filtro de búsqueda
     if (!empty($_GET['search'])) {
-        $condiciones[] = "(s.NombreSeminario LIKE :search OR p.Nombre LIKE :search)";
+        $condiciones[] = "(s.Nombre LIKE :search OR p.Nombre LIKE :search)";
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
@@ -63,6 +67,7 @@ $countQuery = "
     $stmt->execute();
 
     $asignaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
     exit;
@@ -341,7 +346,7 @@ require_once __DIR__ . '/../pages/footer.php';
       <input class="form-control me-2" type="text" placeholder="Buscar diplomado o ponente" name="search"
              value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
       <button class="btn btn-outline-success" type="submit">Buscar</button>
-      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='tu-vista.php'">
+      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='./ver-asistentes_seminario.php'">
         <i class="bi bi-arrow-repeat"></i>
       </button>
     </form>

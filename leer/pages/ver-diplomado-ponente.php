@@ -1,7 +1,9 @@
 
 <?php
-require_once __DIR__ . '/seccion.php';
+require_once __DIR__ . '/../pages/seccion.php';
+
 ?>
+
 <?php
 
 require_once __DIR__ . '/../db/config.php';
@@ -11,37 +13,51 @@ try {
     $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
     $offset = ($pagina - 1) * $registrosPorPagina;
 
+    // Consulta principal
     $query = "
         SELECT ap.ID_Asignacion, d.NombreDiplomado, p.Nombre, ap.FechaAsignacion
         FROM asignacionponente ap
         LEFT JOIN Diplomados d ON ap.ID_Diplomado = d.ID_Diplomado
         LEFT JOIN Ponentes p ON ap.ID_Ponente = p.ID_Ponente
     ";
-    $countQuery = "SELECT COUNT(*) FROM asignacionponente ap";
+
+    // Consulta para contar registros (también con JOINs)
+    $countQuery = "
+        SELECT COUNT(*)
+        FROM asignacionponente ap
+        LEFT JOIN Diplomados d ON ap.ID_Diplomado = d.ID_Diplomado
+        LEFT JOIN Ponentes p ON ap.ID_Ponente = p.ID_Ponente
+    ";
 
     $condiciones = [];
     $params = [];
 
+    // Filtro de búsqueda
     if (!empty($_GET['search'])) {
-        $condiciones[] = "(d.NombreDiplomado LIKE :search OR p.NombrePonente LIKE :search)";
+        $condiciones[] = "(d.NombreDiplomado LIKE :search OR p.Nombre LIKE :search)";
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
+    // Agregar condiciones a ambas consultas
     if ($condiciones) {
         $where = " WHERE " . implode(" AND ", $condiciones);
         $query .= $where;
         $countQuery .= $where;
     }
 
+    // Preparar consulta para contar registros
     $stmtCount = $conn->prepare($countQuery);
     foreach ($params as $k => $v) {
         $stmtCount->bindValue($k, $v);
     }
     $stmtCount->execute();
     $totalRegistros = $stmtCount->fetchColumn();
+
     $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
+    // Agregar orden y límite a la consulta principal
     $query .= " ORDER BY ap.FechaAsignacion DESC LIMIT :limit OFFSET :offset";
+
     $stmt = $conn->prepare($query);
     foreach ($params as $k => $v) {
         $stmt->bindValue($k, $v);
@@ -51,6 +67,7 @@ try {
     $stmt->execute();
 
     $asignaciones = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
     exit;
@@ -326,7 +343,7 @@ require_once __DIR__ . '/../pages/footer.php';
       <input class="form-control me-2" type="text" placeholder="Buscar diplomado o ponente" name="search"
              value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
       <button class="btn btn-outline-success" type="submit">Buscar</button>
-      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='tu-vista.php'">
+      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='./ver-diplomado-ponente.php'">
         <i class="bi bi-arrow-repeat"></i>
       </button>
     </form>
@@ -340,7 +357,7 @@ require_once __DIR__ . '/../pages/footer.php';
           <th>Diplomado</th>
           <th>Ponente</th>
           <th>Fecha Asignación</th>
-            <!-- <th>Acciones</th> -->
+            <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -350,7 +367,11 @@ require_once __DIR__ . '/../pages/footer.php';
             <td><?= htmlspecialchars($a['NombreDiplomado'] ?: '—') ?></td>
             <td><?= htmlspecialchars($a['Nombre'] ?: '—') ?></td>
             <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
-            
+             <td>
+               <a href="./../checkout/editar-asignacion-ponente-diplomado.php?id=<?= $a['ID_Asignacion'] ?>" class="btn btn btn-warning">Editar</a>
+            <button class="eliminar-asignacion btn btn-danger" data-id="<?= $a['ID_Asignacion'] ?>">Eliminar</button>
+
+          </td>
           </tr>
         <?php endforeach; ?>
         <?php if (!$asignaciones): ?>
@@ -387,23 +408,108 @@ require_once __DIR__ . '/../pages/footer.php';
   </nav>
 </main>
 
-        <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-           <?php
-          require_once __DIR__ . '/../checkout/CR.php';
-          ?>
-                <ul class="list-inline">
-                </ul>
-        </footer>
+
+
+<?php if (isset($_GET['mssg'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['mssg'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['mssg'] === 'success' ? 'Asignacion Actualizada correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['mssg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
+
+
+<?php if (isset($_GET['msg'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['msg'] === 'deleted' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['msg'] === 'deleted' ? 'Asignacion Eliminado correctamente' : 'Error al Actualizar' ?>",
+            text: "<?= $_GET['msg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
 <script>
-  document.querySelectorAll('.eliminar-asignacion').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (confirm('¿Eliminar esta asignación?')) {
-        location.href = `eliminar_asignacion_ponente.php?id=${btn.dataset.id}`;
-      }
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-asignacion').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    // Si el mouse pasa sobre "Sí, eliminar" → carita triste
+                    confirmBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😢";
+                    });
+                    confirmBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+
+                    // Si el mouse pasa sobre "No, cancelar" → carita feliz
+                    cancelBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😁";
+                    });
+                    cancelBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const donacionId = button.getAttribute('data-id');
+        window.location.href = `./eliminar-diplomado-ponente.php?id=${donacionId}`;
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'La donación fue eliminada correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    
+                      
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La donación no fue eliminada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
     });
-  });
+});
 </script>
+
+
+
+
 
 <!-- Aquí tus scripts de Bootstrap y dashboard.js si aplica -->
 <?php if (isset($_GET['status'])): ?>

@@ -334,6 +334,11 @@ if (!isset($_GET['id_seminario']) || !is_numeric($_GET['id_seminario'])) {
 $idSeminario = (int) $_GET['id_seminario'];
 $busqueda = trim($_GET['search'] ?? '');
 
+// Paginación
+$porPagina = 10; // Registros por página
+$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$offset = ($pagina - 1) * $porPagina;
+
 // Obtener fecha del seminario
 $stmtSem = $conn->prepare("SELECT fecha, Nombre FROM seminarios WHERE ID_seminario = :idSeminario");
 $stmtSem->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
@@ -344,7 +349,7 @@ if (!$seminario) die("Seminario no encontrado.");
 
 $nombreSeminario = $seminario['Nombre'] ?? 'Seminario sin nombre';
 
-// 1️⃣ Consulta base con UNION ALL (unificando los tres tipos)
+// 1️⃣ Consulta base con UNION ALL
 $sql = "
 (
     SELECT 
@@ -383,26 +388,38 @@ UNION ALL
 )
 ";
 
-// 2️⃣ Si hay búsqueda, se aplica sobre los resultados combinados
+// Agregar filtro de búsqueda
 if ($busqueda !== '') {
     $sql = "SELECT * FROM ($sql) AS todos
             WHERE todos.NombreCompleto LIKE :busqueda
-               OR todos.Email LIKE :busqueda
-            ORDER BY FechaAsignacion DESC";
-} else {
-    $sql = "SELECT * FROM ($sql) AS todos ORDER BY FechaAsignacion DESC";
+               OR todos.Email LIKE :busqueda";
 }
 
-// Ejecutar consulta
+// Contar total registros
+$stmtCount = $conn->prepare("SELECT COUNT(*) AS total FROM ($sql) AS todos");
+$stmtCount->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
+if ($busqueda !== '') {
+    $stmtCount->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
+}
+$stmtCount->execute();
+$totalRegistros = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
+$totalPaginas = ceil($totalRegistros / $porPagina);
+
+// Agregar orden y límites
+$sql .= " ORDER BY FechaAsignacion DESC LIMIT :offset, :porPagina";
+
+// Ejecutar consulta principal
 $stmt = $conn->prepare($sql);
 $stmt->bindValue(':idSeminario', $idSeminario, PDO::PARAM_INT);
 if ($busqueda !== '') {
     $stmt->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
 }
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->bindValue(':porPagina', $porPagina, PDO::PARAM_INT);
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 3️⃣ Traer asistencias si existe la tabla (opcional)
+// Traer asistencias
 $asistencias = [];
 $stmtAsis = $conn->prepare("
     SELECT ID_Persona, Asistio 
@@ -418,12 +435,22 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Asistentes del Seminario: <?= htmlspecialchars($nombreSeminario) ?></h1>
-    <p>Fecha del Seminario: <?= htmlspecialchars($seminario['fecha']) ?></p>
+    <h2 class="text-center my-3">Asistentes del Seminario: <?= htmlspecialchars($nombreSeminario) ?></h2>
   </div>
 
-  <div class="d-flex gap-2 justify-content-center py-5">
-  <form for="search" class="d-flex mb-3" role="search" method="GET">
+  <!-- Botones para imprimir PDF -->
+  <div class="d-flex justify-content-center gap-3 mb-4">
+    <a href="../pages/pdf_asistentes_seminario.php?id_seminario=<?= $idSeminario ?>" target="_blank" class="btn btn-outline-danger">
+      <i class="bi bi-file-earmark-pdf-fill me-2"></i> Imprimir Lista Completa
+    </a>
+    <a href="../pages/pdf_asistencia_completa_sem.php?id_seminario=<?= $idSeminario ?>" target="_blank" class="btn btn-outline-success">
+      <i class="bi bi-file-earmark-check-fill me-2"></i> Imprimir Asistencia Perfecta
+    </a>
+  </div>
+
+  <!-- Buscador -->
+  <div class="d-flex gap-2 justify-content-center py-3">
+    <form class="d-flex mb-3" role="search" method="GET">
       <input type="hidden" name="id_seminario" value="<?= $idSeminario ?>">
       <input class="form-control me-2" type="text" placeholder="Buscar por nombre o email" id="search" name="search" 
              value="<?= htmlspecialchars($busqueda) ?>" aria-label="Search">
@@ -432,14 +459,10 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
               onclick="window.location.href='./ver-asistentes-seminario.php?id_seminario=<?= $idSeminario ?>'">
           <i class="bi bi-arrow-repeat"></i>
       </button>
-  </form>
-</div>
+    </form>
+  </div>
 
-
-
-
-
-
+  <!-- Tabla -->
   <div class="table-responsive small">
     <table class="table table-striped">
         <thead>
@@ -453,36 +476,51 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
             </tr>
         </thead>
         <tbody>
-<?php foreach ($asistentes as $a): ?>
-<tr>
-    <td><?= htmlspecialchars($a['NombreCompleto']) ?></td>
-    <td><?= htmlspecialchars($a['Email']) ?></td>
-    <td><?= htmlspecialchars($a['Tipo']) ?></td>
-    <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
-    <td>
-        <input type="checkbox" class="asistencia-switch"
-               data-persona="<?= $a['ID_Persona'] ?>"
-               <?= isset($asistencias[$a['ID_Persona']]) && $asistencias[$a['ID_Persona']] ? 'checked' : '' ?>>
-    </td>
-
-    <td>
-<a href="../checkout/editar-asistente-seminario.php?id_persona=<?= $a['ID_Persona'] ?>&tipo=<?= $a['Tipo'] ?>&id_taller=<?= $idSeminario ?>" 
-       class="btn btn-primary btn-sm">
-        <i class="bi bi-pencil-square"></i>
-    </a>
-
-    <button class="btn btn-danger btn-sm eliminar-asistente-seminario"
-            data-id="<?= $a['ID_Persona'] ?>"
-            data-tipo="<?= $a['Tipo'] ?>"
-            data-taller="<?= $idSeminario ?>">
-        <i class="bi bi-trash3-fill"></i>
-    </button>
-    </td>
-</tr>
-<?php endforeach; ?>
+        <?php foreach ($asistentes as $a): ?>
+            <tr>
+                <td><?= htmlspecialchars($a['NombreCompleto']) ?></td>
+                <td><?= htmlspecialchars($a['Email']) ?></td>
+                <td><?= htmlspecialchars($a['Tipo']) ?></td>
+                <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
+                <td>
+                    <input type="checkbox" class="asistencia-switch"
+                           data-persona="<?= $a['ID_Persona'] ?>"
+                           <?= isset($asistencias[$a['ID_Persona']]) && $asistencias[$a['ID_Persona']] ? 'checked' : '' ?>>
+                </td>
+                <td>
+                    <a href="../checkout/editar-asistente-seminario.php?id_persona=<?= $a['ID_Persona'] ?>&tipo=<?= $a['Tipo'] ?>&id_taller=<?= $idSeminario ?>" 
+                       class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <button class="btn btn-danger btn-sm eliminar-asistente-seminario"
+                            data-id="<?= $a['ID_Persona'] ?>"
+                            data-tipo="<?= $a['Tipo'] ?>"
+                            data-taller="<?= $idSeminario ?>">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </td>
+            </tr>
+        <?php endforeach; ?>
         </tbody>
     </table>
   </div>
+
+  <!-- Paginación -->
+  <nav aria-label="Paginación">
+    <ul class="pagination justify-content-center mt-3">
+      <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
+        <a class="page-link" href="?id_seminario=<?= $idSeminario ?>&pagina=<?= max($pagina - 1, 1) ?>&search=<?= urlencode($busqueda) ?>">&laquo; Anterior</a>
+      </li>
+      <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+        <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
+          <a class="page-link" href="?id_seminario=<?= $idSeminario ?>&pagina=<?= $i ?>&search=<?= urlencode($busqueda) ?>"><?= $i ?></a>
+        </li>
+      <?php endfor; ?>
+      <li class="page-item <?= $pagina >= $totalPaginas ? 'disabled' : '' ?>">
+        <a class="page-link" href="?id_seminario=<?= $idSeminario ?>&pagina=<?= min($pagina + 1, $totalPaginas) ?>&search=<?= urlencode($busqueda) ?>">Siguiente &raquo;</a>
+      </li>
+    </ul>
+  </nav>
 </main>
 
 
@@ -557,6 +595,10 @@ document.addEventListener("DOMContentLoaded", () => {
 <?php endif; ?>
 
 
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
     switchEl.addEventListener('change', () => {
@@ -570,11 +612,29 @@ document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
             body: `id_persona=${idPersona}&id_seminario=${idSeminario}&Asistio=${presente}`
         })
         .then(res => res.text())
-        .then(res => console.log("Servidor respondió:", res))
-        .catch(err => console.error("Error en fetch:", err));
+        .then(res => {
+            Swal.fire({
+                icon: presente ? 'success' : 'info',
+                title: presente ? 'Asistencia registrada' : 'Asistencia removida',
+                text: res,
+                timer: 1500,
+                showConfirmButton: false,
+                timerProgressBar: true
+            });
+        })
+        .catch(err => {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: "Error al guardar asistencia: " + err,
+                showConfirmButton: true
+            });
+        });
     });
 });
 </script>
+
+
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
       
