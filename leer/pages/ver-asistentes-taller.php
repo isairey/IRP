@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/seccion.php';
+require_once __DIR__ . '/../pages/seccion.php';
+
 
 require_once __DIR__ . '/../db/config.php';
 
@@ -211,9 +212,6 @@ $nombreDiplomado = $diplomado ? $diplomado['Nombre'] : 'Diplomado no encontrado'
         <path d="M8 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
       </symbol>
     </svg>
-<?php
-require_once __DIR__ . '/../pages/header.php';
-?>
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
       <button class="btn btn-bd-primary py-2 dropdown-toggle d-flex align-items-center"
@@ -309,6 +307,9 @@ require_once __DIR__ . '/../pages/header.php';
 
 <!-- Menu de arriba -->
 
+<?php
+require_once __DIR__ . '/../pages/header.php';
+?>
 
 
 
@@ -327,57 +328,92 @@ if (!isset($_GET['id_taller']) || !is_numeric($_GET['id_taller'])) {
     die("ID de taller inválido.");
 }
 $idTaller = (int) $_GET['id_taller'];
+$busqueda = trim($_GET['search'] ?? '');
 
-// Obtener fecha del taller
-$stmtTaller = $conn->prepare("SELECT fecha FROM talleres WHERE ID_taller = :idTaller");
+// Paginación
+$porPagina = 10;
+$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$offset = ($pagina - 1) * $porPagina;
+
+// Obtener datos del taller
+$stmtTaller = $conn->prepare("SELECT fecha, Nombre FROM talleres WHERE ID_taller = :idTaller");
 $stmtTaller->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
 $stmtTaller->execute();
 $taller = $stmtTaller->fetch(PDO::FETCH_ASSOC);
 
 if (!$taller) die("Taller no encontrado.");
 
-// 📌 Configuración de paginación
-$registrosPorPagina = 10; // Cambia este número según prefieras
-$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
-$offset = ($pagina - 1) * $registrosPorPagina;
+$nombreTaller = $taller['Nombre'] ?? 'Taller sin nombre';
 
-// Contar total de asistentes
-$stmtCount = $conn->prepare("SELECT COUNT(*) FROM asistentes_taller WHERE ID_Taller = :idTaller");
-$stmtCount->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
-$stmtCount->execute();
-$totalRegistros = $stmtCount->fetchColumn();
-$totalPaginas = ceil($totalRegistros / $registrosPorPagina);
-
-// Obtener asistentes con LIMIT y OFFSET
-$stmt = $conn->prepare("
-    SELECT a.ID_Persona, a.TipoPersona, a.FechaRegistro,
-        CASE 
-            WHEN a.TipoPersona = 'participante' THEN p.Nombre
-            WHEN a.TipoPersona = 'usuario' THEN u.Nombre
-            WHEN a.TipoPersona = 'personal' THEN pe.Nombre
-            ELSE 'Desconocido'
-        END AS Nombre,
-        CASE 
-            WHEN a.TipoPersona = 'participante' THEN p.Email
-            WHEN a.TipoPersona = 'usuario' THEN u.Email
-            WHEN a.TipoPersona = 'personal' THEN pe.Email
-            ELSE ''
-        END AS Email
+// Consulta base
+$sql = "
+(
+    SELECT 
+        a.ID_Persona,
+        a.TipoPersona,
+        a.FechaRegistro,
+        CONCAT(p.Nombre, ' ', p.ApellidoPaterno, ' ', p.ApellidoMaterno) AS NombreCompleto,
+        p.Email
     FROM asistentes_taller a
-    LEFT JOIN participante p ON a.TipoPersona = 'participante' AND a.ID_Persona = p.ID_Participante
-    LEFT JOIN usuario u ON a.TipoPersona = 'usuario' AND a.ID_Persona = u.ID
-    LEFT JOIN personal pe ON a.TipoPersona = 'personal' AND a.ID_Persona = pe.ID_Personal
+    INNER JOIN participante p ON a.TipoPersona = 'participante' AND a.ID_Persona = p.ID_Participante
     WHERE a.ID_Taller = :idTaller
-    ORDER BY a.FechaRegistro DESC
-    LIMIT :limit OFFSET :offset
-");
+)
+UNION ALL
+(
+    SELECT 
+        a.ID_Persona,
+        a.TipoPersona,
+        a.FechaRegistro,
+        CONCAT(u.Nombre, ' ', u.ApellidoPaterno, ' ', u.ApellidoMaterno) AS NombreCompleto,
+        u.Email
+    FROM asistentes_taller a
+    INNER JOIN usuario u ON a.TipoPersona = 'usuario' AND a.ID_Persona = u.ID
+    WHERE a.ID_Taller = :idTaller
+)
+UNION ALL
+(
+    SELECT 
+        a.ID_Persona,
+        a.TipoPersona,
+        a.FechaRegistro,
+        CONCAT(pe.Nombre, ' ', pe.ApellidoPaterno, ' ', pe.ApellidoMaterno) AS NombreCompleto,
+        pe.Email
+    FROM asistentes_taller a
+    INNER JOIN personal pe ON a.TipoPersona = 'personal' AND a.ID_Persona = pe.ID_Personal
+    WHERE a.ID_Taller = :idTaller
+)
+";
+
+// Filtro de búsqueda
+if ($busqueda !== '') {
+    $sql = "SELECT * FROM ($sql) AS todos
+            WHERE todos.NombreCompleto LIKE :busqueda OR todos.Email LIKE :busqueda";
+}
+
+// Contar registros
+$stmtCount = $conn->prepare("SELECT COUNT(*) AS total FROM ($sql) AS todos");
+$stmtCount->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
+if ($busqueda !== '') {
+    $stmtCount->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
+}
+$stmtCount->execute();
+$totalRegistros = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
+$totalPaginas = ceil($totalRegistros / $porPagina);
+
+// Agregar orden y límites
+$sql .= " ORDER BY FechaRegistro DESC LIMIT :offset, :porPagina";
+
+$stmt = $conn->prepare($sql);
 $stmt->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
-$stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
+if ($busqueda !== '') {
+    $stmt->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
+}
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->bindValue(':porPagina', $porPagina, PDO::PARAM_INT);
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// Traer asistencias si existe la tabla (opcional)
+// Traer asistencias
 $asistencias = [];
 $stmtAsis = $conn->prepare("SELECT ID_Persona, Asistio FROM asistencias_taller WHERE ID_Taller = :idTaller");
 $stmtAsis->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
@@ -389,10 +425,34 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Asistentes del Taller: <?= htmlspecialchars($nombreDiplomado) ?></h1>
-    <p>Fecha del Taller: <?= htmlspecialchars($taller['fecha']) ?></p>
+    <h2 class="text-center my-3">Asistentes del Taller: <?= htmlspecialchars($nombreTaller) ?></h2>
   </div>
 
+  <!-- Botones PDF -->
+  <div class="d-flex justify-content-center gap-3 mb-4">
+    <a href="../pages/pdf_asistentes_taller.php?id_taller=<?= $idTaller ?>" target="_blank" class="btn btn-outline-danger">
+      <i class="bi bi-file-earmark-pdf-fill me-2"></i> Imprimir Lista Completa
+    </a>
+    <a href="../pages/pdf_asistencia_completa_taller.php?id_taller=<?= $idTaller ?>" target="_blank" class="btn btn-outline-success">
+      <i class="bi bi-file-earmark-check-fill me-2"></i> Imprimir Asistencia Perfecta
+    </a>
+  </div>
+
+  <!-- Buscador -->
+  <div class="d-flex gap-2 justify-content-center py-3">
+    <form class="d-flex mb-3" role="search" method="GET">
+      <input type="hidden" name="id_taller" value="<?= $idTaller ?>">
+      <input class="form-control me-2" type="text" placeholder="Buscar por nombre o email" id="search" name="search" 
+             value="<?= htmlspecialchars($busqueda) ?>" aria-label="Search">
+      <button class="btn btn-outline-success" type="submit">Buscar</button>
+      <button class="btn btn-outline-secondary" type="button" 
+              onclick="window.location.href='./ver-asistentes-taller.php?id_taller=<?= $idTaller ?>'">
+          <i class="bi bi-arrow-repeat"></i>
+      </button>
+    </form>
+  </div>
+
+  <!-- Tabla -->
   <div class="table-responsive small">
     <table class="table table-striped">
         <thead>
@@ -402,57 +462,50 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
                 <th>Tipo</th>
                 <th>Fecha Asignación</th>
                 <th>Asistencia</th>
+                
             </tr>
         </thead>
         <tbody>
-<?php foreach ($asistentes as $a): ?>
-<tr>
-    <td><?= htmlspecialchars($a['Nombre']) ?></td>
-    <td><?= htmlspecialchars($a['Email']) ?></td>
-    <td><?= htmlspecialchars($a['TipoPersona']) ?></td>
-    <td><?= htmlspecialchars($a['FechaRegistro']) ?></td>
-    <td>
-        <input type="checkbox" class="asistencia-switch"
-               data-persona="<?= $a['ID_Persona'] ?>"
-               <?= isset($asistencias[$a['ID_Persona']]) && $asistencias[$a['ID_Persona']] ? 'checked' : '' ?>
-               disabled >
-    </td>
-</tr>
-<?php endforeach; ?>
+        <?php foreach ($asistentes as $a): ?>
+            <tr>
+                <td><?= htmlspecialchars($a['NombreCompleto']) ?></td>
+                <td><?= htmlspecialchars($a['Email']) ?></td>
+                <td><?= htmlspecialchars($a['TipoPersona']) ?></td>
+                <td><?= htmlspecialchars($a['FechaRegistro']) ?></td>
+                <td>
+                    <input type="checkbox" class="asistencia-switch"
+                           data-persona="<?= $a['ID_Persona'] ?>"
+                           <?= isset($asistencias[$a['ID_Persona']]) && $asistencias[$a['ID_Persona']] ? 'checked' : '' ?>
+                           disabled>
+                </td>
+              
+            </tr>
+        <?php endforeach; ?>
         </tbody>
     </table>
   </div>
 
-
-   <!-- Paginación -->
+  <!-- Paginación -->
   <nav aria-label="Paginación">
-    <ul class="pagination justify-content-center">
+    <ul class="pagination justify-content-center mt-3">
       <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
-        <a class="page-link" href="?id_taller=<?= $idTaller ?>&pagina=<?= max($pagina - 1, 1) ?>">&laquo; Anterior</a>
+        <a class="page-link" href="?id_taller=<?= $idTaller ?>&pagina=<?= max($pagina - 1, 1) ?>&search=<?= urlencode($busqueda) ?>">&laquo; Anterior</a>
       </li>
-
       <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
         <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
-          <a class="page-link" href="?id_taller=<?= $idTaller ?>&pagina=<?= $i ?>"><?= $i ?></a>
+          <a class="page-link" href="?id_taller=<?= $idTaller ?>&pagina=<?= $i ?>&search=<?= urlencode($busqueda) ?>"><?= $i ?></a>
         </li>
       <?php endfor; ?>
-
       <li class="page-item <?= $pagina >= $totalPaginas ? 'disabled' : '' ?>">
-        <a class="page-link" href="?id_taller=<?= $idTaller ?>&pagina=<?= min($pagina + 1, $totalPaginas) ?>">Siguiente &raquo;</a>
+        <a class="page-link" href="?id_taller=<?= $idTaller ?>&pagina=<?= min($pagina + 1, $totalPaginas) ?>&search=<?= urlencode($busqueda) ?>">Siguiente &raquo;</a>
       </li>
     </ul>
   </nav>
 </main>
 
 
-        <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-           <?php
-          require_once __DIR__ . '/../checkout/CR.php';
-          ?>
-                <ul class="list-inline">
-                </ul>
-        </footer>
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
     switchEl.addEventListener('change', () => {
@@ -467,22 +520,118 @@ document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
         })
         .then(res => res.text())
         .then(res => {
-            console.log("Servidor respondió:", res);
-            alert(res); // <-- muestra mensaje al usuario
+            Swal.fire({
+                icon: presente ? 'success' : 'info',
+                title: presente ? 'Asistencia registrada' : 'Asistencia removida',
+                text: res,
+                timer: 1500,
+                showConfirmButton: false,
+                timerProgressBar: true
+            });
         })
         .catch(err => {
-            console.error("Error en fetch:", err);
-            alert("Error al guardar asistencia: " + err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: "Error al guardar asistencia: " + err,
+                showConfirmButton: true
+            });
         });
     });
 });
-
 </script>
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-asistente-taller').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    confirmBtn.addEventListener("mouseenter", () => emoji.textContent = "😢");
+                    confirmBtn.addEventListener("mouseleave", () => emoji.textContent = "😃");
+                    cancelBtn.addEventListener("mouseenter", () => emoji.textContent = "😁");
+                    cancelBtn.addEventListener("mouseleave", () => emoji.textContent = "😃");
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const idPersona = button.getAttribute('data-id');
+                    const tipo = button.getAttribute('data-tipo');
+                    const idTaller = button.getAttribute('data-taller');
+
+                    // Redirige con los tres parámetros
+                    window.location.href = `./eliminar-asistentes-taller.php?id_persona=${idPersona}&tipo=${tipo}&id_taller=${idTaller}`;
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'El asistente fue eliminado correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La eliminación fue cancelada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+    });
+});
+</script>
+
+
+
+<?php if (isset($_GET['statusss'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['statusss'] === 'deleted' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['statusss'] === 'deleted' ? 'Asistente Eliminado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['statusss'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+<?php if (isset($_GET['status'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['status'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['status'] === 'success' ? 'Asistente Actualizado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['status'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
 
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
       
-    </script><script src="dashboard.js"></script>
-
-</body>
-</html>
+    </script>
+    <script src="dashboard.js"></script>

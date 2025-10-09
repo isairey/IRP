@@ -300,7 +300,7 @@ require_once __DIR__ . '/../pages/footer.php';
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">📋 Listado de Ponentes</h1>
+    <h1 class="h2"> Listado de Ponentes</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
       <form class="d-flex" role="search" method="get">
         <input class="form-control me-2" type="text" placeholder="Buscar Ponente" name="search" aria-label="Search" value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
@@ -453,7 +453,7 @@ require_once __DIR__ . '/../db/config.php';
             <?php
             $foto = !empty($row['Foto']) ? $row['Foto'] : 'default.png';
             ?>
-            <img src="../uploads/ponentes/<?= htmlspecialchars($foto) ?>" alt=" " class="foto-ponente" width="80">
+            <img src="../../uploads/ponentes/<?= htmlspecialchars($foto) ?>" alt=" " class="foto-ponente" width="80">
           </td>
           <?php
             $nombre = trim(

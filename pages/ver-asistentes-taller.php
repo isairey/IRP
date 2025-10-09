@@ -330,7 +330,12 @@ if (!isset($_GET['id_taller']) || !is_numeric($_GET['id_taller'])) {
 $idTaller = (int) $_GET['id_taller'];
 $busqueda = trim($_GET['search'] ?? '');
 
-// Obtener fecha y nombre del taller
+// Paginación
+$porPagina = 10;
+$pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+$offset = ($pagina - 1) * $porPagina;
+
+// Obtener datos del taller
 $stmtTaller = $conn->prepare("SELECT fecha, Nombre FROM talleres WHERE ID_taller = :idTaller");
 $stmtTaller->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
 $stmtTaller->execute();
@@ -338,9 +343,9 @@ $taller = $stmtTaller->fetch(PDO::FETCH_ASSOC);
 
 if (!$taller) die("Taller no encontrado.");
 
-$nombreTaller = $taller['NombreTaller'] ?? 'Taller sin nombre';
+$nombreTaller = $taller['Nombre'] ?? 'Taller sin nombre';
 
-// 1️⃣ Consulta base con UNION ALL (para unificar los tres tipos de asistentes)
+// Consulta base
 $sql = "
 (
     SELECT 
@@ -379,32 +384,38 @@ UNION ALL
 )
 ";
 
-// 2️⃣ Aplicar búsqueda si el usuario escribió algo
+// Filtro de búsqueda
 if ($busqueda !== '') {
     $sql = "SELECT * FROM ($sql) AS todos
-            WHERE todos.NombreCompleto LIKE :busqueda
-               OR todos.Email LIKE :busqueda
-            ORDER BY FechaRegistro DESC";
-} else {
-    $sql = "SELECT * FROM ($sql) AS todos ORDER BY FechaRegistro DESC";
+            WHERE todos.NombreCompleto LIKE :busqueda OR todos.Email LIKE :busqueda";
 }
 
-// Ejecutar consulta
+// Contar registros
+$stmtCount = $conn->prepare("SELECT COUNT(*) AS total FROM ($sql) AS todos");
+$stmtCount->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
+if ($busqueda !== '') {
+    $stmtCount->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
+}
+$stmtCount->execute();
+$totalRegistros = $stmtCount->fetch(PDO::FETCH_ASSOC)['total'];
+$totalPaginas = ceil($totalRegistros / $porPagina);
+
+// Agregar orden y límites
+$sql .= " ORDER BY FechaRegistro DESC LIMIT :offset, :porPagina";
+
 $stmt = $conn->prepare($sql);
 $stmt->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
 if ($busqueda !== '') {
     $stmt->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
 }
+$stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+$stmt->bindValue(':porPagina', $porPagina, PDO::PARAM_INT);
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 3️⃣ Traer asistencias registradas
+// Traer asistencias
 $asistencias = [];
-$stmtAsis = $conn->prepare("
-    SELECT ID_Persona, Asistio 
-    FROM asistencias_taller 
-    WHERE ID_Taller = :idTaller
-");
+$stmtAsis = $conn->prepare("SELECT ID_Persona, Asistio FROM asistencias_taller WHERE ID_Taller = :idTaller");
 $stmtAsis->bindValue(':idTaller', $idTaller, PDO::PARAM_INT);
 $stmtAsis->execute();
 foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
@@ -414,76 +425,97 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Asistentes del Taller: <?= htmlspecialchars($nombreTaller) ?></h1>
-    <p>Fecha del Taller: <?= htmlspecialchars($taller['fecha']) ?></p>
+    <h2 class="text-center my-3">Asistentes del Taller: <?= htmlspecialchars($nombreTaller) ?></h2>
   </div>
 
+  <!-- Botones PDF -->
+  <div class="d-flex justify-content-center gap-3 mb-4">
+    <a href="../pages/pdf_asistentes_taller.php?id_taller=<?= $idTaller ?>" target="_blank" class="btn btn-outline-danger">
+      <i class="bi bi-file-earmark-pdf-fill me-2"></i> Imprimir Lista Completa
+    </a>
+    <a href="../pages/pdf_asistencia_completa_taller.php?id_taller=<?= $idTaller ?>" target="_blank" class="btn btn-outline-success">
+      <i class="bi bi-file-earmark-check-fill me-2"></i> Imprimir Asistencia Perfecta
+    </a>
+  </div>
 
-  <div class="d-flex gap-2 justify-content-center py-5">
-  <form for="search" class="d-flex mb-3" role="search" method="GET">
+  <!-- Buscador -->
+  <div class="d-flex gap-2 justify-content-center py-3">
+    <form class="d-flex mb-3" role="search" method="GET">
       <input type="hidden" name="id_taller" value="<?= $idTaller ?>">
       <input class="form-control me-2" type="text" placeholder="Buscar por nombre o email" id="search" name="search" 
              value="<?= htmlspecialchars($busqueda) ?>" aria-label="Search">
       <button class="btn btn-outline-success" type="submit">Buscar</button>
       <button class="btn btn-outline-secondary" type="button" 
-              onclick="window.location.href='ver-asistentes-taller.php?id_taller=<?= $idTaller ?>'">
+              onclick="window.location.href='./ver-asistentes-taller.php?id_taller=<?= $idTaller ?>'">
           <i class="bi bi-arrow-repeat"></i>
       </button>
-  </form>
-</div>
+    </form>
+  </div>
 
-
-
-
+  <!-- Tabla -->
   <div class="table-responsive small">
     <table class="table table-striped">
         <thead>
             <tr>
-              <th>ID</th>
                 <th>Nombre</th>
                 <th>Email</th>
                 <th>Tipo</th>
                 <th>Fecha Asignación</th>
                 <th>Asistencia</th>
                 <th>Acciones</th>
-                
             </tr>
         </thead>
         <tbody>
-<?php foreach ($asistentes as $a): ?>
-<tr>
-   <td><?= htmlspecialchars($a['ID_Persona']) ?></td>
-    <td><?= htmlspecialchars($a['NombreCompleto']) ?></td>
-    <td><?= htmlspecialchars($a['Email']) ?></td>
-    <td><?= htmlspecialchars($a['TipoPersona']) ?></td>
-    <td><?= htmlspecialchars($a['FechaRegistro']) ?></td>
-    <td>
-        <input type="checkbox" class="asistencia-switch"
-               data-persona="<?= $a['ID_Persona'] ?>"
-               <?= isset($asistencias[$a['ID_Persona']]) && $asistencias[$a['ID_Persona']] ? 'checked' : '' ?> >
-    </td>
-<td>
-    <a href="../checkout/editar-asistente-taller.php?id_persona=<?= $a['ID_Persona'] ?>&tipo=<?= $a['TipoPersona'] ?>&id_taller=<?= $idTaller ?>" 
-       class="btn btn-primary btn-sm">
-        <i class="bi bi-pencil-square"></i>
-    </a>
-
-    <button class="btn btn-danger btn-sm eliminar-asistente-taller"
-            data-id="<?= $a['ID_Persona'] ?>"
-            data-tipo="<?= $a['TipoPersona'] ?>"
-            data-taller="<?= $idTaller ?>">
-        <i class="bi bi-trash3-fill"></i>
-    </button>
-</td>
-
-
-</tr>
-<?php endforeach; ?>
+        <?php foreach ($asistentes as $a): ?>
+            <tr>
+                <td><?= htmlspecialchars($a['NombreCompleto']) ?></td>
+                <td><?= htmlspecialchars($a['Email']) ?></td>
+                <td><?= htmlspecialchars($a['TipoPersona']) ?></td>
+                <td><?= htmlspecialchars($a['FechaRegistro']) ?></td>
+                <td>
+                    <input type="checkbox" class="asistencia-switch"
+                           data-persona="<?= $a['ID_Persona'] ?>"
+                           <?= isset($asistencias[$a['ID_Persona']]) && $asistencias[$a['ID_Persona']] ? 'checked' : '' ?>>
+                </td>
+                <td>
+                    <a href="../checkout/editar-asistente-taller.php?id_persona=<?= $a['ID_Persona'] ?>&tipo=<?= $a['TipoPersona'] ?>&id_taller=<?= $idTaller ?>" 
+                       class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <button class="btn btn-danger btn-sm eliminar-asistente-taller"
+                            data-id="<?= $a['ID_Persona'] ?>"
+                            data-tipo="<?= $a['TipoPersona'] ?>"
+                            data-taller="<?= $idTaller ?>">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </td>
+            </tr>
+        <?php endforeach; ?>
         </tbody>
     </table>
   </div>
+
+  <!-- Paginación -->
+  <nav aria-label="Paginación">
+    <ul class="pagination justify-content-center mt-3">
+      <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
+        <a class="page-link" href="?id_taller=<?= $idTaller ?>&pagina=<?= max($pagina - 1, 1) ?>&search=<?= urlencode($busqueda) ?>">&laquo; Anterior</a>
+      </li>
+      <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+        <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
+          <a class="page-link" href="?id_taller=<?= $idTaller ?>&pagina=<?= $i ?>&search=<?= urlencode($busqueda) ?>"><?= $i ?></a>
+        </li>
+      <?php endfor; ?>
+      <li class="page-item <?= $pagina >= $totalPaginas ? 'disabled' : '' ?>">
+        <a class="page-link" href="?id_taller=<?= $idTaller ?>&pagina=<?= min($pagina + 1, $totalPaginas) ?>&search=<?= urlencode($busqueda) ?>">Siguiente &raquo;</a>
+      </li>
+    </ul>
+  </nav>
 </main>
 
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
     switchEl.addEventListener('change', () => {
@@ -498,17 +530,27 @@ document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
         })
         .then(res => res.text())
         .then(res => {
-            console.log("Servidor respondió:", res);
-            alert(res); // <-- muestra mensaje al usuario
+            Swal.fire({
+                icon: presente ? 'success' : 'info',
+                title: presente ? 'Asistencia registrada' : 'Asistencia removida',
+                text: res,
+                timer: 1500,
+                showConfirmButton: false,
+                timerProgressBar: true
+            });
         })
         .catch(err => {
-            console.error("Error en fetch:", err);
-            alert("Error al guardar asistencia: " + err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: "Error al guardar asistencia: " + err,
+                showConfirmButton: true
+            });
         });
     });
 });
-
 </script>
+
 
 
 

@@ -344,7 +344,7 @@ require_once __DIR__ . '/../pages/footer.php';
         <label for="end_date">Fecha de Fin:</label>
         <input type="date" name="end_date" id="end_date">
         
-        <button type="submit">Filtrar</button>
+        <button class="boton-morado" type="submit">Filtrar</button>
     </form>
 </div>
 

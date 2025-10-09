@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/seccion.php';
 
+
+
 require_once __DIR__ . '/../db/config.php';
 
 try {
@@ -8,29 +10,36 @@ try {
     $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
     $offset = ($pagina - 1) * $registrosPorPagina;
 
-    // Consulta que incluye el JOIN para obtener el nombre del ponente
-    $query = "SELECT 
-                s.ID_Seminario, 
-                s.Nombre, 
-                s.Descripcion, 
-                s.Fecha, 
-                s.DuracionHoras, 
-                s.Estado,
-                p.Nombre AS NombrePonente, 
-                p.ApellidoPaterno AS ApellidoPonente
-              FROM Seminarios s
-              LEFT JOIN asignacion_ponente_seminario aps ON s.ID_Seminario = aps.ID_Seminario
-              LEFT JOIN ponentes p ON aps.ID_Ponente = p.ID_Ponente";
-              
-    $countQuery = "SELECT COUNT(*) FROM Seminarios"; // El count no necesita el join si no filtra por ponente
+    // Consulta principal con JOIN para obtener el nombre del ponente
+    $query = "
+        SELECT 
+            s.ID_Seminario, 
+            s.Nombre, 
+            s.Descripcion, 
+            s.Fecha, 
+            s.DuracionHoras, 
+            s.Estado,
+            p.Nombre AS NombrePonente, 
+            p.ApellidoPaterno AS ApellidoPonente
+        FROM Seminarios s
+        LEFT JOIN asignacion_ponente_seminario aps ON s.ID_Seminario = aps.ID_Seminario
+        LEFT JOIN ponentes p ON aps.ID_Ponente = p.ID_Ponente
+    ";
+
+    // Consulta para contar registros (también con JOIN si hay búsqueda)
+    $countQuery = "
+        SELECT COUNT(DISTINCT s.ID_Seminario) 
+        FROM Seminarios s
+        LEFT JOIN asignacion_ponente_seminario aps ON s.ID_Seminario = aps.ID_Seminario
+        LEFT JOIN ponentes p ON aps.ID_Ponente = p.ID_Ponente
+    ";
 
     $condiciones = [];
     $params = [];
 
-    // Búsqueda por título
+    // Búsqueda por título o ponente
     if (!empty($_GET['search'])) {
-        // Se debe cambiar el campo "titulo" a "Nombre" ya que así se llama en la tabla 'seminarios'
-        $condiciones[] = "s.Nombre LIKE :search"; 
+        $condiciones[] = "(s.Nombre LIKE :search OR p.Nombre LIKE :search OR p.ApellidoPaterno LIKE :search)";
         $params[':search'] = "%" . $_GET['search'] . "%";
     }
 
@@ -40,27 +49,35 @@ try {
         $countQuery .= $where;
     }
 
-    // Total de registros
+    // Contar registros
     $stmtCount = $conn->prepare($countQuery);
-    foreach ($params as $k => $v) $stmtCount->bindValue($k, $v);
+    foreach ($params as $k => $v) {
+        $stmtCount->bindValue($k, $v);
+    }
     $stmtCount->execute();
     $totalRegistros = $stmtCount->fetchColumn();
+
     $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
 
-    // Consulta con LIMIT
-    $query .= " ORDER BY s.Fecha ASC LIMIT :limit OFFSET :offset"; // Ordenar y limitar
+    // Agregar orden y límite
+    $query .= " GROUP BY s.ID_Seminario ORDER BY s.Fecha ASC LIMIT :limit OFFSET :offset";
+
     $stmt = $conn->prepare($query);
-    foreach ($params as $k => $v) $stmt->bindValue($k, $v);
+    foreach ($params as $k => $v) {
+        $stmt->bindValue($k, $v);
+    }
     $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
     $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
+
     $seminarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
     exit;
 }
 ?>
+
 
 
 <!doctype html>

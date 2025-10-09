@@ -393,32 +393,38 @@ require_once __DIR__ . '/../pages/header.php';
 
 
 <?php
- 
 require_once __DIR__ . '/../pages/footer.php';
 ?>
-    <!-- Temina -->
-    <!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
+<!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-   <h2 class="text-center my-3">Participantes del Diplomado: <?= htmlspecialchars($nombreDiplomado) ?></h2>
-
+    <h2 class="text-center my-3">Participantes del Diplomado: <?= htmlspecialchars($nombreDiplomado) ?></h2>
   </div>
 
-  <!-- Buscador opcional si decides agregarlo en el futuro -->
-  <div class="d-flex gap-2 justify-content-center py-5">
-<form for="search" class="d-flex mb-3" role="search" method="GET">
-    <input type="hidden" name="id_diplomado" value="<?= $idDiplomado ?>">
-    <input class="form-control me-2" type="text" placeholder="Buscar por nombre o email" id="search" name="search" 
-           value="<?= htmlspecialchars($busqueda) ?>" aria-label="Search">
-    <button class="btn btn-outline-success" type="submit">Buscar</button>
-    <button class="btn btn-outline-secondary" type="button" 
-            onclick="window.location.href='../pages/asistentes.php?id_diplomado=<?= $idDiplomado ?>'">
-        <i class="bi bi-arrow-repeat"></i>
-    </button>
-</form>
+  <!-- Botones para imprimir PDF -->
+  <div class="d-flex justify-content-center gap-3 mb-4">
+    <a href="../pages/pdf_asistentes.php?id_diplomado=<?= $idDiplomado ?>" target="_blank" class="btn btn-outline-danger">
+      <i class="bi bi-file-earmark-pdf-fill me-2"></i> Imprimir Lista Completa
+    </a>
+    <a href="../pages/pdf_asistencia_completa.php?id_diplomado=<?= $idDiplomado ?>" target="_blank" class="btn btn-outline-success">
+      <i class="bi bi-file-earmark-check-fill me-2"></i> Imprimir Asistencia Perfecta
+    </a>
+  </div>
 
-</div>
+  <!-- Buscador -->
+  <div class="d-flex gap-2 justify-content-center py-3">
+    <form for="search" class="d-flex mb-3" role="search" method="GET">
+      <input type="hidden" name="id_diplomado" value="<?= $idDiplomado ?>">
+      <input class="form-control me-2" type="text" placeholder="Buscar por nombre o email" id="search" name="search" 
+             value="<?= htmlspecialchars($busqueda) ?>" aria-label="Search">
+      <button class="btn btn-outline-success" type="submit">Buscar</button>
+      <button class="btn btn-outline-secondary" type="button" 
+              onclick="window.location.href='../pages/asistentes.php?id_diplomado=<?= $idDiplomado ?>'">
+          <i class="bi bi-arrow-repeat"></i>
+      </button>
+    </form>
+  </div>
 
 <?php
 require_once __DIR__ . '/../db/config.php';
@@ -430,7 +436,7 @@ if (!isset($_GET['id_diplomado']) || !is_numeric($_GET['id_diplomado'])) {
 $idDiplomado = (int) $_GET['id_diplomado'];
 $busqueda = trim($_GET['search'] ?? '');
 
-// 1️⃣ Obtener todas las fechas de secciones de este diplomado
+// 1️⃣ Obtener todas las fechas de secciones
 $stmtFechas = $conn->prepare("
     SELECT ID, fecha
     FROM secciones 
@@ -444,7 +450,7 @@ while ($row = $stmtFechas->fetch(PDO::FETCH_ASSOC)) {
     $fechasDiplomados[$row['ID']] = $row['fecha'];
 }
 
-// 2️⃣ Consulta principal con búsqueda opcional
+// 2️⃣ Consulta principal
 $sql = "
 (
     SELECT 
@@ -483,7 +489,6 @@ UNION ALL
 )
 ";
 
-// Si hay búsqueda, aplicamos el filtro en la consulta envolvente
 if ($busqueda !== '') {
     $sql = "SELECT * FROM ($sql) AS todos 
             WHERE todos.NombreCompleto LIKE :busqueda 
@@ -502,7 +507,7 @@ if ($busqueda !== '') {
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 3️⃣ Traer asistencias ya registradas
+// 3️⃣ Traer asistencias
 $asistencias = [];
 $stmtAsis = $conn->prepare("
     SELECT ID_Seccion, presente, id_usu
@@ -545,50 +550,40 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
                                <?= isset($asistencias[$asistente['ID_Usuario']][$idSeccion]) && $asistencias[$asistente['ID_Usuario']][$idSeccion] ? 'checked' : '' ?>>
                     </td>
                 <?php endforeach; ?>
-
-              <td>
-<a href="../checkout/editar-asistente-diplomado.php?id_persona=<?= $asistente['ID_Usuario'] ?>&tipo=<?= $asistente['TipoUsuario'] ?>&id_taller=<?= $idDiplomado ?>" 
-       class="btn btn-primary btn-sm">
-        <i class="bi bi-pencil-square"></i>
-    </a>
-
-    <button class="btn btn-danger btn-sm eliminar-asistente-diplomado"
-            data-id="<?= $asistente['ID_Usuario'] ?>"
-            data-tipo="<?= $asistente['TipoUsuario'] ?>"
-            data-taller="<?= $idDiplomado ?>">
-        <i class="bi bi-trash3-fill"></i>
-    </button>
-    </td>
+                <td>
+                    <a href="../checkout/editar-asistente-diplomado.php?id_persona=<?= $asistente['ID_Usuario'] ?>&tipo=<?= $asistente['TipoUsuario'] ?>&id_taller=<?= $idDiplomado ?>" 
+                       class="btn btn-primary btn-sm">
+                        <i class="bi bi-pencil-square"></i>
+                    </a>
+                    <button class="btn btn-danger btn-sm eliminar-asistente-diplomado"
+                            data-id="<?= $asistente['ID_Usuario'] ?>"
+                            data-tipo="<?= $asistente['TipoUsuario'] ?>"
+                            data-taller="<?= $idDiplomado ?>">
+                        <i class="bi bi-trash3-fill"></i>
+                    </button>
+                </td>
             </tr>
         <?php endforeach; ?>
         </tbody>
     </table>
 </div>
 
-
-  <nav aria-label="Paginación">
-    <ul class="pagination justify-content-center mt-3">
-      <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
-        <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= max($pagina - 1, 1) ?>">
-          &laquo; Anterior
-        </a>
+<nav aria-label="Paginación">
+  <ul class="pagination justify-content-center mt-3">
+    <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
+      <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= max($pagina - 1, 1) ?>">&laquo; Anterior</a>
+    </li>
+    <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+      <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
+        <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= $i ?>"><?= $i ?></a>
       </li>
-
-      <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-        <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
-          <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= $i ?>"><?= $i ?></a>
-        </li>
-      <?php endfor; ?>
-
-      <li class="page-item <?= $pagina >= $totalPaginas ? 'disabled' : '' ?>">
-        <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= min($pagina + 1, $totalPaginas) ?>">
-          Siguiente &raquo;
-        </a>
-      </li>
-    </ul>
-  </nav>
+    <?php endfor; ?>
+    <li class="page-item <?= $pagina >= $totalPaginas ? 'disabled' : '' ?>">
+      <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= min($pagina + 1, $totalPaginas) ?>">Siguiente &raquo;</a>
+    </li>
+  </ul>
+</nav>
 </main>
-
 
 
 
@@ -671,6 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
     switchEl.addEventListener('change', () => {
@@ -688,16 +684,29 @@ document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
         })
         .then(res => res.text())
         .then(res => {
-            alert("Servidor respondió: " + res);
+            Swal.fire({
+                icon: asistencia ? 'success' : 'info',
+                title: asistencia ? 'Asistencia registrada ✅' : 'Asistencia removida ℹ️',
+                text: res,
+                timer: 1500,
+                showConfirmButton: false,
+                timerProgressBar: true
+            });
             console.log("Datos enviados:", datos);
         })
         .catch(err => {
-            alert("Error en fetch: " + err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error ❌',
+                text: "Error al guardar asistencia: " + err,
+                showConfirmButton: true
+            });
             console.error(err);
         });
     });
 });
 </script>
+
 
 
 
