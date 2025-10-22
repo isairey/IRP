@@ -251,11 +251,6 @@ require_once __DIR__ . '/../pages/seccion.php';
 require_once __DIR__ . '/../pages/header.php';
 ?>
 
-
-
-
-
-
 <?php
  
 require_once __DIR__ . '/../pages/footer.php';
@@ -287,9 +282,7 @@ require_once __DIR__ . '/../pages/footer.php';
         <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-diplomado.php'"><i class="bi bi-arrow-repeat"></i></button>
       </form> 
 </div>
-
 </div>
-
 
 <?php
 require_once __DIR__ . '/../db/config.php';
@@ -322,7 +315,6 @@ try {
         $query .= $where;
         $countQuery .= $where;
     }
-
     // Total de registros
     $stmtCount = $conn->prepare($countQuery);
     foreach ($params as $k => $v) $stmtCount->bindValue($k, $v);
@@ -354,7 +346,7 @@ try {
       <tr>
         <th>Nombre del Diplomado</th>
         <th>Descripción</th>
-        <th>Ponente</th>
+       
         <th>Fecha de Inicio</th>
         <th>Fecha de Fin</th>
         <th>Acciones</th>
@@ -365,7 +357,7 @@ try {
         <tr>
           <td><?= htmlspecialchars($d['NombreDiplomado']) ?></td>
           <td><?= nl2br(htmlspecialchars($d['Descripcion'])) ?></td>
-          <td><?= htmlspecialchars($d['Ponente']) ?></td>
+         
            <td><?= htmlspecialchars($d['FechaInicio']) ?></td>
           <td><?= htmlspecialchars($d['FechaFin']) ?></td>
           <td>
@@ -484,7 +476,19 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
-
+<?php if (isset($_GET['msg'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['msg'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['msg'] === 'success' ? 'Diplomado Actualizado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['msg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
 
 
 

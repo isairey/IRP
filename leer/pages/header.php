@@ -60,7 +60,7 @@ if (strpos($foto, "uploads/") !== false) {
   <div class="container-fluid px-3 d-flex align-items-center justify-content-between">
     <!-- Logo o nombre -->
  <a class="navbar-brand d-flex align-items-center text-white fw-semibold fs-5" 
-   href="./home.php" 
+   href="./../pages/home.php" 
    style="letter-spacing: 0.8px; background:none; box-shadow:none; border:none; padding:0;">
   <img src="../assets/img/logo 1.png" alt="Logo" width="48" height="48" class="me-2 rounded-circle" style="object-fit:cover;">
   <span style="font-weight:600;">Ges<span class="text-light">Mujer</span></span>

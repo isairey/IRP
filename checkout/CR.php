@@ -1,1 +1,1 @@
-<p class="mb-1">Copyright GESMujer &copy; 2024 IRP && IZR</p>
+<p class="mt-5 mb-3 text-body-secondary">Copyright GESMujer &copy; 2025 IRP & IZR</p>

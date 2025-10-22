@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $id_ponente = $_POST['id_ponente'] ?? null;
     $tipo_usuario = $_POST['tipo_usuario'] ?? null; // Lo enviaremos vía JS
 
-    if (!$id_usuario || !$id_diplomado || !$id_ponente) {
+    if (!$id_usuario || !$id_diplomado ) {
         die("Todos los campos son obligatorios.");
     }
 
@@ -23,14 +23,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         
 
         // Insertar en AsignacionesDiplomado
-        $sql = "INSERT INTO AsignacionesDiplomado (ID_Usuario, TipoUsuario, ID_Diplomado, ID_Ponente, FechaAsignacion)
-                VALUES (:id_usuario, :tipo_usuario, :id_diplomado, :id_ponente, NOW())";
+        $sql = "INSERT INTO AsignacionesDiplomado (ID_Usuario, TipoUsuario, ID_Diplomado, FechaAsignacion)
+                VALUES (:id_usuario, :tipo_usuario, :id_diplomado, NOW())";
 
         $stmt = $conn->prepare($sql);
         $stmt->bindParam(':id_usuario', $id_usuario);
         $stmt->bindParam(':tipo_usuario', $tipo_usuario);
         $stmt->bindParam(':id_diplomado', $id_diplomado);
-        $stmt->bindParam(':id_ponente', $id_ponente);
+      
 
         $stmt->execute();
             header("Location: ../pages/ver-asistentes.php?statuss=success");
@@ -41,8 +41,6 @@ exit();
     }
 }
 ?>
-
-
 
 <!doctype html>
 <html lang="en" data-bs-theme="auto">
@@ -127,7 +125,8 @@ require_once __DIR__ . '/../pages/header.php';
       </ul>
     </div>
 
-    
+
+
         
      <div class="container">
     <main>
@@ -227,23 +226,14 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
 
                       <!-- Seleccionar Ponente -->
 <div class="col-sm-12">
-    <label for="id_ponente" class="form-label">Ponente</label>
-    <select name="id_ponente" class="form-select" id="id_ponente">
-        <?php
-        try {
-            $sql = "SELECT ID_Ponente, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombrePonente FROM Ponentes";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
-            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                echo "<option value='{$row['ID_Ponente']}'>{$row['NombrePonente']}</option>";
-            }
-            $conn = null;
-        } catch(PDOException $e) {
-            echo "<option value=''>Error al obtener ponentes</option>";
-        }
-        ?>
-    </select>
+    <label class="form-label">Ponentes asignados</label>
+    <div id="lista-ponentes" class="border rounded p-2" style="min-height: 40px;">
+        <!-- Aquí se cargarán los ponentes -->
+        Seleccione un diplomado primero
+    </div>
 </div>
+
+
 
 <hr class="my-4">
                     <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar Asignación</button>
@@ -314,6 +304,44 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
     <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="checkout.js"></script>
+
+<script>
+document.getElementById('id_diplomado').addEventListener('change', function() {
+    const idDiplomado = this.value;
+    const contenedor = document.getElementById('lista-ponentes');
+    contenedor.innerHTML = 'Cargando ponentes...';
+
+    if (idDiplomado) {
+        fetch('../checkout/obtener-ponentes.php?id_diplomado=' + idDiplomado)
+            .then(response => response.json())
+            .then(data => {
+                if (data.length > 0) {
+                    contenedor.innerHTML = '';
+                    const ul = document.createElement('ul');
+                    ul.classList.add('list-group');
+                    data.forEach(p => {
+                        const li = document.createElement('li');
+                        li.classList.add('list-group-item', 'py-1');
+                        li.textContent = p.NombrePonente;
+                        ul.appendChild(li);
+                    });
+                    contenedor.appendChild(ul);
+                } else {
+                    contenedor.innerHTML = 'No hay ponentes asignados';
+                }
+            })
+            .catch(error => {
+                contenedor.innerHTML = 'Error al cargar';
+                console.error(error);
+            });
+    } else {
+        contenedor.innerHTML = 'Seleccione un diplomado primero';
+    }
+});
+
+</script>
+
+
    <script>
 
 

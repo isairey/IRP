@@ -137,73 +137,66 @@ require_once __DIR__ . '/../pages/header.php';
       </ul>
     </div>
 
-    <div class="container">
-    <main>
-        <div class="py-5 text-center">
-            <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
-            <h2>Editar Asistente del Taller</h2>
-            <p class="lead">Modifica los datos del asistente asignado a este taller.</p>
+    
+        <div class="container">
+        <main>
+    <div class="py-5 text-center">
+    <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
+        <h2>Editar Donativo</h2>
+        <p class="lead"></p>
+    </div>
+
+    <div class="row g-5">
+    <div class="col-xxl-12 col-xxl-12">
+        <h4 class="mb-3"></h4>
+        <form class="needs-validation" action="" method="POST" enctype="multipart/form-data"  novalidate>
+    <div class="row g-3">
+
+     <!-- Selección de Donante -->
+        <div class="col-sm-12">
+          <label for="id_donante" class="form-label">Nombre del Donante</label>
+          <select name="id_donante" class="form-select" id="id_donante" required>
+            <?php
+              $sqlDonantes = "SELECT ID_Donante, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto FROM Donantes";
+              $stmtDonantes = $conn->query($sqlDonantes);
+
+              while ($row = $stmtDonantes->fetch(PDO::FETCH_ASSOC)) {
+                $selected = ($row['ID_Donante'] == $donativo['ID_Donante']) ? "selected" : "";
+                echo "<option value='".$row['ID_Donante']."' $selected>".$row['NombreCompleto']."</option>";
+              }
+            ?>
+          </select>
         </div>
 
-        <div class="row g-5">
-            <div class="col-xxl-12">
-                <form class="needs-validation" action="" method="POST" enctype="multipart/form-data" novalidate>
-                    <div class="row g-3">
-
-                        <!-- Selección Taller -->
-                        <div class="col-sm-12">
-                            <label for="ID_Taller" class="form-label">Taller</label>
-                            <select name="ID_Taller" class="form-select" required>
-                                <option value="<?= $id_taller ?>" selected>
-                                    <?= htmlspecialchars($nombreTaller) ?> (Actual)
-                                </option>
-                                <option disabled>───────────────</option>
-                                <?php foreach ($talleres as $t): ?>
-                                    <option value="<?= $t['ID_Taller'] ?>">
-                                        <?= htmlspecialchars($t['Nombre']) ?>
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <!-- Selección Asistente -->
-                        <div class="col-sm-12">
-                            <label for="ID_Persona" class="form-label">Asistente</label>
-                            <select name="ID_Persona" class="form-select" id="personaSelect" required>
-                                <option value="<?= $id_persona ?>" data-tipo="<?= $tipo ?>" selected>
-                                    <?= htmlspecialchars($nombrePersona) ?> (<?= ucfirst($tipo) ?> - Actual)
-                                </option>
-                                <option disabled>───────────────</option>
-                                <?php foreach ($personas as $p): ?>
-                                    <option value="<?= $p['ID'] ?>" data-tipo="<?= $p['Tipo'] ?>">
-                                        <?= htmlspecialchars($p['Nombre']) ?> (<?= ucfirst($p['Tipo']) ?>)
-                                    </option>
-                                <?php endforeach; ?>
-                            </select>
-                        </div>
-
-                        <!-- Tipo de Persona -->
-                        <div class="col-sm-12">
-                            <label for="TipoPersona" class="form-label">Tipo de Persona</label>
-                            <input type="text" name="TipoPersona" id="tipoPersona" class="form-control" value="<?= htmlspecialchars($tipo) ?>" readonly>
-                        </div>
-
-                    </div>
-
-                    <hr class="my-4">
-                    <button class="w-100 btn btn-primary btn-lg" type="submit">Actualizar</button>
-                </form>
-            </div>
+        <!-- Monto -->
+        <div class="col-sm-6">
+          <label for="monto_donacion" class="form-label">Monto de Donación</label>
+          <input type="number" class="form-control" id="monto_donacion" 
+                 name="monto_donacion" value="<?= htmlspecialchars($donativo['MontoDonacion']) ?>" required>
         </div>
+
+        <!-- Tipo de Donación -->
+        <div class="col-sm-6">
+          <label for="tipo_donacion" class="form-label">Tipo de Donación</label>
+          <select class="form-select" id="tipo_donacion" name="tipo_donacion" required>
+            <?php
+              $tipos = ["TRANSFERENCIA BANCARIA", "CHEQUE", "EFECTIVO", "TARJETA DE CRÉDITO O DÉBITO", "OTRO"];
+              foreach ($tipos as $tipo) {
+                  $selected = ($donativo['TipoDonacion'] == $tipo) ? "selected" : "";
+                  echo "<option value='$tipo' $selected>$tipo</option>";
+              }
+            ?>
+          </select>
+        </div>
+
+            <hr class="my-4">
+
+    <button class="w-100 btn btn-primary btn-lg" type="submit"  ">actualizar</button>
+    </form>
+    </div>
+    </div>
     </main>
-</div>
 
-<script>
-document.querySelector('select[name="ID_Persona"]').addEventListener('change', function() {
-    const tipo = this.selectedOptions[0].getAttribute('data-tipo');
-    document.getElementById('tipoPersona').value = tipo || '';
-});
-</script>
         <footer class="my-5 pt-5 text-body-secondary text-center text-small">
            <?php
           require_once __DIR__ . '/../checkout/CR.php';
@@ -252,7 +245,4 @@ Swal.fire({
 
     <script src="checkout.js"></script></body>
         </html>
-
-
-
 

@@ -34,7 +34,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             header("Location: ../psicologia/pages/home.php"); // Redirige al usuario a la página 2
         } elseif ($_SESSION['role_id'] == 4) {
             header("Location: ../Justicia/pages/home.php"); // Redirige al usuario a la página 3
-        }else {
+        }elseif ($_SESSION['role_id'] == 5) {
+            header("Location: ../Soporte/pages/home.php"); // Redirige al usuario a la página 3
+        }
+        else {
             // En caso de que el rol no coincida con ninguno de los roles esperados
             // Puedes redirigir a una página de error o mostrar un mensaje de error
             echo "Rol no válido.";
@@ -227,8 +230,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <label for="floatingPassword">Contraseña</label>
             </div>
             <button class="btn btn-primary w-100 py-2" type="submit">Iniciar Sesión</button>
-            <p class="mt-5 mb-3 text-body-secondary">&copy; Copyright GESMujer © 2024 </p>
+           <?php
+          require_once __DIR__ . '/../checkout/CR.php';
+          ?>
         </form>
+
+        <?php require __DIR__ . '/../chatbot/chatbot.php'; ?>
+
     </main>
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 

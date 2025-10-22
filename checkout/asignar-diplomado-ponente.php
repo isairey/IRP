@@ -3,38 +3,79 @@ require_once __DIR__ . '/../pages/seccion.php';
 
 ?>
 <?php
-
 require_once __DIR__ . '/../db/config.php';
 $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
 $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 $conn->exec("SET NAMES utf8");
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
-    $id_diplomado = $_POST['id_diplomado'] ?? null;
-    $id_ponente = $_POST['id_ponente'] ?? null;
+// --- CONTROLADOR AJAX ---
+if (isset($_GET['accion'])) {
+    header('Content-Type: application/json; charset=utf-8');
 
-    if (!$id_diplomado || !$id_ponente) {
-        echo '<div class="alert alert-danger">Todos los campos son obligatorios.</div>';
-        exit();
+    // 🔹 Obtener módulos por diplomado
+    if ($_GET['accion'] === 'modulos' && isset($_GET['diplomado_id'])) {
+        $stmt = $conn->prepare("SELECT ID_Modulo, NombreModulo FROM modulos WHERE DiplomadoID = ?");
+        $stmt->execute([$_GET['diplomado_id']]);
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        exit;
     }
 
-    try {
-        $sql = "INSERT INTO AsignacionPonente (ID_Diplomado, ID_Ponente) 
-                VALUES (:id_diplomado, :id_ponente)";
-        $stmt = $conn->prepare($sql);
-        $stmt->bindParam(':id_diplomado', $id_diplomado);
-        $stmt->bindParam(':id_ponente', $id_ponente);
+    // 🔹 Obtener secciones por módulo
+    if ($_GET['accion'] === 'secciones' && isset($_GET['modulo_id'])) {
+        $stmt = $conn->prepare("SELECT ID, NombreSeccion FROM secciones WHERE ModuloID = ?");
+        $stmt->execute([$_GET['modulo_id']]);
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        exit;
+    }
 
-        $stmt->execute();
-            header("Location: ../pages/ver-diplomado-ponente.php?status=success");
-exit();
-    } catch (PDOException $e) {
-         header("Location: ../pages/ver-diplomado-ponente.php?status=error&msg=" . urlencode($e->getMessage()));
-exit();
+    // 🔹 Ponentes ya asignados a una sección
+    if ($_GET['accion'] === 'ponentes_asignados' && isset($_GET['seccion_id'])) {
+        $stmt = $conn->prepare("
+            SELECT p.ID_Ponente, CONCAT(p.Nombre, ' ', p.ApellidoPaterno, ' ', p.ApellidoMaterno) AS NombreCompleto
+            FROM seccion_ponentes sp
+            INNER JOIN ponentes p ON sp.ID_Ponente = p.ID_Ponente
+            WHERE sp.ID_Seccion = ?
+        ");
+        $stmt->execute([$_GET['seccion_id']]);
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        exit;
+    }
+
+    // 🔹 Lista completa de ponentes
+    if ($_GET['accion'] === 'todos_ponentes') {
+        $stmt = $conn->query("
+            SELECT ID_Ponente, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
+            FROM ponentes
+        ");
+        echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
+        exit;
     }
 }
-?>
 
+// --- GUARDAR NUEVOS PONENTES (NO BORRA LOS EXISTENTES) ---
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $id_seccion = $_POST['id_seccion'] ?? null;
+    $ponentes_nuevos = $_POST['ponentes_nuevos'] ?? [];
+
+    if ($id_seccion && !empty($ponentes_nuevos)) {
+        $stmt = $conn->prepare("INSERT INTO seccion_ponentes (ID_Seccion, ID_Ponente) VALUES (?, ?)");
+
+        foreach ($ponentes_nuevos as $id_ponente) {
+            if (!empty($id_ponente)) {
+                // Evitar duplicados
+                $check = $conn->prepare("SELECT COUNT(*) FROM seccion_ponentes WHERE ID_Seccion = ? AND ID_Ponente = ?");
+                $check->execute([$id_seccion, $id_ponente]);
+                if ($check->fetchColumn() == 0) {
+                    $stmt->execute([$id_seccion, $id_ponente]);
+                }
+            }
+        }
+    }
+
+    header("Location: ./../pages/ver-ponentes-diplomado.php?status=success");
+    exit;
+}
+?>
 
 
 
@@ -78,10 +119,13 @@ exit();
       </symbol>
     </svg>
 
-    
+
+
 <?php
 require_once __DIR__ . '/../pages/header.php';
 ?>
+
+
 
 
     <div class="dropdown position-fixed bottom-0 end-0 mb-3 me-3 bd-mode-toggle">
@@ -119,139 +163,152 @@ require_once __DIR__ . '/../pages/header.php';
       </ul>
     </div>
 
+
+
     
-        
-     <div class="container">
-    <main>
-        <div class="py-5 text-center">
-            <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
-            <h2>Asignaciones Diplomado</h2>
-        </div>
-     <form class="needs-validation" action="asignar-diplomado-ponente.php" method="POST" enctype="multipart/form-data" novalidate>
+     
+<div class="container mt-5">
+  <div class="text-center mb-4">
+    <img src="../assets/img/logo 1.png" alt="Logo" width="100">
+    <h2 class="mt-3">Asignar Ponentes a Sección</h2>
+  </div>
 
-    <!-- Seleccionar Diplomado -->
-    <div class="col-sm-12 mb-3">
-        <label for="id_diplomado" class="form-label">Diplomado</label>
-        <select name="id_diplomado" class="form-select" id="id_diplomado" required>
-            <option value="">-- Selecciona un Diplomado --</option>
-            <?php
-            require_once __DIR__ . '/../db/config.php';
-            $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            $conn->exec("SET NAMES utf8");
-
-            try {
-                $sql = "SELECT ID_Diplomado, NombreDiplomado FROM Diplomados";
-                $stmt = $conn->prepare($sql);
-                $stmt->execute();
-                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<option value='{$row['ID_Diplomado']}'>{$row['NombreDiplomado']}</option>";
-                }
-            } catch(PDOException $e) {
-                echo "<option value=''>Error al obtener diplomados</option>";
-            }
-            ?>
-        </select>
+  <form method="POST" class="border p-4 rounded shadow-sm bg-light">
+    <!-- DIPLOMADO -->
+    <div class="mb-3">
+      <label class="form-label">Diplomado</label>
+      <select id="diplomado_id" class="form-select" onchange="cargarModulos()" required>
+        <option value="">Seleccione un diplomado</option>
+        <?php
+        $sql = "SELECT ID_Diplomado, NombreDiplomado FROM diplomados";
+        foreach ($conn->query($sql) as $row) {
+            echo "<option value='{$row['ID_Diplomado']}'>{$row['NombreDiplomado']}</option>";
+        }
+        ?>
+      </select>
     </div>
 
-    <!-- Seleccionar Ponente -->
-    <div class="col-sm-12 mb-4">
-        <label for="id_ponente" class="form-label">Ponente</label>
-        <select name="id_ponente" class="form-select" id="id_ponente" required>
-            <option value="">-- Selecciona un Ponente --</option>
-            <?php
-            try {
-                $sql = "SELECT ID_Ponente, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombrePonente FROM Ponentes";
-                $stmt = $conn->prepare($sql);
-                $stmt->execute();
-                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<option value='{$row['ID_Ponente']}'>{$row['NombrePonente']}</option>";
-                }
-            } catch(PDOException $e) {
-                echo "<option value=''>Error al obtener ponentes</option>";
-            }
-            ?>
-        </select>
+    <!-- MÓDULO -->
+    <div class="mb-3">
+      <label class="form-label">Módulo</label>
+      <select id="modulo_id" class="form-select" onchange="cargarSecciones()" required>
+        <option value="">Seleccione un módulo</option>
+      </select>
     </div>
 
-    <hr class="my-4">
-    <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar Asignación</button>
-</form>
-
-
-
-        <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-          <?php
-          require_once __DIR__ . '/../checkout/CR.php';
-          ?>
-            
-                <ul class="list-inline">
-                </ul>
-        </footer>
+    <!-- SECCIÓN -->
+    <div class="mb-3">
+      <label class="form-label">Sección</label>
+      <select name="id_seccion" id="id_seccion" class="form-select" onchange="cargarPonentesAsignados()" required>
+        <option value="">Seleccione una sección</option>
+      </select>
     </div>
+
+    <!-- Ponentes ya asignados -->
+    <div id="ponentes-asignados" class="mb-4"></div>
+
+    <!-- Nuevos ponentes -->
+    <div id="nuevo-ponente-container"></div>
+
+    <div class="d-flex gap-2 mt-3">
+      <button type="button" class="btn btn-primary flex-grow-1" onclick="agregarSelectPonente()">➕ Agregar Ponente</button>
+      <button type="submit" class="btn btn-success flex-grow-1">💾 Guardar Cambios</button>
+    </div>
+  </form>
+</div>
+
+<!-- SweetAlert para notificaciones -->
+<?php if (isset($_GET['status'])): ?>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+Swal.fire({
+  icon: "<?= $_GET['status'] === 'success' ? 'success' : 'error' ?>",
+  title: "<?= $_GET['status'] === 'success' ? 'Cambios guardados' : 'Error al guardar' ?>",
+  timer: 2000,
+  showConfirmButton: false
+});
+</script>
+<?php endif; ?>
+
+<script>
+let listaPonentes = [];
+
+// --- Cargar módulos ---
+function cargarModulos() {
+  const diplomadoId = document.getElementById("diplomado_id").value;
+  fetch(`?accion=modulos&diplomado_id=${diplomadoId}`)
+    .then(res => res.json())
+    .then(data => {
+      const modSel = document.getElementById("modulo_id");
+      modSel.innerHTML = '<option value="">Seleccione un módulo</option>';
+      data.forEach(m => modSel.innerHTML += `<option value="${m.ID_Modulo}">${m.NombreModulo}</option>`);
+    });
+}
+
+// --- Cargar secciones ---
+function cargarSecciones() {
+  const moduloId = document.getElementById("modulo_id").value;
+  fetch(`?accion=secciones&modulo_id=${moduloId}`)
+    .then(res => res.json())
+    .then(data => {
+      const secSel = document.getElementById("id_seccion");
+      secSel.innerHTML = '<option value="">Seleccione una sección</option>';
+      data.forEach(s => secSel.innerHTML += `<option value="${s.ID}">${s.NombreSeccion}</option>`);
+    });
+}
+
+// --- Cargar ponentes asignados ---
+function cargarPonentesAsignados() {
+  const seccionId = document.getElementById("id_seccion").value;
+  const cont = document.getElementById("ponentes-asignados");
+  cont.innerHTML = "Cargando ponentes...";
+
+  fetch("?accion=todos_ponentes")
+    .then(r => r.json())
+    .then(data => listaPonentes = data);
+
+  fetch(`?accion=ponentes_asignados&seccion_id=${seccionId}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.length === 0) {
+        cont.innerHTML = "<div class='alert alert-warning'>No hay ponentes asignados aún.</div>";
+      } else {
+        cont.innerHTML = "<h5>Ponentes asignados:</h5><ul class='list-group'>" +
+          data.map(p => `<li class='list-group-item'>${p.NombreCompleto}</li>`).join('') +
+          "</ul>";
+      }
+      document.getElementById("nuevo-ponente-container").innerHTML = ""; // limpiar selects previos
+    });
+}
+
+// --- Agregar nuevo select de ponente ---
+function agregarSelectPonente() {
+  if (listaPonentes.length === 0) {
+    fetch("?accion=todos_ponentes")
+      .then(r => r.json())
+      .then(data => {
+        listaPonentes = data;
+        agregarSelectPonente();
+      });
+    return;
+  }
+
+  const cont = document.getElementById("nuevo-ponente-container");
+  const select = document.createElement("select");
+  select.name = "ponentes_nuevos[]";
+  select.className = "form-select mb-2";
+  select.innerHTML = '<option value="">Seleccione un ponente</option>' +
+    listaPonentes.map(p => `<option value="${p.ID_Ponente}">${p.NombreCompleto}</option>`).join('');
+  cont.appendChild(select);
+}
+</script>
+
+
 
     <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 
     <script src="checkout.js"></script>
-   <script>
-let valorAnterior = null; // Guardará el valor previo del select
 
-function mostrarModalSiOtro(valor) {
-    const select = document.getElementById('id_usuario');
-    if(valor === "_otro_") {
-        // Guardar el valor actual antes de abrir modal
-        valorAnterior = select.value;
-
-        // Mostrar el modal
-        var modal = new bootstrap.Modal(document.getElementById('modalOtro'));
-        modal.show();
-
-        // Escuchar cuando el modal se oculta
-        var modalEl = document.getElementById('modalOtro');
-        modalEl.addEventListener('hidden.bs.modal', function () {
-            // Si no se agregó nueva usuaria, restaurar el valor anterior
-            if (select.value === "_otro_") {
-                select.value = valorAnterior;
-            }
-        }, { once: true }); // solo una vez
-    }
-}
-
-// Enviar el formulario de nueva usuaria vía AJAX
-document.getElementById('formNuevoParticipante').addEventListener('submit', function(e){
-    e.preventDefault();
-    var formData = new FormData(this);
-
-    fetch('../checkout/registrar_participante.php', {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if(data.success){
-            // Agregar la nueva usuaria al select
-            var select = document.getElementById('id_usuario');
-            var option = document.createElement("option");
-            option.value = data.id;
-            option.text = data.nombreCompleto;
-            option.selected = true;
-            select.add(option);
-// Mostrar alerta simple
-            alert("¡Participante registrado correctamente!");
-
-            // Cerrar modal
-            var modalEl = document.getElementById('modalOtro');
-            var modal = bootstrap.Modal.getInstance(modalEl);
-            modal.hide();
-        } else {
-            alert("Error: " + data.message);
-        }
-    })
-    .catch(error => {
-        console.error("Error al registrar la usuaria:", error);
-    });
-});
-</script>
 
 
 </body>

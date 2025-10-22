@@ -436,22 +436,44 @@ if (!isset($_GET['id_diplomado']) || !is_numeric($_GET['id_diplomado'])) {
 $idDiplomado = (int) $_GET['id_diplomado'];
 $busqueda = trim($_GET['search'] ?? '');
 
-// 1️⃣ Obtener todas las fechas de secciones
-$stmtFechas = $conn->prepare("
-    SELECT ID, fecha
-    FROM secciones 
-    WHERE DiplomadoID = :idDiplomado
-    ORDER BY fecha ASC
+
+// 🔹 Paginación
+$registrosPorPagina = 10; // puedes cambiarlo
+$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+if ($pagina < 1) $pagina = 1;
+$inicio = ($pagina - 1) * $registrosPorPagina;
+
+// 🔹 Contar total de registros para calcular páginas
+
+
+// 🔹 Agregar LIMIT a la consulta principal
+$sql .= " LIMIT $inicio, $registrosPorPagina";
+
+
+
+// 1️⃣ Obtener módulos y sus secciones
+$sqlModulos = $conn->prepare("
+    SELECT m.ID_Modulo, m.NombreModulo, s.ID AS ID_Seccion, s.fecha
+    FROM modulos m
+    INNER JOIN secciones s ON s.ModuloID = m.ID_Modulo
+    WHERE m.DiplomadoID = :id
+    ORDER BY m.ID_Modulo ASC, s.fecha ASC
 ");
-$stmtFechas->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
-$stmtFechas->execute();
-$fechasDiplomados = [];
-while ($row = $stmtFechas->fetch(PDO::FETCH_ASSOC)) {
-    $fechasDiplomados[$row['ID']] = $row['fecha'];
+$sqlModulos->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
+$sqlModulos->execute();
+
+$modulos = [];
+while ($row = $sqlModulos->fetch(PDO::FETCH_ASSOC)) {
+    $modulos[$row['ID_Modulo']]['nombre'] = $row['NombreModulo'];
+    $modulos[$row['ID_Modulo']]['secciones'][] = [
+        'id' => $row['ID_Seccion'],
+        'fecha' => $row['fecha']
+    ];
 }
 
-// 2️⃣ Consulta principal
-$sql = "
+// 2️⃣ Consulta principal (participantes / personal / usuario)
+// Consulta base con UNION de los tres tipos de usuario
+$sqlBase = "
 (
     SELECT 
         a.ID_Usuario,
@@ -461,7 +483,7 @@ $sql = "
         p.Email
     FROM asignacionesdiplomado a
     INNER JOIN participante p ON a.ID_Usuario = p.ID_Participante
-    WHERE a.ID_Diplomado = :idDiplomado AND a.TipoUsuario = 'participante'
+    WHERE a.ID_Diplomado = :id AND a.TipoUsuario = 'participante'
 )
 UNION ALL
 (
@@ -473,7 +495,7 @@ UNION ALL
         pe.Email
     FROM asignacionesdiplomado a
     INNER JOIN personal pe ON a.ID_Usuario = pe.ID_Personal
-    WHERE a.ID_Diplomado = :idDiplomado AND a.TipoUsuario = 'personal'
+    WHERE a.ID_Diplomado = :id AND a.TipoUsuario = 'personal'
 )
 UNION ALL
 (
@@ -485,22 +507,37 @@ UNION ALL
         u.Email
     FROM asignacionesdiplomado a
     INNER JOIN usuario u ON a.ID_Usuario = u.ID
-    WHERE a.ID_Diplomado = :idDiplomado AND a.TipoUsuario = 'usuario'
+    WHERE a.ID_Diplomado = :id AND a.TipoUsuario = 'usuario'
 )
 ";
 
+
 if ($busqueda !== '') {
-    $sql = "SELECT * FROM ($sql) AS todos 
+    $sql = "SELECT * FROM ($sqlBase) AS todos 
             WHERE todos.NombreCompleto LIKE :busqueda 
                OR todos.Email LIKE :busqueda
             ORDER BY FechaAsignacion DESC";
+    $countSql = "SELECT COUNT(*) AS total FROM ($sqlBase) AS total_count 
+                 WHERE total_count.NombreCompleto LIKE :busqueda 
+                    OR total_count.Email LIKE :busqueda";
 } else {
-    $sql = "SELECT * FROM ($sql) AS todos ORDER BY FechaAsignacion DESC";
+    $sql = "SELECT * FROM ($sqlBase) AS todos ORDER BY FechaAsignacion DESC";
+    $countSql = "SELECT COUNT(*) AS total FROM ($sqlBase) AS total_count";
 }
 
-// Ejecutar consulta
+
+$countStmt = $conn->prepare($countSql);
+$countStmt->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
+if ($busqueda !== '') {
+    $countStmt->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
+}
+$countStmt->execute();
+$totalRegistros = $countStmt->fetchColumn();
+$totalPaginas = ceil($totalRegistros / $registrosPorPagina);
+
+
 $stmt = $conn->prepare($sql);
-$stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmt->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
 if ($busqueda !== '') {
     $stmt->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
 }
@@ -512,61 +549,86 @@ $asistencias = [];
 $stmtAsis = $conn->prepare("
     SELECT ID_Seccion, presente, id_usu
     FROM asistencias
-    WHERE ID_Diplomado = :idDiplomado
+    WHERE ID_Diplomado = :id
 ");
-$stmtAsis->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmtAsis->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
 $stmtAsis->execute();
 foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
     $asistencias[$a['id_usu']][$a['ID_Seccion']] = $a['presente'];
 }
 ?>
 
+
 <div class="table-responsive small">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Tipo</th>
-                <th>Fecha Asignación</th>
-                <?php foreach ($fechasDiplomados as $fecha): ?>
-                    <th><?= htmlspecialchars($fecha) ?></th>
-                <?php endforeach; ?>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
+  <?php if (count($asistentes) > 0): ?>
+    <table class="table table-striped table-sm">
+      <thead>
+        <!-- Encabezado: Módulos -->
+        <tr class="table table-striped table-sm">
+          <th rowspan="2">Nombre</th>
+          <th rowspan="2">Email</th>
+          <th rowspan="2">Tipo</th>
+          <th rowspan="2">Fecha Asignación</th>
+          <?php foreach ($modulos as $mod): ?>
+            <th colspan="<?= count($mod['secciones']) ?>">
+              <?= htmlspecialchars($mod['nombre']) ?>
+            </th>
+          <?php endforeach; ?>
+          <th rowspan="2">Acciones</th>
+        </tr>
+
+        <!-- Encabezado: Secciones -->
+        <tr class="table table-striped table-sm">
+          <?php foreach ($modulos as $mod): ?>
+            <?php foreach ($mod['secciones'] as $sec): ?>
+              <th><?= date('d/m/Y', strtotime($sec['fecha'])) ?></th>
+            <?php endforeach; ?>
+          <?php endforeach; ?>
+        </tr>
+      </thead>
+
+      <tbody>
         <?php foreach ($asistentes as $asistente): ?>
-            <tr>
-                <td><?= htmlspecialchars($asistente['NombreCompleto'] ?? 'Desconocido') ?></td>
-                <td><?= htmlspecialchars($asistente['Email'] ?? '-') ?></td>
-                <td><?= htmlspecialchars($asistente['TipoUsuario']) ?></td>
-                <td><?= htmlspecialchars($asistente['FechaAsignacion']) ?></td>
-                <?php foreach ($fechasDiplomados as $idSeccion => $fecha): ?>
-                    <td>
-                        <input type="checkbox" class="asistencia-switch"
-                               data-usuario="<?= $asistente['ID_Usuario'] ?>"
-                               data-seccion="<?= $idSeccion ?>"
-                               <?= isset($asistencias[$asistente['ID_Usuario']][$idSeccion]) && $asistencias[$asistente['ID_Usuario']][$idSeccion] ? 'checked' : '' ?>>
-                    </td>
-                <?php endforeach; ?>
+          <tr>
+            <td><?= htmlspecialchars($asistente['NombreCompleto']) ?></td>
+            <td><?= htmlspecialchars($asistente['Email']) ?></td>
+            <td><?= htmlspecialchars($asistente['TipoUsuario']) ?></td>
+            <td><?= htmlspecialchars($asistente['FechaAsignacion']) ?></td>
+
+            <?php foreach ($modulos as $mod): ?>
+              <?php foreach ($mod['secciones'] as $sec): ?>
                 <td>
-                    <a href="../checkout/editar-asistente-diplomado.php?id_persona=<?= $asistente['ID_Usuario'] ?>&tipo=<?= $asistente['TipoUsuario'] ?>&id_taller=<?= $idDiplomado ?>" 
-                       class="btn btn-primary btn-sm">
-                        <i class="bi bi-pencil-square"></i>
-                    </a>
-                    <button class="btn btn-danger btn-sm eliminar-asistente-diplomado"
-                            data-id="<?= $asistente['ID_Usuario'] ?>"
-                            data-tipo="<?= $asistente['TipoUsuario'] ?>"
-                            data-taller="<?= $idDiplomado ?>">
-                        <i class="bi bi-trash3-fill"></i>
-                    </button>
+                  <input type="checkbox" class="asistencia-switch"
+                    data-usuario="<?= $asistente['ID_Usuario'] ?>"
+                    data-seccion="<?= $sec['id'] ?>"
+                    <?= isset($asistencias[$asistente['ID_Usuario']][$sec['id']]) && $asistencias[$asistente['ID_Usuario']][$sec['id']] ? 'checked' : '' ?>>
                 </td>
-            </tr>
+              <?php endforeach; ?>
+            <?php endforeach; ?>
+
+            <td>
+              <a href="../checkout/editar-asistente-diplomado.php?id_persona=<?= $asistente['ID_Usuario'] ?>&tipo=<?= $asistente['TipoUsuario'] ?>&id_taller=<?= $idDiplomado ?>" 
+                 class="btn btn-primary btn-sm">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              <button class="btn btn-danger btn-sm eliminar-asistente-diplomado"
+                      data-id="<?= $asistente['ID_Usuario'] ?>"
+                      data-tipo="<?= $asistente['TipoUsuario'] ?>"
+                      data-taller="<?= $idDiplomado ?>">
+                <i class="bi bi-trash3-fill"></i>
+              </button>
+            </td>
+          </tr>
         <?php endforeach; ?>
-        </tbody>
+      </tbody>
     </table>
+  <?php else: ?>
+    <div class="alert alert-warning text-center">
+      No se encontraron datos.
+    </div>
+  <?php endif; ?>
 </div>
+
 
 <nav aria-label="Paginación">
   <ul class="pagination justify-content-center mt-3">
