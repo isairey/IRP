@@ -113,6 +113,30 @@ try {
     $stmt = $conn->prepare($sql);
     $stmt->execute();
 
+    $userId = $conn->lastInsertId();
+
+// Insertar hijos si hay alguno
+if(isset($_POST['hijos']) && is_array($_POST['hijos'])) {
+    $sqlHijos = "INSERT INTO Hijos_Usuario 
+        (ID_Usuario, Nombre, ApellidoPaterno, ApellidoMaterno, FechaNacimiento, Sexo, Escolaridad, Condicion)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmtHijo = $conn->prepare($sqlHijos);
+
+    foreach($_POST['hijos'] as $hijo) {
+        $stmtHijo->execute([
+            $userId,
+            $hijo['nombre'],
+            $hijo['apellido_paterno'],
+            $hijo['apellido_materno'] ?? '-',
+            $hijo['fecha_nacimiento'],
+            $hijo['sexo'],
+            $hijo['escolaridad'] ?? '-',
+            $hijo['condicion'] ?? '-'
+        ]);
+    }
+}
+
+
      header("Location: ../pages/ver-usuaria.php?status=success");
 exit();
 } catch (PDOException $e) {
@@ -227,7 +251,7 @@ require_once __DIR__ . '/../pages/header.php';
     <div class="row g-5">
     <div class="col-xxl-12 col-xxl-12">
         <h4 class="mb-3">Datos Generales</h4>
-        <form class="needs-validation" action="register-usuaria.php" method="POST" enctype="multipart/form-data"  novalidate>
+        <form class="needs-validation" action="register-usuaria.php" method="POST" enctype="multipart/form-data"  novalidate onsubmit="closePopup();">
     <div class="row g-3">
             
     <div class="col-sm-12">
@@ -383,27 +407,96 @@ require_once __DIR__ . '/../pages/header.php';
     <div class="invalid-feedback">Se requiere una selección válida.</div>
     </div>
 
-    <div class="col-sm-6">
-        <label class="form-label">¿Tiene Hijos e Hijas?</label>
+   <div class="col-sm-6">
+    <label class="form-label">¿Tiene Hijos e Hijas?</label>
     <div class="form-check">
         <input class="form-check-input" type="radio" name="decendencia" id="hijos1" value="SI" onclick="showHijosInput()">
-        <label class="form-check-label" for="exampleRadios1">SI</label>
+        <label class="form-check-label" for="hijos1">SI</label>
     </div>
     <div class="form-check">
         <input class="form-check-input" type="radio" name="decendencia" id="hijos2" value="NO" onclick="hideHijosInput()">
-        <label class="form-check-label" for="exampleRadios2">NO</label>
+        <label class="form-check-label" for="hijos2">NO</label>
     </div>
-    </div>
+</div>
 
-    <div class="col-sm-6" id="HijosInput" style="display: none;">
-        <label for="numDecendencia" class="form-label">¿Cuántos?</label>
-        <input type="number" min="1" max="15" class="form-control" id="numDecendencia" name="numDecendencia" placeholder="Ingrese un número">
-        <div class="invalid-feedback">Se requiere un número válido.</div>
+<div class="col-sm-12" id="HijosInput" style="display: none;">
+    <label for="numDecendencia" class="form-label">¿Cuántos?</label>
+    <input type="number" min="1" max="15" class="form-control mb-3" id="numDecendencia" name="numDecendencia" placeholder="Ingrese un número" oninput="generarCamposHijos()">
+    <div class="invalid-feedback">Se requiere un número válido.</div>
 
-        <div>
-        <button class="w-100 btn btn-primary btn-lg" type="submit"  onclick="openPopup()">Registrar</button>
-        </div>
-    </div>
+    <div id="formularios_hijos"></div>
+</div>
+
+<script>
+function showHijosInput() {
+    document.getElementById('HijosInput').style.display = 'block';
+}
+
+function hideHijosInput() {
+    document.getElementById('HijosInput').style.display = 'none';
+    document.getElementById('formularios_hijos').innerHTML = ''; // Limpiar campos si el usuario cambia a NO
+}
+
+function generarCamposHijos() {
+    const cantidad = parseInt(document.getElementById('numDecendencia').value) || 0;
+    const contenedor = document.getElementById('formularios_hijos');
+    contenedor.innerHTML = ''; // Limpiar antes de generar
+
+    for (let i = 0; i < cantidad; i++) {
+        const div = document.createElement('div');
+        div.classList.add('mb-3');
+        div.innerHTML = `
+            <h5>Hijo ${i + 1}</h5>
+            <div class="row">
+
+                <div class="col-sm-6">
+                    <label class="form-label">Nombre:</label>
+                    <input type="text" name="hijos[${i}][nombre]" id="firstName" class="form-control" required  oninput="validateInput(this)">
+                <div class="invalid-feedback">Se requiere un nombre válido.</div>
+    <div class="valid-feedback">Looks good!</div>
+                    </div>
+                <div class="col-sm-6">
+                    <label class="form-label">Apellido Paterno:</label>
+                    <input type="text" name="hijos[${i}][apellido_paterno]" class="form-control" required>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-sm-6">
+                    <label class="form-label">Apellido Materno:</label>
+                    <input type="text" name="hijos[${i}][apellido_materno]" class="form-control">
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label">Fecha de Nacimiento:</label>
+                    <input type="date" name="hijos[${i}][fecha_nacimiento]" class="form-control" required>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-sm-6">
+                    <label class="form-label">Sexo:</label>
+                    <select name="hijos[${i}][sexo]" class="form-select" required>
+                        <option value="">Selecciona</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                    </select>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label">Escolaridad:</label>
+                    <input type="text" name="hijos[${i}][escolaridad]" class="form-control">
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-sm-6">
+                    <label class="form-label">Condición:</label>
+                    <input type="text" name="hijos[${i}][condicion]" class="form-control">
+                </div>
+            </div>
+            <hr>
+        `;
+        contenedor.appendChild(div);
+    }
+}
+</script>
+
 
 
         <h4>Datos de Domicilio</h4>
@@ -2251,7 +2344,7 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-12">
     <div>
-    <button class="w-100 btn btn-primary btn-lg" type="submit"  onclick="openPopupp()">Registrar Tipo de Violencia</button>
+    <button class="w-100 btn btn-primary btn-lg" type="submit"  onclick="openPopupp()">Registrar Usuario</button>
     </div>
     </div>
 
@@ -2283,10 +2376,12 @@ require_once __DIR__ . '/../pages/header.php';
     <script src="register.js"></script>
 
     <script>
+        
 function openPopup() {
-    var popup = window.open('ventana_hijos.php', '_blank', 'width=700,height=700');
+    var num = document.getElementById('numDecendencia').value || 0;
+    // Abrimos el popup y enviamos el valor como parámetro
+    var popup = window.open('ventana_hijos.php?numDecendencia=' + encodeURIComponent(num), '_blank', 'width=700,height=700');
 }
-
 // Esta función se llama desde la ventana emergente para cerrarla después de enviar el formulario
 function closePopup() {
     window.close();
