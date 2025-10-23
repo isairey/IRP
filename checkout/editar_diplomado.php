@@ -1,55 +1,107 @@
 <?php
-require_once __DIR__ . '/../pages/seccion.php';
 
+require_once __DIR__ . '/../pages/seccion.php';
 
 require_once __DIR__ . '/../db/config.php';
 
-// Verificar ID recibido
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
     die("❌ ID no válido.");
 }
-
 $idDiplomado = (int)$_GET['id'];
 
-
+// Cargar diplomado + módulos (para mostrar en el form)
 try {
-    // Traer los datos del diplomado junto con el ponente asignado
-    $sql = "SELECT d.ID_Diplomado, d.NombreDiplomado, d.Descripcion, d.FechaInicio, d.FechaFin, d.Num,
-       ad.ID_Ponente,
-       p.Nombre AS NombrePonente
-FROM diplomados d
-LEFT JOIN asignacionponente ad ON d.ID_Diplomado = ad.ID_Diplomado
-LEFT JOIN ponentes p ON ad.ID_Ponente = p.ID_Ponente
-WHERE d.ID_Diplomado = :id
-LIMIT 1
-";
-
-
-    $stmt = $conn->prepare($sql);
-    $stmt->bindParam(':id', $idDiplomado, PDO::PARAM_INT);
-    $stmt->execute();
+    $stmt = $conn->prepare("SELECT ID_Diplomado, NombreDiplomado, Descripcion, FechaInicio, FechaFin, Num FROM diplomados WHERE ID_Diplomado = :id LIMIT 1");
+    $stmt->execute([':id' => $idDiplomado]);
     $diplomado = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$diplomado) {
-        die("❌ Diplomado no encontrado.");
+        die("Diplomado no encontrado.");
     }
 
-    // Traer todos los ponentes disponibles para llenar el <select>
-    $sqlPonentes = "SELECT ID_Ponente, Nombre FROM ponentes ORDER BY Nombre ASC";
-    $stmtPonentes = $conn->query($sqlPonentes);
-    $ponentes = $stmtPonentes->fetchAll(PDO::FETCH_ASSOC);
-
-
-    // Traer fechas registradas del diplomado
-$sqlFechas = "SELECT Fecha FROM secciones WHERE DiplomadoID = :id ORDER BY nUMSeccion ASC";
-$stmtFechas = $conn->prepare($sqlFechas);
-$stmtFechas->bindParam(':id', $idDiplomado, PDO::PARAM_INT);
-$stmtFechas->execute();
-$fechas = $stmtFechas->fetchAll(PDO::FETCH_COLUMN); // Array de strings de fechas
-
+    $stmtMod = $conn->prepare("SELECT ID_Modulo, NombreModulo, Descripcion FROM modulos WHERE DiplomadoID = ? ORDER BY ID_Modulo ASC");
+    $stmtMod->execute([$idDiplomado]);
+    $modulosExistentes = $stmtMod->fetchAll(PDO::FETCH_ASSOC);
 
 } catch (PDOException $e) {
     die("Error: " . $e->getMessage());
+}
+
+// --- PROCESAR envío del formulario ---
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $nombreDiplomado = trim($_POST["nombre_diplomado"] ?? '');
+    $descripcion = trim($_POST["descripcion"] ?? '');
+    $fechaInicio = $_POST["fecha_inicio"] ?? null;
+    $fechaFin = $_POST["fecha_fin"] ?? null;
+    $numModulos = isset($_POST["num_modulos"]) ? (int)$_POST["num_modulos"] : 0;
+
+    // Arrays enviados desde el form
+    $modulo_ids          = $_POST['modulo_id'] ?? [];           // pueden venir vacíos para nuevos
+    $modulo_nombres      = $_POST['modulo_nombre'] ?? [];
+    $modulo_descripciones= $_POST['modulo_descripcion'] ?? [];
+
+    try {
+        $conn->beginTransaction();
+
+        // 1) Actualizar datos del diplomado (incluye Num provisional)
+        $stmtUpdDipl = $conn->prepare("UPDATE diplomados SET NombreDiplomado = ?, Descripcion = ?, Num = ?, FechaInicio = ?, FechaFin = ? WHERE ID_Diplomado = ?");
+        $stmtUpdDipl->execute([$nombreDiplomado, $descripcion, $numModulos, $fechaInicio, $fechaFin, $idDiplomado]);
+
+        // 2) Obtener IDs actuales en BD
+        $stmtIds = $conn->prepare("SELECT ID_Modulo FROM modulos WHERE DiplomadoID = ?");
+        $stmtIds->execute([$idDiplomado]);
+        $currentIDs = $stmtIds->fetchAll(PDO::FETCH_COLUMN);
+
+        // 3) IDs recibidos desde el formulario (filtramos vacíos y casteamos a int)
+        $receivedIDs = [];
+        foreach ($modulo_ids as $v) {
+            if ($v === '' || $v === null) continue;
+            $receivedIDs[] = (int)$v;
+        }
+        // 4) Eliminar módulos que existían en BD pero ya no vinieron en el formulario
+        $toDelete = array_diff($currentIDs, $receivedIDs);
+        if (count($toDelete) > 0) {
+            $placeholders = implode(',', array_fill(0, count($toDelete), '?'));
+            $stmtDel = $conn->prepare("DELETE FROM modulos WHERE ID_Modulo IN ($placeholders)");
+            $stmtDel->execute(array_values($toDelete));
+        }
+
+        // 5) Recorrer lo enviado y actualizar/insertar según corresponda.
+        $loopCount = max($numModulos, count($modulo_nombres));
+        for ($i = 0; $i < $loopCount; $i++) {
+            $idMod = isset($modulo_ids[$i]) && $modulo_ids[$i] !== '' ? (int)$modulo_ids[$i] : null;
+            $nom   = trim($modulo_nombres[$i] ?? '');
+            $desc  = trim($modulo_descripciones[$i] ?? '');
+
+            if ($idMod) {
+                // actualizar
+                $stmtUpdate = $conn->prepare("UPDATE modulos SET NombreModulo = ?, Descripcion = ? WHERE ID_Modulo = ?");
+                $stmtUpdate->execute([$nom ?: 'Sin título', $desc, $idMod]);
+            } else {
+                // insertar nuevo
+                $stmtInsert = $conn->prepare("INSERT INTO modulos (DiplomadoID, NombreModulo, Descripcion) VALUES (?, ?, ?)");
+                $stmtInsert->execute([$idDiplomado, $nom ?: 'Nuevo módulo', $desc]);
+            }
+        }
+
+        // 6) Asegurar que el campo Num en diplomados refleje la cantidad real
+        $stmtCount = $conn->prepare("SELECT COUNT(*) FROM modulos WHERE DiplomadoID = ?");
+        $stmtCount->execute([$idDiplomado]);
+        $actualCount = (int)$stmtCount->fetchColumn();
+
+        $stmtUpdNum = $conn->prepare("UPDATE diplomados SET Num = ? WHERE ID_Diplomado = ?");
+        $stmtUpdNum->execute([$actualCount, $idDiplomado]);
+
+        $conn->commit();
+
+        header("Location: ../pages/ver-diplomado.php?msg=success");
+        exit;
+    } catch (Exception $e) {
+        $conn->rollBack();
+        // redirigir con error
+        header("Location: ../pages/editar-diplomado.php?id={$idDiplomado}&msg=error&err=" . urlencode($e->getMessage()));
+        exit;
+    }
 }
 ?>
 
@@ -134,238 +186,140 @@ require_once __DIR__ . '/../pages/header.php';
     </div>
 
    <div class="container">
-  <main>
-    <div class="py-5 text-center">
-      <img class="d-block mx-auto mb-4" src="../assets/img/logo 1.png" alt="" width="100" height="100">
+  <main class="py-5">
+    <div class="text-center mb-4">
+      <img src="../assets/img/logo 1.png" alt="" width="100" height="100" class="mb-3">
       <h2>Editar Diplomado</h2>
     </div>
 
-    <form action="" method="POST" class="needs-validation" novalidate>
+    <form method="POST" class="needs-validation" novalidate>
       <input type="hidden" name="id_diplomado" value="<?= htmlspecialchars($diplomado['ID_Diplomado']) ?>">
 
       <div class="mb-3">
-        <label for="nombre_diplomado" class="form-label">Nombre del Diplomado</label>
-        <input type="text" class="form-control" id="nombre_diplomado" 
-               name="nombre_diplomado" value="<?= htmlspecialchars($diplomado['NombreDiplomado']) ?>" required>
+        <label class="form-label">Nombre del Diplomado</label>
+        <input type="text" name="nombre_diplomado" class="form-control" required value="<?= htmlspecialchars($diplomado['NombreDiplomado']) ?>">
       </div>
 
-<div class="mb-3">
-    <label class="form-label"><strong>Ponente asignado</strong></label>
-    <select name="ID_Ponente" class="form-control" required>
-       
-        <?php foreach ($ponentes as $p): ?>
-            <option value="<?= $p['ID_Ponente'] ?>" 
-                <?= ($diplomado['ID_Ponente'] == $p['ID_Ponente']) ? 'selected' : '' ?>>
-                <?= htmlspecialchars($p['Nombre']) ?>
-            </option>
-        <?php endforeach; ?>
-    </select>
-</div>
-
-
       <div class="mb-3">
-        <label for="descripcion" class="form-label">Descripción</label>
-        <textarea class="form-control" id="descripcion" name="descripcion" rows="3"><?= htmlspecialchars($diplomado['Descripcion']) ?></textarea>
+        <label class="form-label">Descripción</label>
+        <textarea name="descripcion" class="form-control" rows="3"><?= htmlspecialchars($diplomado['Descripcion']) ?></textarea>
       </div>
 
       <div class="row">
         <div class="col-md-4 mb-3">
-          <label for="fecha_inicio" class="form-label">Fecha de Inicio</label>
-          <input type="date" class="form-control" id="fecha_inicio" 
-                 name="fecha_inicio" value="<?= htmlspecialchars($diplomado['FechaInicio']) ?>" required>
+          <label class="form-label">Fecha de Inicio</label>
+          <input type="date" name="fecha_inicio" class="form-control" value="<?= htmlspecialchars($diplomado['FechaInicio']) ?>">
         </div>
 
         <div class="col-md-4 mb-3">
-          <label for="fecha_fin" class="form-label">Fecha de Fin</label>
-          <input type="date" class="form-control" id="fecha_fin" 
-                 name="fecha_fin" value="<?= htmlspecialchars($diplomado['FechaFin']) ?>" required>
+          <label class="form-label">Fecha de Fin</label>
+          <input type="date" name="fecha_fin" class="form-control" value="<?= htmlspecialchars($diplomado['FechaFin']) ?>">
         </div>
 
         <div class="col-md-4 mb-3">
-          <label for="num_secciones" class="form-label">Número de Secciones</label>
-          <input type="number" class="form-control" id="num_secciones" 
-                 name="num_secciones" min="1" value="<?= htmlspecialchars($diplomado['Num']) ?>" required>
+          <label class="form-label">Número de Módulos</label>
+          <input type="number" id="num_modulos" name="num_modulos" class="form-control" min="1" required value="<?= htmlspecialchars($diplomado['Num']) ?>">
         </div>
       </div>
-<div id="preview-fechas" class="mt-4"></div>
 
+      <div id="modulos-inputs-container" class="mt-3"></div>
 
-      <button class="btn btn-success w-100" type="submit">💾 Guardar Cambios</button>
+      <button type="submit" class="btn btn-success w-100 mt-3">💾 Guardar Cambios</button>
     </form>
   </main>
 </div>
 
-<!-- Vista previa -->
-
 <script>
-let fechasRegistradas = <?= json_encode($fechas) ?>;
-</script>
+// Datos traídos desde PHP: array de { ID_Modulo, NombreModulo, Descripcion }
+const modulosExistentes = <?= json_encode($modulosExistentes, JSON_HEX_TAG|JSON_HEX_APOS|JSON_HEX_QUOT|JSON_HEX_AMP) ?>;
 
+function generarModulos() {
+    const container = document.getElementById("modulos-inputs-container");
+    // preservar contenido actual si existe
+    const currNames = Array.from(document.getElementsByName('modulo_nombre[]')).map(i => i.value);
+    const currDescs = Array.from(document.getElementsByName('modulo_descripcion[]')).map(i => i.value);
+    const currIds   = Array.from(document.getElementsByName('modulo_id[]')).map(i => i.value);
 
-<script>
-function generarFechas() {
-    const container = document.getElementById("preview-fechas");
     container.innerHTML = "";
 
-    let num = parseInt(document.getElementById("num_secciones").value);
+    const num = parseInt(document.getElementById("num_modulos").value) || 0;
+    if (num <= 0) return;
 
-    if (isNaN(num) || num <= 0) return;
-
-    let html = `
-        <h5 class="mb-3">📅 Fechas de Secciones</h5>
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped text-center align-middle">
-                <thead >
-                    <tr>
-                        <th>Sección</th>
-                        <th>Fecha</th>
-                    </tr>
-                </thead>
-                <tbody>
-    `;
+    const table = document.createElement('table');
+    table.className = 'table table-bordered';
+    table.innerHTML = `<thead><tr><th style="width:50px">#</th><th>Nombre</th><th>Descripción</th></tr></thead>`;
+    const tbody = document.createElement('tbody');
 
     for (let i = 0; i < num; i++) {
-        let fechaValue = fechasRegistradas[i] || ""; // Si existe, usarla, si no dejar vacío
-        html += `
-            <tr>
-                <td><strong>${i + 1}</strong></td>
-                <td>
-                    <input type="date" class="form-control" 
-                           name="seccion_fecha[]" 
-                           value="${fechaValue}" required>
-                </td>
-            </tr>
-        `;
+        const tr = document.createElement('tr');
+
+        const tdIndex = document.createElement('td');
+        tdIndex.textContent = i + 1;
+
+        const tdName = document.createElement('td');
+        const inputName = document.createElement('input');
+        inputName.type = 'text';
+        inputName.name = 'modulo_nombre[]';
+        inputName.className = 'form-control';
+
+        const hiddenId = document.createElement('input');
+        hiddenId.type = 'hidden';
+        hiddenId.name = 'modulo_id[]';
+
+        const tdDesc = document.createElement('td');
+        const textarea = document.createElement('textarea');
+        textarea.name = 'modulo_descripcion[]';
+        textarea.className = 'form-control';
+        textarea.rows = 2;
+
+        // Priorizar: si ya había contenido en los inputs (preservado), usarlo.
+        // Si no, usar datos que vinieron desde la DB (modulosExistentes).
+        const nombrePreservado = currNames[i];
+        const descPreservado   = currDescs[i];
+        const idPreservado     = currIds[i];
+
+        if (typeof nombrePreservado !== 'undefined' && nombrePreservado !== '') {
+            inputName.value = nombrePreservado;
+        } else if (modulosExistentes[i] && modulosExistentes[i].NombreModulo) {
+            inputName.value = modulosExistentes[i].NombreModulo;
+        } else {
+            inputName.value = '';
+        }
+
+        if (typeof descPreservado !== 'undefined' && descPreservado !== '') {
+            textarea.value = descPreservado;
+        } else if (modulosExistentes[i] && (modulosExistentes[i].Descripcion !== undefined)) {
+            textarea.value = modulosExistentes[i].Descripcion;
+        } else {
+            textarea.value = '';
+        }
+
+        if (typeof idPreservado !== 'undefined' && idPreservado !== '') {
+            hiddenId.value = idPreservado;
+        } else if (modulosExistentes[i] && modulosExistentes[i].ID_Modulo) {
+            hiddenId.value = modulosExistentes[i].ID_Modulo;
+        } else {
+            hiddenId.value = '';
+        }
+
+        tdName.appendChild(inputName);
+        tdName.appendChild(hiddenId);
+        tdDesc.appendChild(textarea);
+
+        tr.appendChild(tdIndex);
+        tr.appendChild(tdName);
+        tr.appendChild(tdDesc);
+
+        tbody.appendChild(tr);
     }
 
-    html += `
-                </tbody>
-            </table>
-        </div>
-    `;
-
-    container.innerHTML = html;
+    table.appendChild(tbody);
+    container.appendChild(table);
 }
 
-document.getElementById("num_secciones").addEventListener("change", generarFechas);
-document.getElementById("fecha_inicio").addEventListener("change", generarFechas);
-document.getElementById("fecha_fin").addEventListener("change", generarFechas);
-
-document.addEventListener("DOMContentLoaded", generarFechas);
+document.getElementById("num_modulos").addEventListener("change", generarModulos);
+document.addEventListener("DOMContentLoaded", generarModulos);
 </script>
-
-
-
-        <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-            <?php
-          require_once __DIR__ . '/../checkout/CR.php';
-          ?>
-                <ul class="list-inline">
-                </ul>
-        </footer>
-    </div>
-
-<?php
-require_once __DIR__ . '/../db/config.php';
-
-$mensaje = "";
-$tipoMensaje = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-    $nombreDiplomado = $_POST["nombre_diplomado"];
-    $descripcion = $_POST["descripcion"];
-    $fechaInicio = $_POST["fecha_inicio"];
-    $fechaFin = $_POST["fecha_fin"];
-    $numSecciones = $_POST["num_secciones"];
-    $idPonente = $_POST["ID_Ponente"] ?? null;
-    $idDiplomado = $_POST["id_diplomado"];
-    $fechasFormulario = $_POST["seccion_fecha"] ?? []; // <-- NUEVO: array con fechas por sección
-
-    try {
-        $conn->beginTransaction();
-
-        // 1) Actualizar diplomado
-        $sql = "UPDATE diplomados 
-                SET NombreDiplomado = ?, Descripcion = ?, Num = ?, FechaInicio = ?, FechaFin = ?
-                WHERE ID_Diplomado = ?";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute([$nombreDiplomado, $descripcion, $numSecciones, $fechaInicio, $fechaFin, $idDiplomado]);
-
-        // 2) Obtener secciones existentes
-        $stmtSecExist = $conn->prepare("SELECT ID, NumSeccion, Fecha FROM secciones WHERE DiplomadoID = ? ORDER BY NumSeccion ASC");
-        $stmtSecExist->execute([$idDiplomado]);
-        $seccionesExistentesRaw = $stmtSecExist->fetchAll(PDO::FETCH_ASSOC);
-
-        $seccionesExistentes = [];
-        foreach ($seccionesExistentesRaw as $sec) {
-            $seccionesExistentes[$sec['NumSeccion']] = [
-                'ID' => $sec['ID'],
-                'Fecha' => substr($sec['Fecha'], 0, 10) // quitar hora
-            ];
-        }
-
-        // 3) Actualizar fechas según lo que viene del formulario
-        for ($i = 1; $i <= $numSecciones; $i++) {
-            $fechaForm = $fechasFormulario[$i - 1] ?? null;
-            if ($fechaForm) {
-                if (isset($seccionesExistentes[$i])) {
-                    // Si la fecha cambió, actualizamos
-                    if ($seccionesExistentes[$i]['Fecha'] !== $fechaForm) {
-                        $sqlUpdate = "UPDATE secciones SET Fecha = ? WHERE ID = ?";
-                        $stmtUpdate = $conn->prepare($sqlUpdate);
-                        $stmtUpdate->execute([$fechaForm, $seccionesExistentes[$i]['ID']]);
-                    }
-                } else {
-                    // Si no existe la sección, la insertamos
-                    $sqlInsert = "INSERT INTO secciones (DiplomadoID, NumSeccion, Fecha) VALUES (?, ?, ?)";
-                    $stmtInsert = $conn->prepare($sqlInsert);
-                    $stmtInsert->execute([$idDiplomado, $i, $fechaForm]);
-                }
-            }
-        }
-
-        // 4) Eliminar secciones sobrantes si se redujo el número
-        if (count($seccionesExistentes) > $numSecciones) {
-            $sqlDelete = "DELETE FROM secciones WHERE DiplomadoID = ? AND NumSeccion > ?";
-            $stmtDelete = $conn->prepare($sqlDelete);
-            $stmtDelete->execute([$idDiplomado, $numSecciones]);
-        }
-
-        // 5) Actualizar ponente asignado
-        if ($idPonente) {
-            $sqlCheck = "SELECT COUNT(*) FROM asignacionesdiplomado WHERE ID_Diplomado = ?";
-            $stmtCheck = $conn->prepare($sqlCheck);
-            $stmtCheck->execute([$idDiplomado]);
-            $existe = $stmtCheck->fetchColumn();
-
-            if ($existe) {
-                $sqlUpdatePonente = "UPDATE asignacionesdiplomado 
-                                     SET ID_Ponente = ? 
-                                     WHERE ID_Diplomado = ?";
-                $stmtUpdate = $conn->prepare($sqlUpdatePonente);
-                $stmtUpdate->execute([$idPonente, $idDiplomado]);
-            } else {
-                $sqlInsertPonente = "INSERT INTO asignacionesdiplomado (ID_Diplomado, ID_Ponente) 
-                                     VALUES (?, ?)";
-                $stmtInsert = $conn->prepare($sqlInsertPonente);
-                $stmtInsert->execute([$idDiplomado, $idPonente]);
-            }
-        }
-
-        $conn->commit();
-        $mensaje = "Diplomado actualizado correctamente";
-        $tipoMensaje = "success";
-
-    } catch (PDOException $e) {
-        $conn->rollBack();
-        $mensaje = "Error: " . $e->getMessage();
-        $tipoMensaje = "error";
-    }
-}
-?>
-
-
 
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>

@@ -75,35 +75,35 @@
 
         
 
-// document.addEventListener('DOMContentLoaded', function () {
-//   // Función genérica de validación
-//   function validateInput(input, regex) {
-//     // Convertir el valor a mayúsculas
-//     input.value = input.value.toUpperCase();
+document.addEventListener('DOMContentLoaded', function () {
+     // Función genérica de validación
+   function validateInput(input, regex) {
+     // Convertir el valor a mayúsculas
+    input.value = input.value.toUpperCase();
 
-//     // Verificar si el texto cumple con las restricciones
-//     if (!regex.test(input.value)) {
-//       document.getElementById(input.id + 'Feedback').innerText = 'Se requiere un valor válido.';
-//       input.classList.add('is-invalid');
-//       input.classList.remove('is-valid');
-//     } else {
-//       document.getElementById(input.id + 'Feedback').innerText = '';
-//       input.classList.remove('is-invalid');
-//       input.classList.add('is-valid');
-//     }
-//   }
+    // Verificar si el texto cumple con las restricciones
+    if (!regex.test(input.value)) {
+      document.getElementById(input.id + 'Feedback').innerText = 'Se requiere un valor válido.';
+       input.classList.add('is-invalid');
+      input.classList.remove('is-valid');
+    } else {
+      document.getElementById(input.id + 'Feedback').innerText = '';
+      input.classList.remove('is-invalid');
+      input.classList.add('is-valid');
+    }
+  }
 
-//   // Obtener los inputs y asociar la validación
-//   const firstNameInput = document.getElementById('firstName');
-//   const lastNameInput = document.getElementById('lastName');
+  // Obtener los inputs y asociar la validación
+  const firstNameInput = document.getElementById('firstName');
+  const lastNameInput = document.getElementById('lastName');
 
-//   firstNameInput.addEventListener('input', function () {
-//     let regex = /^[a-zA-ZáéíóúÁÉÍÓÚ\s]{3,70}$/;
-//     validateInput(this, regex);
-//   });
+  firstNameInput.addEventListener('input', function () {
+    let regex = /^[a-zA-ZáéíóúÁÉÍÓÚÑñ0-9\s]{3,70}$/;
+    validateInput(this, regex);
+  });
 
-//   lastNameInput.addEventListener('input', function () {
-//     let regex = /^[a-zA-ZáéíóúÁÉÍÓÚ\s]{3,70}$/;
-//     validateInput(this, regex);
-//   });
-// });
+   lastNameInput.addEventListener('input', function () {
+    let regex = /^[a-zA-ZáéíóúÁÉÍÓÚ\s]{3,70}$/;
+    validateInput(this, regex);
+  });
+ });

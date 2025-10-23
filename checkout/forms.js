@@ -85,7 +85,7 @@ document.addEventListener('DOMContentLoaded', function () {
         validateInput(this);
     });
 
-    function validateInput(input) {
+    /*function validateInput(input) {
         // Convertir el valor a mayúsculas
         input.value = input.value.toUpperCase();
 
@@ -101,6 +101,30 @@ document.addEventListener('DOMContentLoaded', function () {
             input.classList.add('is-valid');
         }
     }
+
+    */
+
+
+
+    function validateInput(input) {
+    // Convertir el valor a mayúsculas
+    input.value = input.value.toUpperCase();
+
+    // ✅ Ahora acepta letras, acentos, Ñ, espacios y números
+let regex = /^[a-zA-ZáéíóúÁÉÍÓÚÑñ0-9\s]{3,}$/;
+
+
+    if (!regex.test(input.value)) {
+        input.setCustomValidity('Se requiere un nombre o valor válido (letras y números).');
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+    } else {
+        input.setCustomValidity('');
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+    }
+}
+
 });
 
 

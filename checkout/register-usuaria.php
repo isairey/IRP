@@ -232,7 +232,7 @@ require_once __DIR__ . '/../pages/header.php';
             
     <div class="col-sm-12">
         <label for="firstName" class="form-label">Nombre</label>
-        <input type="text" class="form-control" id="firstName" name="nombre" placeholder="" required>
+        <input type="text" class="form-control" id="firstName" name="nombre" placeholder="" required  oninput="validateInput(this)">
     <div class="invalid-feedback">Se requiere un nombre válido.</div>
     <div class="valid-feedback">Looks good!</div>
     </div>

@@ -156,12 +156,6 @@ require_once __DIR__ . '/../pages/header.php';
         </div>
       <form class="needs-validation" action="asignar-seminario.php" method="POST" enctype="multipart/form-data" novalidate>
             
-
-
-
-
-
-
 <div class="col-sm-12">
     <label for="buscar_usuario" class="form-label">Buscar Participante</label>
     <div class="input-group mb-3">
@@ -217,10 +211,6 @@ document.getElementById('id_usuario').addEventListener('change', function() {
 });
 </script>
 
-
-
-
-
 <script>
 // Filtrar opciones del select según el input
 document.getElementById('btnBuscarUsuario').addEventListener('click', function() {
@@ -241,8 +231,6 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
     }
 });
 </script>
-
-
                         <!-- Seleccionar Diplomado -->
                        <div class="col-sm-12">
     <label for="id_seminario" class="form-label">Seminario</label>
@@ -270,11 +258,6 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
     <input type="text" id="nombre_ponente" class="form-control" value="Seleccione un seminario primero" readonly>
     <input type="hidden" name="id_ponente" id="id_ponente_hidden">
 </div>
-
-
-
-
-
   <hr class="my-4">
                     <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar Asignación</button>
 
@@ -287,7 +270,6 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
 </div>
 
 <div id="alert-container" style="position: fixed; top: 20px; right: 20px; z-index: 1055;"></div>
-
 
 <!-- Modal para nueva usuaria -->
 <div class="modal fade" id="modalOtro" tabindex="-1" aria-labelledby="modalOtroLabel" aria-hidden="true">
@@ -329,9 +311,6 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
     </form>
   </div>
 </div>
-
-
-
         <footer class="my-5 pt-5 text-body-secondary text-center text-small">
           <?php
           require_once __DIR__ . '/../checkout/CR.php';
@@ -379,8 +358,6 @@ document.getElementById('id_seminario').addEventListener('change', function() {
             btnSubmit.disabled = true;
         });
 });
-
-
 
 let valorAnterior = null; // Guardará el valor previo del select
 

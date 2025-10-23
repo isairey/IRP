@@ -695,9 +695,13 @@ require_once __DIR__ . '/../pages/header.php';
 
 
 
+       
         <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-            <p class="mb-1">Copyright GESMujer &copy; 2024 </p>
+              <?php
+          require_once __DIR__ . '/../checkout/CR.php';
+          ?>
                 <ul class="list-inline">
+                    <!-- <li class="list-inline-item"><a href="#">Privacy</a></li> -->
                 </ul>
         </footer>
     </div>
