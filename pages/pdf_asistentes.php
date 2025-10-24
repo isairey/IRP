@@ -227,6 +227,159 @@ if(count($asistentes)>0){
     $pdf->Cell(array_sum($w),6,'No hay asistentes registrados',1,1,'C');
 }
 
+
+// --------------------------------------------------
+// 6️⃣ Reporte de asistencias por módulo
+// --------------------------------------------------
+// Obtener módulos del diplomado con su descripción
+$sqlModulos = $conn->prepare("
+    SELECT ID_Modulo, NombreModulo, Descripcion
+    FROM modulos
+    WHERE DiplomadoID = :id
+");
+$sqlModulos->execute([':id' => $idDiplomado]);
+$modulos = $sqlModulos->fetchAll(PDO::FETCH_ASSOC);
+
+// Obtener todos los asistentes
+$sqlAsistentes = $conn->prepare("
+    SELECT ad.ID_Usuario, ad.TipoUsuario
+    FROM asignacionesdiplomado ad
+    WHERE ad.ID_Diplomado = :id
+");
+$sqlAsistentes->execute([':id' => $idDiplomado]);
+$asistentes = $sqlAsistentes->fetchAll(PDO::FETCH_ASSOC);
+
+foreach ($modulos as $mod) {
+
+    // Agregar nueva página por módulo
+    $pdf->AddPage('L');
+
+    // Título del módulo
+  $pdf->SetFont('helvetica', 'B', 13);
+$pdf->Cell(0, 8, "Módulo: " . $mod['NombreModulo'], 0, 1, 'L');
+
+if (!empty($mod['Descripcion'])) {
+    $pdf->SetFont('helvetica', '', 10);
+    $pdf->MultiCell(0, 6, "Descripción: " . $mod['Descripcion'], 0, 'L');
+}
+
+    $pdf->Ln(4);
+
+    // Obtener secciones del módulo
+    $sqlSecciones = $conn->prepare("
+        SELECT ID, NombreSeccion
+        FROM secciones
+        WHERE ModuloID = :id
+    ");
+    $sqlSecciones->execute([':id' => $mod['ID_Modulo']]);
+    $secciones = $sqlSecciones->fetchAll(PDO::FETCH_ASSOC);
+
+    if (count($secciones) == 0) {
+        $pdf->SetFont('helvetica','I',9);
+        $pdf->Cell(0,6,'Sin secciones registradas',0,1,'L');
+        $pdf->Ln(3);
+        continue;
+    }
+
+    // ===========================
+    // TABLA DE ASISTENCIAS
+    // ===========================
+
+    // Calcular anchos dinámicos
+    $margenIzq = 10;
+    $margenDer = 10;
+    $anchoTotal = $pdf->GetPageWidth() - ($margenIzq + $margenDer);
+
+    $anchoNum = 15;      // #
+    $anchoNombre = 60;   // Nombre
+    $anchoTipo = 35;     // Tipo
+    $numSecciones = count($secciones);
+
+    $anchoRestante = $anchoTotal - ($anchoNum + $anchoNombre + $anchoTipo);
+    $anchoSeccion = $numSecciones > 0 ? ($anchoRestante / $numSecciones) : 40;
+
+    // Encabezados
+    $pdf->SetFont('helvetica', 'B', 9);
+    $pdf->SetFillColor(230,230,230);
+    $pdf->Cell($anchoNum, 8, '#', 1, 0, 'C', true);
+    $pdf->Cell($anchoNombre, 8, 'Nombre', 1, 0, 'C', true);
+    $pdf->Cell($anchoTipo, 8, 'Tipo', 1, 0, 'C', true);
+
+    foreach ($secciones as $sec) {
+        $pdf->Cell($anchoSeccion, 8, utf8_decode($sec['NombreSeccion']), 1, 0, 'C', true);
+    }
+    $pdf->Ln();
+
+    // Filas
+    $pdf->SetFont('helvetica', '', 8);
+    $contador = 1;
+
+    foreach ($asistentes as $a) {
+        // Obtener nombre según tipo
+        $nombre = 'Desconocido';
+        switch($a['TipoUsuario']){
+            case 'usuario': 
+                $q=$conn->prepare("SELECT Nombre FROM usuario WHERE ID=?"); break;
+            case 'personal': 
+                $q=$conn->prepare("SELECT Nombre FROM personal WHERE ID_Personal=?"); break;
+            case 'participante': 
+                $q=$conn->prepare("SELECT Nombre FROM participante WHERE ID_Participante=?"); break;
+            default: $q=null;
+        }
+        if($q){ 
+            $q->execute([$a['ID_Usuario']]); 
+            $info=$q->fetch(PDO::FETCH_ASSOC); 
+            if($info){ $nombre=$info['Nombre']; } 
+        }
+
+        // Fila base
+        $pdf->Cell($anchoNum, 8, $contador++, 1, 0, 'C');
+        $pdf->Cell($anchoNombre, 8, utf8_decode($nombre), 1, 0, 'L');
+        $pdf->Cell($anchoTipo, 8, utf8_decode($a['TipoUsuario']), 1, 0, 'C');
+
+        // Estado por sección
+        foreach ($secciones as $sec) {
+            $sqlEstado = $conn->prepare("
+                SELECT estado 
+                FROM asistencias 
+                WHERE id_usu = :idUsu 
+                  AND id_seccion = :idSec
+                  AND ID_Diplomado = :idDiplomado
+                LIMIT 1
+            ");
+            $sqlEstado->execute([
+                ':idUsu' => $a['ID_Usuario'],
+                ':idSec' => $sec['ID'],
+                ':idDiplomado' => $idDiplomado
+            ]);
+            $estado = $sqlEstado->fetchColumn();
+
+            switch ($estado) {
+                case 'asistio': $texto = 'Asistio'; break;
+                case 'falta': $texto = 'Falta'; break;
+                case 'permiso': $texto = 'Permiso'; break;
+                default: $texto = 'Sin  Reguistro';
+            }
+
+            $pdf->Cell($anchoSeccion, 8, utf8_decode($texto), 1, 0, 'C');
+        }
+
+        $pdf->Ln();
+    }
+
+    $pdf->Ln(6);
+}
+
+
+
+
+
+
+
+
+
+
+
 $pdf->Output('diplomado_actividades.pdf','I');
 ?>
 

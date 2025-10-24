@@ -1,56 +1,136 @@
 <?php
-// Inicia sesión, verifica permisos si es necesario
-session_start();
+require_once __DIR__ . '/../pages/seccion.php';
+
+?>
+
+<?php
 require_once __DIR__ . '/../db/config.php';
 
-// --- Aquí va todo tu código de consulta de asistentes y secciones ---
+// Validar ID del diplomado
 if (!isset($_GET['id_diplomado']) || !is_numeric($_GET['id_diplomado'])) {
     die("ID de diplomado inválido.");
 }
 $idDiplomado = (int) $_GET['id_diplomado'];
+$busqueda = trim($_GET['search'] ?? '');
 
 $registrosPorPagina = 8;
 $pagina = isset($_GET['pagina']) && is_numeric($_GET['pagina']) ? (int) $_GET['pagina'] : 1;
 $offset = ($pagina - 1) * $registrosPorPagina;
 
-// 1️⃣ Consulta de asistentes
-$stmt = $conn->prepare("
-    SELECT u.ID, u.Nombre, u.Email, aa.FechaAsignacion
-    FROM asignacionesdiplomado aa
-    INNER JOIN usuario u ON aa.ID_Usuario = u.ID
-    WHERE aa.ID_Diplomado = :idDiplomado
-    ORDER BY aa.FechaAsignacion DESC
-    LIMIT :limit OFFSET :offset
-");
-$stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+// 🔍 Consulta principal (Usuarios + Participantes + Personal)
+$sql = "
+SELECT ID_Usuario, NombreCompleto, Email, FechaAsignacion, TipoUsuario FROM (
+    SELECT 
+        u.ID AS ID_Usuario,
+        u.Nombre AS NombreCompleto,
+        u.Email,
+        ad.FechaAsignacion,
+        'Usuario' AS TipoUsuario
+    FROM asignacionesdiplomado ad
+    INNER JOIN usuario u ON ad.ID_Usuario = u.ID
+    WHERE ad.ID_Diplomado = :id1
+    " . (!empty($busqueda) ? "AND u.Nombre LIKE :busqueda1" : "") . "
+
+    UNION ALL
+
+    SELECT 
+        p.ID_Participante AS ID_Usuario,
+        p.Nombre AS NombreCompleto,
+        p.Email,
+        ad.FechaAsignacion,
+        'Participante' AS TipoUsuario
+    FROM asignacionesdiplomado ad
+    INNER JOIN participante p ON ad.ID_Usuario = p.ID_Participante
+    WHERE ad.ID_Diplomado = :id2
+    " . (!empty($busqueda) ? "AND p.Nombre LIKE :busqueda2" : "") . "
+
+    UNION ALL
+
+    SELECT 
+        pe.ID_Personal AS ID_Usuario,
+        pe.Nombre AS NombreCompleto,
+        pe.Email,
+        ad.FechaAsignacion,
+        'Personal' AS TipoUsuario
+    FROM asignacionesdiplomado ad
+    INNER JOIN personal pe ON ad.ID_Usuario = pe.ID_Personal
+    WHERE ad.ID_Diplomado = :id3
+    " . (!empty($busqueda) ? "AND pe.Nombre LIKE :busqueda3" : "") . "
+) AS total
+ORDER BY FechaAsignacion DESC
+LIMIT :limit OFFSET :offset
+";
+
+$stmt = $conn->prepare($sql);
+$stmt->bindValue(':id1', $idDiplomado, PDO::PARAM_INT);
+$stmt->bindValue(':id2', $idDiplomado, PDO::PARAM_INT);
+$stmt->bindValue(':id3', $idDiplomado, PDO::PARAM_INT);
+if (!empty($busqueda)) {
+    $stmt->bindValue(':busqueda1', "%$busqueda%", PDO::PARAM_STR);
+    $stmt->bindValue(':busqueda2', "%$busqueda%", PDO::PARAM_STR);
+    $stmt->bindValue(':busqueda3', "%$busqueda%", PDO::PARAM_STR);
+}
 $stmt->bindValue(':limit', $registrosPorPagina, PDO::PARAM_INT);
 $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 2️⃣ Traer fechas de secciones de cada participante
-// 2️⃣ Traer fechas de secciones para este diplomado
-foreach ($asistentes as &$asistente) {
-    $stmt2 = $conn->prepare("
-        SELECT fecha 
-        FROM secciones 
-        WHERE DiplomadoID = :idDiplomado
-        ORDER BY fecha ASC
-    ");
-    $stmt2->execute([
-        ':idDiplomado' => $idDiplomado
-    ]);
-    $asistente['fechas_secciones'] = $stmt2->fetchAll(PDO::FETCH_COLUMN);
+// 🟨 Si no hay resultados, tabla vacía
+if (!$asistentes) {
+    $asistentes = [];
 }
 
+// 📅 Fechas de secciones del diplomado
+$stmtFechas = $conn->prepare("
+    SELECT ID, fecha 
+    FROM secciones 
+    WHERE DiplomadoID = :id
+    ORDER BY fecha ASC
+");
+$stmtFechas->execute([':id' => $idDiplomado]);
+$fechasDiplomados = $stmtFechas->fetchAll(PDO::FETCH_KEY_PAIR);
 
-// Conteo total para paginación
-$stmtCount = $conn->prepare("SELECT COUNT(*) FROM asignacionesdiplomado WHERE ID_Diplomado = :idDiplomado");
-$stmtCount->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+// 🔢 Conteo total con búsqueda
+$sqlCount = "
+SELECT COUNT(*) FROM (
+    SELECT u.ID FROM asignacionesdiplomado ad
+    INNER JOIN usuario u ON ad.ID_Usuario = u.ID
+    WHERE ad.ID_Diplomado = :id
+    " . (!empty($busqueda) ? "AND u.Nombre LIKE :busqueda" : "") . "
+    
+    UNION ALL
+    
+    SELECT p.ID_Participante FROM asignacionesdiplomado ad
+    INNER JOIN participante p ON ad.ID_Usuario = p.ID_Participante
+    WHERE ad.ID_Diplomado = :id
+    " . (!empty($busqueda) ? "AND p.Nombre LIKE :busqueda" : "") . "
+    
+    UNION ALL
+    
+    SELECT pe.ID_Personal FROM asignacionesdiplomado ad
+    INNER JOIN personal pe ON ad.ID_Usuario = pe.ID_Personal
+    WHERE ad.ID_Diplomado = :id
+    " . (!empty($busqueda) ? "AND pe.Nombre LIKE :busqueda" : "") . "
+) AS total
+";
+
+$stmtCount = $conn->prepare($sqlCount);
+$stmtCount->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
+if (!empty($busqueda)) {
+    $stmtCount->bindValue(':busqueda', "%$busqueda%", PDO::PARAM_STR);
+}
 $stmtCount->execute();
 $totalRegistros = $stmtCount->fetchColumn();
 $totalPaginas = ceil($totalRegistros / $registrosPorPagina);
+
+// 🏷️ Obtener nombre del diplomado
+$stmtNombre = $conn->prepare("SELECT NombreDiplomado FROM diplomados WHERE ID_Diplomado = :id");
+$stmtNombre->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
+$stmtNombre->execute();
+$diplomado = $stmtNombre->fetch(PDO::FETCH_ASSOC);
+$nombreDiplomado = $diplomado ? $diplomado['NombreDiplomado'] : 'Diplomado no encontrado';
 ?>
+
 
 
 
@@ -313,27 +393,38 @@ require_once __DIR__ . '/../pages/header.php';
 
 
 <?php
- 
 require_once __DIR__ . '/../pages/footer.php';
 ?>
-    <!-- Temina -->
-    <!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
+<!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
 
 <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
   <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Asistentes del Diplomado #<?= htmlspecialchars($idDiplomado) ?></h1>
+    <h2 class="text-center my-3">Participantes del Diplomado: <?= htmlspecialchars($nombreDiplomado) ?></h2>
   </div>
 
-  <!-- Buscador opcional si decides agregarlo en el futuro -->
-  <!--
-  <div class="d-flex justify-content-center py-4">
-    <form class="d-flex" role="search">
-      <input class="form-control me-2" type="text" placeholder="Buscar nombre o correo" name="search"
-             value="<?= isset($_GET['search']) ? htmlspecialchars($_GET['search']) : '' ?>">
+  <!-- Botones para imprimir PDF -->
+  <div class="d-flex justify-content-center gap-3 mb-4">
+    <a href="../pages/pdf_asistentes.php?id_diplomado=<?= $idDiplomado ?>" target="_blank" class="btn btn-outline-danger">
+      <i class="bi bi-file-earmark-pdf-fill me-2"></i> Imprimir Lista Completa
+    </a>
+    <a href="../pages/pdf_asistencia_completa.php?id_diplomado=<?= $idDiplomado ?>" target="_blank" class="btn btn-outline-success">
+      <i class="bi bi-file-earmark-check-fill me-2"></i> Imprimir Asistencia Perfecta
+    </a>
+  </div>
+
+  <!-- Buscador -->
+  <div class="d-flex gap-2 justify-content-center py-3">
+    <form for="search" class="d-flex mb-3" role="search" method="GET">
+      <input type="hidden" name="id_diplomado" value="<?= $idDiplomado ?>">
+      <input class="form-control me-2" type="text" placeholder="Buscar por nombre o email" id="search" name="search" 
+             value="<?= htmlspecialchars($busqueda) ?>" aria-label="Search">
       <button class="btn btn-outline-success" type="submit">Buscar</button>
+      <button class="btn btn-outline-secondary" type="button" 
+              onclick="window.location.href='../pages/asistentes.php?id_diplomado=<?= $idDiplomado ?>'">
+          <i class="bi bi-arrow-repeat"></i>
+      </button>
     </form>
   </div>
-  -->
 
 <?php
 require_once __DIR__ . '/../db/config.php';
@@ -343,23 +434,46 @@ if (!isset($_GET['id_diplomado']) || !is_numeric($_GET['id_diplomado'])) {
     die("ID de diplomado inválido.");
 }
 $idDiplomado = (int) $_GET['id_diplomado'];
+$busqueda = trim($_GET['search'] ?? '');
 
-// 1️⃣ Obtener todas las fechas de secciones de este diplomado
-$stmtFechas = $conn->prepare("
-    SELECT ID, fecha
-    FROM secciones 
-    WHERE DiplomadoID = :idDiplomado
-    ORDER BY fecha ASC
+
+// 🔹 Paginación
+$registrosPorPagina = 10; // puedes cambiarlo
+$pagina = isset($_GET['pagina']) ? (int)$_GET['pagina'] : 1;
+if ($pagina < 1) $pagina = 1;
+$inicio = ($pagina - 1) * $registrosPorPagina;
+
+// 🔹 Contar total de registros para calcular páginas
+
+
+// 🔹 Agregar LIMIT a la consulta principal
+$sql .= " LIMIT $inicio, $registrosPorPagina";
+
+
+
+// 1️⃣ Obtener módulos y sus secciones
+$sqlModulos = $conn->prepare("
+    SELECT m.ID_Modulo, m.NombreModulo, s.ID AS ID_Seccion, s.fecha
+    FROM modulos m
+    INNER JOIN secciones s ON s.ModuloID = m.ID_Modulo
+    WHERE m.DiplomadoID = :id
+    ORDER BY m.ID_Modulo ASC, s.fecha ASC
 ");
-$stmtFechas->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
-$stmtFechas->execute();
-$fechasDiplomados = [];
-while ($row = $stmtFechas->fetch(PDO::FETCH_ASSOC)) {
-    $fechasDiplomados[$row['ID']] = $row['fecha'];
+$sqlModulos->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
+$sqlModulos->execute();
+
+$modulos = [];
+while ($row = $sqlModulos->fetch(PDO::FETCH_ASSOC)) {
+    $modulos[$row['ID_Modulo']]['nombre'] = $row['NombreModulo'];
+    $modulos[$row['ID_Modulo']]['secciones'][] = [
+        'id' => $row['ID_Seccion'],
+        'fecha' => $row['fecha']
+    ];
 }
 
-// 2️⃣ Obtener asistentes con UNION ALL para respetar el tipo
-$sql = "
+// 2️⃣ Consulta principal (participantes / personal / usuario)
+// Consulta base con UNION de los tres tipos de usuario
+$sqlBase = "
 (
     SELECT 
         a.ID_Usuario,
@@ -369,7 +483,7 @@ $sql = "
         p.Email
     FROM asignacionesdiplomado a
     INNER JOIN participante p ON a.ID_Usuario = p.ID_Participante
-    WHERE a.ID_Diplomado = :idDiplomado AND a.TipoUsuario = 'participante'
+    WHERE a.ID_Diplomado = :id AND a.TipoUsuario = 'participante'
 )
 UNION ALL
 (
@@ -381,7 +495,7 @@ UNION ALL
         pe.Email
     FROM asignacionesdiplomado a
     INNER JOIN personal pe ON a.ID_Usuario = pe.ID_Personal
-    WHERE a.ID_Diplomado = :idDiplomado AND a.TipoUsuario = 'personal'
+    WHERE a.ID_Diplomado = :id AND a.TipoUsuario = 'personal'
 )
 UNION ALL
 (
@@ -393,97 +507,243 @@ UNION ALL
         u.Email
     FROM asignacionesdiplomado a
     INNER JOIN usuario u ON a.ID_Usuario = u.ID
-    WHERE a.ID_Diplomado = :idDiplomado AND a.TipoUsuario = 'usuario'
+    WHERE a.ID_Diplomado = :id AND a.TipoUsuario = 'usuario'
 )
-ORDER BY FechaAsignacion DESC
 ";
+
+
+if ($busqueda !== '') {
+    $sql = "SELECT * FROM ($sqlBase) AS todos 
+            WHERE todos.NombreCompleto LIKE :busqueda 
+               OR todos.Email LIKE :busqueda
+            ORDER BY FechaAsignacion DESC";
+    $countSql = "SELECT COUNT(*) AS total FROM ($sqlBase) AS total_count 
+                 WHERE total_count.NombreCompleto LIKE :busqueda 
+                    OR total_count.Email LIKE :busqueda";
+} else {
+    $sql = "SELECT * FROM ($sqlBase) AS todos ORDER BY FechaAsignacion DESC";
+    $countSql = "SELECT COUNT(*) AS total FROM ($sqlBase) AS total_count";
+}
+
+
+$countStmt = $conn->prepare($countSql);
+$countStmt->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
+if ($busqueda !== '') {
+    $countStmt->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
+}
+$countStmt->execute();
+$totalRegistros = $countStmt->fetchColumn();
+$totalPaginas = ceil($totalRegistros / $registrosPorPagina);
+
+
 $stmt = $conn->prepare($sql);
-$stmt->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmt->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
+if ($busqueda !== '') {
+    $stmt->bindValue(':busqueda', '%' . $busqueda . '%', PDO::PARAM_STR);
+}
 $stmt->execute();
 $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-// 3️⃣ Traer asistencias ya registradas
+// 3️⃣ Traer asistencias
 $asistencias = [];
 $stmtAsis = $conn->prepare("
-    SELECT ID_Seccion, presente, id_usu
+    SELECT ID_Seccion, estado, id_usu
     FROM asistencias
-    WHERE ID_Diplomado = :idDiplomado
+    WHERE ID_Diplomado = :id
 ");
-$stmtAsis->bindValue(':idDiplomado', $idDiplomado, PDO::PARAM_INT);
+$stmtAsis->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
 $stmtAsis->execute();
 foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
-    $asistencias[$a['id_usu']][$a['ID_Seccion']] = $a['presente'];
+    $asistencias[$a['id_usu']][$a['ID_Seccion']] = $a['estado'];
 }
 ?>
+
+
 <div class="table-responsive small">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Email</th>
-                <th>Tipo</th>
-                <th>Fecha Asignación</th>
-                <?php foreach ($fechasDiplomados as $fecha): ?>
-                    <th><?= htmlspecialchars($fecha) ?></th>
-                <?php endforeach; ?>
-            </tr>
-        </thead>
-        <tbody>
+  <?php if (count($asistentes) > 0): ?>
+    <table class="table table-striped table-sm">
+      <thead>
+        <!-- Encabezado: Módulos -->
+        <tr class="table table-striped table-sm">
+          <th rowspan="2">Nombre</th>
+          <th rowspan="2">Email</th>
+          <th rowspan="2">Tipo</th>
+          <th rowspan="2">Fecha Asignación</th>
+          <?php foreach ($modulos as $mod): ?>
+            <th colspan="<?= count($mod['secciones']) ?>">
+              <?= htmlspecialchars($mod['nombre']) ?>
+            </th>
+          <?php endforeach; ?>
+          <th rowspan="2">Acciones</th>
+        </tr>
+
+        <!-- Encabezado: Secciones -->
+        <tr class="table table-striped table-sm">
+          <?php foreach ($modulos as $mod): ?>
+            <?php foreach ($mod['secciones'] as $sec): ?>
+              <th><?= date('d/m/Y', strtotime($sec['fecha'])) ?></th>
+            <?php endforeach; ?>
+          <?php endforeach; ?>
+        </tr>
+      </thead>
+
+      <tbody>
         <?php foreach ($asistentes as $asistente): ?>
-            <tr>
-                <td><?= htmlspecialchars($asistente['NombreCompleto'] ?? 'Desconocido') ?></td>
-                <td><?= htmlspecialchars($asistente['Email'] ?? '-') ?></td>
-                <td><?= htmlspecialchars($asistente['TipoUsuario']) ?></td>
-                <td><?= htmlspecialchars($asistente['FechaAsignacion']) ?></td>
-                <?php foreach ($fechasDiplomados as $idSeccion => $fecha): ?>
-                    <td>
-                        <input type="checkbox" class="asistencia-switch"
-                               data-usuario="<?= $asistente['ID_Usuario'] ?>"
-                               data-seccion="<?= $idSeccion ?>"
-                               <?= isset($asistencias[$asistente['ID_Usuario']][$idSeccion]) && $asistencias[$asistente['ID_Usuario']][$idSeccion] ? 'checked' : '' ?>>
-                    </td>
-                <?php endforeach; ?>
-            </tr>
+          <tr>
+            <td><?= htmlspecialchars($asistente['NombreCompleto']) ?></td>
+            <td><?= htmlspecialchars($asistente['Email']) ?></td>
+            <td><?= htmlspecialchars($asistente['TipoUsuario']) ?></td>
+            <td><?= htmlspecialchars($asistente['FechaAsignacion']) ?></td>
+
+            <?php foreach ($modulos as $mod): ?>
+              <?php foreach ($mod['secciones'] as $sec): ?>
+                <td>
+                  <select class="form-select asistencia-select"
+        data-usuario="<?= $asistente['ID_Usuario'] ?>"
+        data-seccion="<?= $sec['id'] ?>">
+    <option value="" <?= !isset($asistencias[$asistente['ID_Usuario']][$sec['id']]) ? 'selected' : '' ?>>-- Sin registrar --</option>
+    <option value="asistio" <?= (isset($asistencias[$asistente['ID_Usuario']][$sec['id']]) && $asistencias[$asistente['ID_Usuario']][$sec['id']] == 'asistio') ? 'selected' : '' ?>>Asistió</option>
+    <option value="falta" <?= (isset($asistencias[$asistente['ID_Usuario']][$sec['id']]) && $asistencias[$asistente['ID_Usuario']][$sec['id']] == 'falta') ? 'selected' : '' ?>>Falta</option>
+    <option value="permiso" <?= (isset($asistencias[$asistente['ID_Usuario']][$sec['id']]) && $asistencias[$asistente['ID_Usuario']][$sec['id']] == 'permiso') ? 'selected' : '' ?>>Permiso</option>
+</select>
+
+
+                </td>
+              <?php endforeach; ?>
+            <?php endforeach; ?>
+
+            <td>
+              <a href="../checkout/editar-asistente-diplomado.php?id_persona=<?= $asistente['ID_Usuario'] ?>&tipo=<?= $asistente['TipoUsuario'] ?>&id_taller=<?= $idDiplomado ?>" 
+                 class="btn btn-primary btn-sm">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+              <button class="btn btn-danger btn-sm eliminar-asistente-diplomado"
+                      data-id="<?= $asistente['ID_Usuario'] ?>"
+                      data-tipo="<?= $asistente['TipoUsuario'] ?>"
+                      data-taller="<?= $idDiplomado ?>">
+                <i class="bi bi-trash3-fill"></i>
+              </button>
+            </td>
+          </tr>
         <?php endforeach; ?>
-        </tbody>
+      </tbody>
     </table>
+  <?php else: ?>
+    <div class="alert alert-warning text-center">
+      No se encontraron datos.
+    </div>
+  <?php endif; ?>
 </div>
 
 
-  <nav aria-label="Paginación">
-    <ul class="pagination justify-content-center mt-3">
-      <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
-        <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= max($pagina - 1, 1) ?>">
-          &laquo; Anterior
-        </a>
+<nav aria-label="Paginación">
+  <ul class="pagination justify-content-center mt-3">
+    <li class="page-item <?= $pagina <= 1 ? 'disabled' : '' ?>">
+      <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= max($pagina - 1, 1) ?>">&laquo; Anterior</a>
+    </li>
+    <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
+      <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
+        <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= $i ?>"><?= $i ?></a>
       </li>
-
-      <?php for ($i = 1; $i <= $totalPaginas; $i++): ?>
-        <li class="page-item <?= $i == $pagina ? 'active' : '' ?>">
-          <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= $i ?>"><?= $i ?></a>
-        </li>
-      <?php endfor; ?>
-
-      <li class="page-item <?= $pagina >= $totalPaginas ? 'disabled' : '' ?>">
-        <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= min($pagina + 1, $totalPaginas) ?>">
-          Siguiente &raquo;
-        </a>
-      </li>
-    </ul>
-  </nav>
+    <?php endfor; ?>
+    <li class="page-item <?= $pagina >= $totalPaginas ? 'disabled' : '' ?>">
+      <a class="page-link" href="?id_diplomado=<?= $idDiplomado ?>&pagina=<?= min($pagina + 1, $totalPaginas) ?>">Siguiente &raquo;</a>
+    </li>
+  </ul>
+</nav>
 </main>
 
 
 
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
-    switchEl.addEventListener('change', () => {
-        const idUsuario = switchEl.dataset.usuario;
-        const idSeccion = switchEl.dataset.seccion;
-        const asistencia = switchEl.checked ? 1 : 0;
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-asistente-diplomado').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    confirmBtn.addEventListener("mouseenter", () => emoji.textContent = "😢");
+                    confirmBtn.addEventListener("mouseleave", () => emoji.textContent = "😃");
+                    cancelBtn.addEventListener("mouseenter", () => emoji.textContent = "😁");
+                    cancelBtn.addEventListener("mouseleave", () => emoji.textContent = "😃");
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const idPersona = button.getAttribute('data-id');
+                    const tipo = button.getAttribute('data-tipo');
+                    const idTaller = button.getAttribute('data-taller');
+
+                    // Redirige con los tres parámetros
+                    window.location.href = `./eliminar-asistentes-diplomado.php?id_persona=${idPersona}&tipo=${tipo}&id_diplomado=${idTaller}`;
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'El asistente fue eliminado correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La eliminación fue cancelada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
+                }
+            });
+        });
+    });
+});
+</script>
+
+
+
+<?php if (isset($_GET['statusss'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['statusss'] === 'deleted' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['statusss'] === 'deleted' ? 'Asistente Eliminado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['statusss'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
+
+
+
+
+
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+document.querySelectorAll('.asistencia-select').forEach(selectEl => {
+    selectEl.addEventListener('change', () => {
+        const idUsuario = selectEl.dataset.usuario;
+        const idSeccion = selectEl.dataset.seccion;
+        const estado = selectEl.value; // ahora tomamos 'asistio', 'falta' o 'permiso'
         const idDiplomado = <?= $idDiplomado ?>;
 
-        const datos = `id_usu=${idUsuario}&id_seccion=${idSeccion}&id_diplomado=${idDiplomado}&presente=${asistencia}`;
+        const datos = `id_usu=${encodeURIComponent(idUsuario)}&id_seccion=${encodeURIComponent(idSeccion)}&id_diplomado=${encodeURIComponent(idDiplomado)}&estado=${encodeURIComponent(estado)}`;
 
         fetch('guardar_asistencia.php', {
             method: 'POST',
@@ -492,16 +752,43 @@ document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
         })
         .then(res => res.text())
         .then(res => {
-            alert("Servidor respondió: " + res);
+            let icon, title;
+            if(estado === 'asistio') {
+                icon = 'success';
+                title = 'Asistencia registrada ✅';
+            } else if(estado === 'falta') {
+                icon = 'error';
+                title = 'Falta registrada ❌';
+            } else {
+                icon = 'info';
+                title = 'Permiso registrado ℹ️';
+            }
+
+            Swal.fire({
+                icon: icon,
+                title: title,
+                text: res,
+                timer: 1500,
+                showConfirmButton: false,
+                timerProgressBar: true
+            });
+
             console.log("Datos enviados:", datos);
         })
         .catch(err => {
-            alert("Error en fetch: " + err);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error ❌',
+                text: "Error al guardar asistencia: " + err,
+                showConfirmButton: true
+            });
             console.error(err);
         });
     });
 });
 </script>
+
+
 
 
 

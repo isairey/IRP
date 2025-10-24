@@ -366,7 +366,7 @@ require_once __DIR__ . '/../pages/footer.php';
                 <th>Otra Lengua</th>
                 <th>Fecha de registro</th>
                 
-               <!-- <th>Acciones</th> -->
+               <th>Acciones</th> 
             </tr>
         </thead>
         <tbody>
@@ -459,7 +459,12 @@ try {
     echo "<div class='row g-1'>";
 
   echo "<div class='col-6'><a href='../checkout/editar_usuaria.php?id={$usuario['id']}' class='btn btn-primary btn-sm w-100'><i class='bi bi-pencil-square'></i></a></div>";
-   
+   // echo "<div class='col-6'><button class='btn btn-danger btn-sm w-100 eliminar-usuario' data-id='{$usuario['id']}'><i class='bi bi-trash3-fill'></i></button></div>";
+    echo "<div class='col-6'><button class='btn btn-success btn-sm w-100 registrar-cita' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Registrar Citas</button></div>";
+    echo "<div class='col-6'><button class='btn btn-warning btn-sm w-100 registrar-atencion' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Registrar Atención</button></div>";
+    echo "<div class='col-6'><button class='btn btn-secondary btn-sm w-100 registrar-proyecto' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Asignar Proyecto</button></div>";
+    echo "<div class='col-6'><a href='citas.php?id={$usuario['id']}' class='btn btn-info btn-sm w-100'>Ver Plan Empoderamiento</a></div>";
+
     echo "</div>";
     echo "</div>";
 
@@ -553,7 +558,7 @@ try {
 
             // Redirigir a la página de registro de citas con los parámetros necesarios en la URL
             //window.location.href = 'register-cita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
-            window.location.href = '/ERP/ERP_IRP/checkout/register-ucita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
+            window.location.href = '../checkout/register-ucita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
 
         }
     });
@@ -568,7 +573,7 @@ try {
 
             // Redirigir a la página de registro de citas con los parámetros necesarios en la URL
             //window.location.href = 'register-cita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
-            window.location.href = '/ERP/ERP_IRP/checkout/asignacion-uproyecto.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
+            window.location.href = '../checkout/asignacion-uproyecto.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
 
         }
     });
@@ -582,7 +587,7 @@ try {
 
             // Redirigir a la página de registro de citas con los parámetros necesarios en la URL
             //window.location.href = 'register-cita.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
-            window.location.href = '/ERP/ERP_IRP/checkout/register-uatencion.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
+            window.location.href = '../checkout/register-uatencion.php?id_usuario=' + userId + '&nombre_usuario=' + encodeURIComponent(userName);
 
         }
     });

@@ -357,7 +357,7 @@ require_once __DIR__ . '/../pages/footer.php';
           <th>Diplomado</th>
           <th>Ponente</th>
           <th>Fecha Asignación</th>
-            <th>Acciones</th>
+        <!--    <th>Acciones</th>-->
         </tr>
       </thead>
       <tbody>
@@ -367,11 +367,11 @@ require_once __DIR__ . '/../pages/footer.php';
             <td><?= htmlspecialchars($a['NombreDiplomado'] ?: '—') ?></td>
             <td><?= htmlspecialchars($a['Nombre'] ?: '—') ?></td>
             <td><?= htmlspecialchars($a['FechaAsignacion']) ?></td>
-             <td>
+         <!--    <td>
                <a href="./../checkout/editar-asignacion-ponente-diplomado.php?id=<?= $a['ID_Asignacion'] ?>" class="btn btn btn-warning">Editar</a>
             <button class="eliminar-asignacion btn btn-danger" data-id="<?= $a['ID_Asignacion'] ?>">Eliminar</button>
 
-          </td>
+          </td>-->
           </tr>
         <?php endforeach; ?>
         <?php if (!$asignaciones): ?>

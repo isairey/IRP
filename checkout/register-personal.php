@@ -891,21 +891,94 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="estado" class="form-label">Estado</label>
-        <input type="text" class="form-control" id="estado" name="estado" placeholder="">
+        <input type="text" class="form-control" id="estado" name="estado" placeholder="" value="OAXACA">
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
-        <label for="region" class="form-label">Región</label>
-        <input type="text" class="form-control" id="region" name="region" placeholder="">
-        <div class="invalid-feedback">Se requiere una región válida.</div>
-    </div>
+    <label for="region" class="form-label">Región</label>
+    <select class="form-select" id="region" name="region" >
+        <option value="">Selecciona una región</option>
+        <option value="Valles Centrales">Valles Centrales</option>
+        <option value="Istmo">Istmo</option>
+        <option value="Costa">Costa</option>
+        <option value="Sierra Norte">Sierra Norte</option>
+        <option value="Sierra Sur">Sierra Sur</option>
+        <option value="Mixteca">Mixteca</option>
+    </select>
+    <div class="invalid-feedback">Se requiere una región válida.</div>
+</div>
 
     <div class="col-sm-6">
-        <label for="pais_procedencia" class="form-label">País de Procedencia</label>
-        <input type="text" class="form-control" id="pais_procedencia" name="pais_procedencia" placeholder="">
-    <div class="invalid-feedback">Se requiere un País de Procedencia válido.</div>
-    </div>
+  <label for="pais_procedencia" class="form-label">PAÍS DE PROCEDENCIA</label>
+  <select class="form-select" id="pais_procedencia" name="pais_procedencia" required>
+    <option value="">SELECCIONA UN PAÍS</option>
+    <option value="MÉXICO" selected>MÉXICO</option>
+    <option value="GUATEMALA">GUATEMALA</option>
+    <option value="BELICE">BELICE</option>
+    <option value="EL SALVADOR">EL SALVADOR</option>
+    <option value="HONDURAS">HONDURAS</option>
+    <option value="NICARAGUA">NICARAGUA</option>
+    <option value="COSTA RICA">COSTA RICA</option>
+    <option value="PANAMÁ">PANAMÁ</option>
+    <option value="CUBA">CUBA</option>
+    <option value="REPÚBLICA DOMINICANA">REPÚBLICA DOMINICANA</option>
+    <option value="PUERTO RICO">PUERTO RICO</option>
+    <option value="COLOMBIA">COLOMBIA</option>
+    <option value="VENEZUELA">VENEZUELA</option>
+    <option value="ECUADOR">ECUADOR</option>
+    <option value="PERÚ">PERÚ</option>
+    <option value="BOLIVIA">BOLIVIA</option>
+    <option value="PARAGUAY">PARAGUAY</option>
+    <option value="CHILE">CHILE</option>
+    <option value="ARGENTINA">ARGENTINA</option>
+    <option value="URUGUAY">URUGUAY</option>
+    <option value="BRASIL">BRASIL</option>
+    <option value="ESTADOS UNIDOS">ESTADOS UNIDOS</option>
+    <option value="CANADÁ">CANADÁ</option>
+    <option value="ESPAÑA">ESPAÑA</option>
+    <option value="PORTUGAL">PORTUGAL</option>
+    <option value="FRANCIA">FRANCIA</option>
+    <option value="ITALIA">ITALIA</option>
+    <option value="ALEMANIA">ALEMANIA</option>
+    <option value="REINO UNIDO">REINO UNIDO</option>
+    <option value="PAÍSES BAJOS">PAÍSES BAJOS</option>
+    <option value="SUIZA">SUIZA</option>
+    <option value="SUECIA">SUECIA</option>
+    <option value="NORUEGA">NORUEGA</option>
+    <option value="FINLANDIA">FINLANDIA</option>
+    <option value="DINAMARCA">DINAMARCA</option>
+    <option value="RUSIA">RUSIA</option>
+    <option value="CHINA">CHINA</option>
+    <option value="JAPÓN">JAPÓN</option>
+    <option value="COREA DEL SUR">COREA DEL SUR</option>
+    <option value="INDIA">INDIA</option>
+    <option value="FILIPINAS">FILIPINAS</option>
+    <option value="VIETNAM">VIETNAM</option>
+    <option value="TAILANDIA">TAILANDIA</option>
+    <option value="INDONESIA">INDONESIA</option>
+    <option value="MALASIA">MALASIA</option>
+    <option value="SINGAPUR">SINGAPUR</option>
+    <option value="AUSTRALIA">AUSTRALIA</option>
+    <option value="NUEVA ZELANDA">NUEVA ZELANDA</option>
+    <option value="MARRUECOS">MARRUECOS</option>
+    <option value="EGIPTO">EGIPTO</option>
+    <option value="SUDÁFRICA">SUDÁFRICA</option>
+    <option value="NIGERIA">NIGERIA</option>
+    <option value="GHANA">GHANA</option>
+    <option value="ETIOPÍA">ETIOPÍA</option>
+    <option value="KENIA">KENIA</option>
+    <option value="TURQUÍA">TURQUÍA</option>
+    <option value="ISRAEL">ISRAEL</option>
+    <option value="ARABIA SAUDITA">ARABIA SAUDITA</option>
+    <option value="EMIRATOS ÁRABES UNIDOS">EMIRATOS ÁRABES UNIDOS</option>
+    <option value="IRÁN">IRÁN</option>
+    <option value="PAKISTÁN">PAKISTÁN</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+  <div class="invalid-feedback">SE REQUIERE UN PAÍS DE PROCEDENCIA VÁLIDO.</div>
+</div>
+
 
     <div class="col-sm-6">
         <label for="direccion_temporal" class="form-label">Dirección Temporal</label>
@@ -947,10 +1020,25 @@ require_once __DIR__ . '/../pages/header.php';
         <hr class="my-4">
 
     <div class="col-sm-6">
-        <label for="grado_academico" class="form-label">Grado Académico</label>
-        <input type="text" class="form-control" id="grado_academico" name="grado_academico" placeholder="">
-        <div class="invalid-feedback">Se requiere un Grado Académico válido.</div>
-    </div>
+  <label for="grado_academico" class="form-label">GRADO ACADÉMICO</label>
+  <select class="form-select" id="grado_academico" name="grado_academico" required>
+    <option value="">SELECCIONA UN GRADO ACADÉMICO</option>
+    <option value="SIN ESTUDIOS">SIN ESTUDIOS</option>
+    <option value="PRIMARIA INCOMPLETA">PRIMARIA INCOMPLETA</option>
+    <option value="PRIMARIA COMPLETA">PRIMARIA COMPLETA</option>
+    <option value="SECUNDARIA INCOMPLETA">SECUNDARIA INCOMPLETA</option>
+    <option value="SECUNDARIA COMPLETA">SECUNDARIA COMPLETA</option>
+    <option value="PREPARATORIA O BACHILLERATO INCOMPLETO">PREPARATORIA O BACHILLERATO INCOMPLETO</option>
+    <option value="PREPARATORIA O BACHILLERATO COMPLETO">PREPARATORIA O BACHILLERATO COMPLETO</option>
+    <option value="TÉCNICO O TECNÓLOGO">TÉCNICO O TECNÓLOGO</option>
+    <option value="LICENCIATURA INCOMPLETA">LICENCIATURA INCOMPLETA</option>
+    <option value="LICENCIATURA COMPLETA">LICENCIATURA COMPLETA</option>
+    <option value="POSGRADO (MAESTRÍA)">POSGRADO (MAESTRÍA)</option>
+    <option value="POSGRADO (DOCTORADO)">POSGRADO (DOCTORADO)</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+  <div class="invalid-feedback">SE REQUIERE UN GRADO ACADÉMICO VÁLIDO.</div>
+</div>
 
     <!-- <div class="col-sm-6">
         <label for="puesto" class="form-label">Puesto</label>
@@ -958,11 +1046,42 @@ require_once __DIR__ . '/../pages/header.php';
         <div class="invalid-feedback">Se requiere un Puesto válido.</div>
     </div> -->
 
-    <div class="col-sm-6">
-        <label for="institucion" class="form-label">Institución Proveniente</label>
-        <input type="text" class="form-control" id="institucion" name="institucion" placeholder="">
-        <div class="invalid-feedback">Se requiere una Institución válido.</div>
-    </div>
+ <div class="col-sm-6">
+    <label for="institucion" class="form-label">INSTITUCIÓN PROVENIENTE</label>
+    <select class="form-select" id="institucionn" name="institucion" required>
+        <option value="">SELECCIONA UNA INSTITUCIÓN</option>
+        <?php
+        require_once "../db/config.php"; // Ajusta la ruta
+        $stmt = $conn->query("SELECT NombreInstitucion FROM instituciones ORDER BY NombreInstitucion ASC");
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $nombre = htmlspecialchars($row['NombreInstitucion'], ENT_QUOTES, 'UTF-8');
+            echo "<option value='$nombre'>$nombre</option>";
+        }
+        ?>
+        <option value="OTRO">OTRO</option>
+    </select>
+    <div class="invalid-feedback">SE REQUIERE UNA INSTITUCIÓN VÁLIDA.</div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const institucionSelect = document.getElementById('institucionn');
+
+    institucionSelect.addEventListener('change', function () {
+        if (this.value === "") {
+            this.setCustomValidity('Se requiere una institución válida.');
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else {
+            this.setCustomValidity('');
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
+    });
+});
+</script>
+
+
     
     <!-- <div class="col-sm-6">
         <label for="area_asignada" class="form-label">Área Asignada</label>

@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     lugarNacimientoInput.addEventListener('input', function () {
-        validateInput(this);
+        validateInputNacimiento(this);
     });
 
     lenguaMaternaInput.addEventListener('input', function () {
@@ -103,6 +103,30 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     */
+
+
+
+
+function validateInputNacimiento(input) {
+    // Convertir el valor a mayúsculas
+    input.value = input.value.toUpperCase();
+
+    // ✅ Ahora acepta letras, acentos, Ñ, espacios y números
+let regex = /^[a-zA-ZáéíóúÁÉÍÓÚÑñ0-9\s]{3,}$/;
+
+
+    if (!regex.test(input.value)) {
+        input.setCustomValidity('Se requiere un nombre o valor válido (letras y números).');
+        input.classList.add('is-invalid');
+        input.classList.remove('is-valid');
+    } else {
+        input.setCustomValidity('');
+        input.classList.remove('is-invalid');
+        input.classList.add('is-valid');
+    }
+}
+
+
 
 
 

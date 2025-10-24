@@ -238,7 +238,7 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="lastName" class="form-label">Apellido Paterno:</label>
-        <input type="text" class="form-control" id="lastName" name="apellidoPaterno" placeholder="" required>
+        <input type="text" class="form-control" id="lastName" name="apellidoPaterno" placeholder="" >
         <div class="invalid-feedback">Se requiere un apellido paterno válido.</div>
     </div>
 

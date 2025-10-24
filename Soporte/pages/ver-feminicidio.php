@@ -324,7 +324,7 @@ require_once __DIR__ . '/../pages/footer.php';
                 <th>Latitud</th>
                 <th>Longitud</th>
                 <th>Sexenio</th>
-             <!--   <th>Acciones</th> -->
+              <th>Acciones</th> 
             </tr>
         </thead>
         <tbody>
@@ -410,7 +410,12 @@ try {
         echo "<td>{$feminicidio['Latitud']}</td>";
         echo "<td>{$feminicidio['Longitud']}</td>";
         echo "<td>{$feminicidio['Sexenio']}</td>";
-       
+       echo "<td>";
+        
+   echo "<a href='../checkout/editar-fem.php?id={$feminicidio['ID']}' class='btn btn-primary btn-sm'><i class='bi bi-pencil-square'></i></a> ";
+  
+        //echo "<button class='btn btn-danger btn-sm eliminar-feminicidio' data-id='{$feminicidio['ID']}'>Eliminar</button>";
+        echo "</td>";
 /*
         echo "<button class='btn btn-danger btn-sm eliminar-feminicidio' data-id='{$feminicidio['ID']}'>Eliminar</button>";
       */ 
