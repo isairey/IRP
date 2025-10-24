@@ -547,14 +547,14 @@ $asistentes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 // 3️⃣ Traer asistencias
 $asistencias = [];
 $stmtAsis = $conn->prepare("
-    SELECT ID_Seccion, presente, id_usu
+    SELECT ID_Seccion, estado, id_usu
     FROM asistencias
     WHERE ID_Diplomado = :id
 ");
 $stmtAsis->bindValue(':id', $idDiplomado, PDO::PARAM_INT);
 $stmtAsis->execute();
 foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
-    $asistencias[$a['id_usu']][$a['ID_Seccion']] = $a['presente'];
+    $asistencias[$a['id_usu']][$a['ID_Seccion']] = $a['estado'];
 }
 ?>
 
@@ -598,10 +598,16 @@ foreach ($stmtAsis->fetchAll(PDO::FETCH_ASSOC) as $a) {
             <?php foreach ($modulos as $mod): ?>
               <?php foreach ($mod['secciones'] as $sec): ?>
                 <td>
-                  <input type="checkbox" class="asistencia-switch"
-                    data-usuario="<?= $asistente['ID_Usuario'] ?>"
-                    data-seccion="<?= $sec['id'] ?>"
-                    <?= isset($asistencias[$asistente['ID_Usuario']][$sec['id']]) && $asistencias[$asistente['ID_Usuario']][$sec['id']] ? 'checked' : '' ?>>
+                  <select class="form-select asistencia-select"
+        data-usuario="<?= $asistente['ID_Usuario'] ?>"
+        data-seccion="<?= $sec['id'] ?>">
+    <option value="" <?= !isset($asistencias[$asistente['ID_Usuario']][$sec['id']]) ? 'selected' : '' ?>>-- Sin registrar --</option>
+    <option value="asistio" <?= (isset($asistencias[$asistente['ID_Usuario']][$sec['id']]) && $asistencias[$asistente['ID_Usuario']][$sec['id']] == 'asistio') ? 'selected' : '' ?>>Asistió</option>
+    <option value="falta" <?= (isset($asistencias[$asistente['ID_Usuario']][$sec['id']]) && $asistencias[$asistente['ID_Usuario']][$sec['id']] == 'falta') ? 'selected' : '' ?>>Falta</option>
+    <option value="permiso" <?= (isset($asistencias[$asistente['ID_Usuario']][$sec['id']]) && $asistencias[$asistente['ID_Usuario']][$sec['id']] == 'permiso') ? 'selected' : '' ?>>Permiso</option>
+</select>
+
+
                 </td>
               <?php endforeach; ?>
             <?php endforeach; ?>
@@ -730,14 +736,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
-    switchEl.addEventListener('change', () => {
-        const idUsuario = switchEl.dataset.usuario;
-        const idSeccion = switchEl.dataset.seccion;
-        const asistencia = switchEl.checked ? 1 : 0;
+document.querySelectorAll('.asistencia-select').forEach(selectEl => {
+    selectEl.addEventListener('change', () => {
+        const idUsuario = selectEl.dataset.usuario;
+        const idSeccion = selectEl.dataset.seccion;
+        const estado = selectEl.value; // ahora tomamos 'asistio', 'falta' o 'permiso'
         const idDiplomado = <?= $idDiplomado ?>;
 
-        const datos = `id_usu=${idUsuario}&id_seccion=${idSeccion}&id_diplomado=${idDiplomado}&presente=${asistencia}`;
+        const datos = `id_usu=${encodeURIComponent(idUsuario)}&id_seccion=${encodeURIComponent(idSeccion)}&id_diplomado=${encodeURIComponent(idDiplomado)}&estado=${encodeURIComponent(estado)}`;
 
         fetch('guardar_asistencia.php', {
             method: 'POST',
@@ -746,14 +752,27 @@ document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
         })
         .then(res => res.text())
         .then(res => {
+            let icon, title;
+            if(estado === 'asistio') {
+                icon = 'success';
+                title = 'Asistencia registrada ✅';
+            } else if(estado === 'falta') {
+                icon = 'error';
+                title = 'Falta registrada ❌';
+            } else {
+                icon = 'info';
+                title = 'Permiso registrado ℹ️';
+            }
+
             Swal.fire({
-                icon: asistencia ? 'success' : 'info',
-                title: asistencia ? 'Asistencia registrada ✅' : 'Asistencia removida ℹ️',
+                icon: icon,
+                title: title,
                 text: res,
                 timer: 1500,
                 showConfirmButton: false,
                 timerProgressBar: true
             });
+
             console.log("Datos enviados:", datos);
         })
         .catch(err => {
@@ -768,6 +787,7 @@ document.querySelectorAll('.asistencia-switch').forEach(switchEl => {
     });
 });
 </script>
+
 
 
 

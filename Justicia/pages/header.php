@@ -25,13 +25,13 @@ $sql = "
 $stmt = $conn->prepare($sql);
 $stmt->bindParam(':id', $idUsuario, PDO::PARAM_INT);
 $stmt->execute();
-$usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+$usuario2 = $stmt->fetch(PDO::FETCH_ASSOC);
 
 // Si no hay foto guardada, usar una por defecto
 
 
 // Si no hay foto guardada, usar una por defecto
-$foto = !empty($usuario['foto']) ? $usuario['foto'] : 'default.png';
+$foto = !empty($usuario2['foto']) ? $usuario2['foto'] : 'default.png';
 
 // Verificar si la ruta ya incluye "uploads/"
 if (strpos($foto, "uploads/") !== false) {
@@ -74,7 +74,7 @@ if (strpos($foto, "uploads/") !== false) {
     <div class="dropdown">
       <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
         <img src="<?= $fotoFinal ?>" alt="Usuario" class="rounded-circle me-2 border border-light shadow-sm" width="40" height="40">
-        <span class="d-none d-md-inline fw-semibold"><?= htmlspecialchars($usuario['Nombre']) ?></span>
+        <span class="d-none d-md-inline fw-semibold"><?= htmlspecialchars($usuario2['Nombre']) ?></span>
       </a>
 
       <ul class="dropdown-menu dropdown-menu-end mt-2 shadow border-0 rounded-3 animate-dropdown">
@@ -84,14 +84,14 @@ if (strpos($foto, "uploads/") !== false) {
          class="rounded-circle me-2 border border-success-subtle" 
          width="35" height="35">
     <div>
-      <strong><?= htmlspecialchars($usuario['Nombre']) ?></strong><br>
-      <small class="text-muted"><?= htmlspecialchars($usuario['Descripcion']) ?></small>
+      <strong><?= htmlspecialchars($usuario2['Nombre']) ?></strong><br>
+      <small class="text-muted"><?= htmlspecialchars($usuario2['Descripcion']) ?></small>
     </div>
   </div>
 </li>
 
         <li>
-          <a class="dropdown-item py-2" href="../checkout/editar-personal.php?id=<?= htmlspecialchars($usuario['ID_Personal']) ?>">
+          <a class="dropdown-item py-2" href="../checkout/editar-personal.php?id=<?= htmlspecialchars($usuario2['ID_Personal']) ?>">
             <i class="bi bi-person me-2 text-success"></i> Perfil
           </a>
         </li>

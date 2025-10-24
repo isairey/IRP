@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buscador de Localidades de Oaxaca</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 20px; background: #f4f4f4; }
+        .buscador-container { max-width: 500px; margin: auto; }
+        .campo-busqueda { margin-bottom: 15px; position: relative; }
+        .campo-busqueda label { font-size: 0.9em; font-weight: bold; display: block; margin-bottom: 3px; }
+        .campo-busqueda input { font-size: 1.1em; padding: 10px; width: 100%; box-sizing: border-box; }
+        .sugerencias { position: absolute; z-index: 10; border: 1px solid #ccc; background: #fff; width: 100%; max-height: 200px; overflow-y: auto; }
+        .sugerencias div { padding: 10px; cursor: pointer; border-bottom: 1px solid #f0f0f0; }
+        .sugerencias div:last-child { border-bottom: none; }
+        .sugerencias div:hover { background: #eee; }
+        .sugerencias small { color: #555; display: block; }
+        #detalles { margin-top: 20px; padding: 15px; background: #fff; border: 1px solid #ddd; }
+        #detalles h3 { margin-top: 0; }
+        #detalles p { margin: 5px 0; }
+    </style>
+</head>
+<body>
+
+    <div class="buscador-container">
+        <h2>Buscador de Localidades de Oaxaca</h2>
+        <p>Selecciona en orden para filtrar o selecciona uno para autocompletar.</p>
+
+        <input type="hidden" id="selected_region_id">
+        <input type="hidden" id="selected_distrito_id">
+        <input type="hidden" id="selected_municipio_id">
+        <input type="hidden" id="selected_localidad_id"> <div class="campo-busqueda">
+            <label for="input_region">Región:</label>
+            <input type="text" id="input_region" placeholder="Escribe para buscar región..." autocomplete="off">
+            <div class="sugerencias" id="sug_region"></div>
+        </div>
+
+        <div class="campo-busqueda">
+            <label for="input_distrito">Distrito:</label>
+            <input type="text" id="input_distrito" placeholder="Escribe para buscar distrito..." autocomplete="off">
+            <div class="sugerencias" id="sug_distrito"></div>
+        </div>
+
+        <div class="campo-busqueda">
+            <label for="input_municipio">Municipio:</label>
+            <input type="text" id="input_municipio" placeholder="Escribe para buscar municipio..." autocomplete="off">
+            <div class="sugerencias" id="sug_municipio"></div>
+        </div>
+
+        <div class="campo-busqueda">
+            <label for="input_localidad">Localidad:</label>
+            <input type="text" id="input_localidad" placeholder="Escribe el nombre de la localidad..." autocomplete="off">
+            <div class="sugerencias" id="sug_localidad"></div>
+        </div>
+
+        <div id="detalles" style="display: none;">
+            <h3>Detalles de la Selección</h3>
+            <p><strong>Localidad:</strong> <span id="res_localidad"></span></p>
+            <p><strong>Municipio:</strong> <span id="res_municipio"></span></p>
+            <p><strong>Distrito:</strong> <span id="res_distrito"></span></p>
+            <p><strong>Región:</strong> <span id="res_region"></span></p>
+        </div>
+    </div>
+
+    <script>
+        // --- Referencias a los elementos ---
+        const inputs = {
+            region: document.getElementById('input_region'),
+            distrito: document.getElementById('input_distrito'),
+            municipio: document.getElementById('input_municipio'),
+            localidad: document.getElementById('input_localidad')
+        };
+        const suggestions = {
+            region: document.getElementById('sug_region'),
+            distrito: document.getElementById('sug_distrito'),
+            municipio: document.getElementById('sug_municipio'),
+            localidad: document.getElementById('sug_localidad')
+        };
+        const selectedIds = {
+            region: document.getElementById('selected_region_id'),
+            distrito: document.getElementById('selected_distrito_id'),
+            municipio: document.getElementById('selected_municipio_id'),
+            localidad: document.getElementById('selected_localidad_id') // Añadido
+        };
+
+        // --- LÓGICA DE BÚSQUEDA (keyup) ---
+
+        inputs.region.addEventListener('keyup', e => handleSearch('region', e.target.value));
+        inputs.distrito.addEventListener('keyup', e => handleSearch('distrito', e.target.value));
+        inputs.municipio.addEventListener('keyup', e => handleSearch('municipio', e.target.value));
+        inputs.localidad.addEventListener('keyup', e => handleSearch('localidad', e.target.value));
+
+        async function handleSearch(type, query) {
+            // Limpia sugerencias si la búsqueda es muy corta o vacía
+            if (query.length < 2) {
+                suggestions[type].innerHTML = '';
+                // Si el campo se vació manualmente, también resetea su ID oculto y los hijos
+                if (query.length === 0) {
+                     if(selectedIds[type]) {
+                        selectedIds[type].value = '';
+                    }
+                    resetChildren(type);
+                }
+                return;
+            }
+
+            // Construye parámetros base
+            const params = new URLSearchParams({ type: type, q: query });
+
+            // --- Lógica de filtrado en cascada ---
+            // Añade IDs de niveles superiores a los parámetros si existen
+            if (type === 'distrito' && selectedIds.region.value) {
+                params.append('region_id', selectedIds.region.value);
+            }
+            if (type === 'municipio') {
+                 if (selectedIds.distrito.value) params.append('distrito_id', selectedIds.distrito.value);
+                 else if (selectedIds.region.value) params.append('region_id', selectedIds.region.value); // Filtro por región si no hay distrito
+            }
+            if (type === 'localidad') {
+                if (selectedIds.municipio.value) params.append('municipio_id', selectedIds.municipio.value);
+                else if (selectedIds.distrito.value) params.append('distrito_id', selectedIds.distrito.value);
+                else if (selectedIds.region.value) params.append('region_id', selectedIds.region.value);
+            }
+
+            try {
+                // Llama a la API
+                const response = await fetch(`./api.php?${params.toString()}`);
+                 if (!response.ok) { // Verifica si la respuesta HTTP fue exitosa
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                 }
+                const data = await response.json();
+                 // Verifica si la respuesta JSON contiene un error del backend
+                 if (data.error) {
+                    console.error("Error del backend:", data.error);
+                    suggestions[type].innerHTML = `<div>Error: ${data.error}</div>`; // Muestra error en sugerencias
+                 } else {
+                    mostrarSugerencias(type, data); // Muestra sugerencias si todo ok
+                 }
+            } catch (error) {
+                // Captura errores de red o de parseo JSON
+                console.error("Error en fetch o procesando JSON:", error);
+                suggestions[type].innerHTML = `<div>Error al buscar: ${error.message}</div>`; // Muestra error
+            }
+        }
+
+        // --- FUNCIÓN genérica para mostrar sugerencias (ACTUALIZADA) ---
+        function mostrarSugerencias(type, data) {
+            const sugBox = suggestions[type];
+            sugBox.innerHTML = ''; // Limpia sugerencias anteriores
+
+            // Verifica si data es un array; si no, muestra mensaje o error
+            if (!Array.isArray(data)) {
+                 console.warn("La respuesta de la API no es un array:", data);
+                 sugBox.innerHTML = '<div>No se recibieron sugerencias válidas.</div>';
+                 return;
+            }
+            if (data.length === 0) {
+                 sugBox.innerHTML = '<div>No hay coincidencias.</div>';
+                 return;
+            }
+
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                // Determina el ID correcto a usar según el tipo y los nombres de columna de tu API
+                let id_value = item.id_region || item.id_distrito || item.id_municipio_inegi || item.id_asentamiento;
+
+                // Asegura que item.nombre exista antes de usarlo
+                div.innerHTML = `<strong>${item.nombre || 'Nombre no disponible'}</strong>`;
+
+                // Añadir info extra si es localidad (asentamiento)
+                if (type === 'localidad' && item.tipo_asentamiento) {
+                     div.innerHTML += `<small>${item.tipo_asentamiento} - CP: ${item.codigo_postal || 'N/A'}</small>`;
+                }
+
+                // Añade el listener SOLO si id_value es válido
+                if (id_value !== undefined && id_value !== null) {
+                    // Pasamos type, el objeto item completo y el id_value extraído
+                    div.addEventListener('click', () => handleSuggestionClick(type, item, id_value));
+                } else {
+                    console.warn("Item sin ID válido encontrado:", item); // Advertencia si un item no tiene ID
+                }
+                sugBox.appendChild(div);
+            });
+        }
+
+        // --- FUNCIÓN genérica para manejar clic en sugerencia (ACTUALIZADA) ---
+        async function handleSuggestionClick(type, itemData, id) { // Recibe el ID extraído también
+            console.log(`Clic en sugerencia - Tipo: ${type}, ID: ${id}, Nombre: ${itemData.nombre}`); // <-- DEBUG
+
+            // 1. Limpiar todas las cajas de sugerencias
+            Object.values(suggestions).forEach(sug => sug.innerHTML = '');
+
+            // 2. Ocultar el panel de detalles (se mostrará después si aplica)
+            document.getElementById('detalles').style.display = 'none';
+
+            // *** 3. Rellenar el campo clickeado INMEDIATAMENTE ***
+            inputs[type].value = itemData.nombre; // Usa el nombre del item clickeado
+            // Guardar ID seleccionado en el campo oculto correspondiente
+            if (selectedIds[type]) {
+                selectedIds[type].value = id;
+            }
+             // Si se hizo clic en un nivel superior, limpiar los hijos AHORA para evitar búsquedas con filtros incorrectos
+             resetChildren(type);
+
+
+            // 4. Llamar a la API para obtener TODOS los detalles y rellenar campos
+            console.log(`Fetching details for ${type} with ID: ${id}`); // <-- DEBUG
+            await fetchFullDetails(type, id); // Llama siempre para asegurar consistencia y rellenar todo
+        }
+
+        // --- FUNCIÓN para obtener detalles y rellenar todo (SIN CAMBIOS RESPECTO A LA ANTERIOR) ---
+        async function fetchFullDetails(type, id) {
+            // Construye el nombre del parámetro esperado por api.php (ej: 'municipio_id')
+            const paramName = (type === 'localidad') ? 'localidad_id' : `${type}_id`;
+
+            try {
+                const response = await fetch(`./api.php?type=get_full_details&${paramName}=${id}`);
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                const details = await response.json();
+                if (details.error) {
+                     console.error("Error del backend en get_full_details:", details.error);
+                     // Podrías mostrar un mensaje al usuario aquí
+                } else {
+                    // 4. Rellenar todos los campos con la información obtenida
+                    populateFields(details);
+                }
+            } catch (error) {
+                 console.error("Error en fetchFullDetails:", error);
+                 // Podrías mostrar un mensaje al usuario aquí
+            }
+        }
+
+
+       // --- FUNCIÓN para rellenar los campos (ACTUALIZADA CON DEBUG) ---
+        function populateFields(details) {
+            console.log("Datos recibidos para rellenar:", details); // <-- DEBUG
+
+             // Rellenar Región (si existe en 'details')
+             if (details.region_id !== undefined && details.region_nombre !== undefined) {
+                 inputs.region.value = details.region_nombre || '';
+                 selectedIds.region.value = details.region_id !== null ? details.region_id : '';
+             } else if (!inputs.region.value) { // Limpiar si no viene y no estaba ya puesto
+                 inputs.region.value = '';
+                 selectedIds.region.value = '';
+             }
+
+             // Rellenar Distrito (si existe en 'details')
+             if (details.distrito_id !== undefined && details.distrito_nombre !== undefined) {
+                 inputs.distrito.value = details.distrito_nombre || '';
+                 selectedIds.distrito.value = details.distrito_id !== null ? details.distrito_id : '';
+             } else if (!inputs.distrito.value) { // Limpia si no estaba puesto
+                 inputs.distrito.value = '';
+                 selectedIds.distrito.value = '';
+             }
+
+             // Rellenar Municipio (si existe en 'details')
+             if (details.municipio_id !== undefined && details.municipio_nombre !== undefined) {
+                 inputs.municipio.value = details.municipio_nombre || '';
+                 selectedIds.municipio.value = details.municipio_id !== null ? details.municipio_id : '';
+             } else if (!inputs.municipio.value) { // Limpia si no estaba puesto
+                 inputs.municipio.value = '';
+                 selectedIds.municipio.value = '';
+             }
+
+             // Rellenar Localidad (si existe en 'details') - SOLO EL NOMBRE
+             if (details.localidad_id !== undefined && details.localidad_nombre !== undefined) {
+                  // Actualiza el campo de localidad solo si NO fue el input que disparó la búsqueda original
+                  // (Evita sobreescribir si el usuario ya seleccionó algo y luego seleccionó un nivel superior)
+                  // Esto es complejo sin saber qué input está activo. Una solución simple es:
+                  // Si el ID de localidad en details COINCIDE con el ID guardado (selectedIds.localidad.value),
+                  // entonces sí actualizamos el input. Si no coincide, significa que se seleccionó
+                  // un nivel superior, y NO debemos sobreescribir lo que ya estaba en localidad (si había algo).
+                  if (details.localidad_id == selectedIds.localidad.value || !selectedIds.localidad.value ) {
+                       inputs.localidad.value = details.localidad_nombre || '';
+                       // selectedIds.localidad.value ya debería estar correcto por el handleSuggestionClick
+                  }
+
+
+             } else if (!inputs.localidad.value) { // Limpia si no viene info Y no hay nada escrito
+                 inputs.localidad.value = '';
+                 selectedIds.localidad.value = '';
+             }
+
+
+            // Mostrar el panel de detalles si se seleccionó o se obtuvo info de una localidad
+            if (details.localidad_id !== null && details.localidad_id !== undefined) {
+                 document.getElementById('res_localidad').textContent = details.localidad_nombre || 'N/A';
+                 document.getElementById('res_municipio').textContent = details.municipio_nombre || 'N/A';
+                 document.getElementById('res_distrito').textContent = details.distrito_nombre || 'N/A';
+                 document.getElementById('res_region').textContent = details.region_nombre || 'N/A';
+                 // Añadir CP y Tipo si existen en la respuesta de details
+                 let detallesExtra = '';
+                 if (details.tipo_asentamiento) detallesExtra += ` (${details.tipo_asentamiento})`;
+                 if (details.codigo_postal) detallesExtra += ` - CP: ${details.codigo_postal}`;
+                 document.getElementById('res_localidad').textContent += detallesExtra;
+
+                 document.getElementById('detalles').style.display = 'block';
+            } else {
+                 // Si no hay info de localidad en la respuesta, oculta detalles
+                 document.getElementById('detalles').style.display = 'none';
+            }
+        }
+
+        // --- Lógica para limpiar campos hijos si se borra un nivel superior ---
+        Object.keys(inputs).forEach(type => {
+            inputs[type].addEventListener('input', e => {
+                // Si el campo se vacía por el usuario
+                if (e.target.value === '') {
+                    console.log(`Campo ${type} vaciado manualmente.`); // <-- DEBUG
+                    // Borra su ID oculto correspondiente
+                    if(selectedIds[type]) {
+                        selectedIds[type].value = '';
+                    }
+                    // Y resetea todos los campos hijos visualmente y sus IDs
+                    resetChildren(type);
+                    // También limpia las sugerencias de este campo
+                    if(suggestions[type]) {
+                        suggestions[type].innerHTML = '';
+                    }
+                }
+            });
+        });
+
+        // --- FUNCIÓN para resetear campos hijos ---
+        function resetChildren(typeChanged) {
+             console.log(`Reseteando hijos de ${typeChanged}`); // <-- DEBUG
+             document.getElementById('detalles').style.display = 'none'; // Oculta detalles siempre
+             // Define la jerarquía para saber qué limpiar
+             const hierarchy = ['region', 'distrito', 'municipio', 'localidad'];
+             const startIndex = hierarchy.indexOf(typeChanged);
+
+             // Si se encontró el tipo y no es el último nivel
+             if (startIndex > -1 && startIndex < hierarchy.length - 1) {
+                // Itera sobre los niveles inferiores
+                for (let i = startIndex + 1; i < hierarchy.length; i++) {
+                    const childType = hierarchy[i];
+                    if (inputs[childType]) {
+                        inputs[childType].value = ''; // Limpia input visible
+                        inputs[childType].placeholder = `Escribe para buscar ${childType}...`; // Restaura placeholder si es necesario
+                    }
+                    if (selectedIds[childType]) {
+                        selectedIds[childType].value = ''; // Limpia ID oculto
+                    }
+                     if (suggestions[childType]) {
+                        suggestions[childType].innerHTML = ''; // Limpia sugerencias hijas
+                    }
+                }
+             }
+             // Si se borra la localidad, solo ocultamos detalles (ya hecho arriba)
+        }
+
+       // --- ¡NUEVA! Función para limpiar todos los campos (se puede llamar si necesitas un botón "Limpiar todo") ---
+         function resetFields() {
+             Object.values(inputs).forEach(input => input.value = '');
+             Object.values(selectedIds).forEach(hidden => hidden.value = '');
+             Object.values(suggestions).forEach(sug => sug.innerHTML = ''); // Limpia todas las sugerencias
+             document.getElementById('detalles').style.display = 'none';
+             console.log("Todos los campos reseteados."); // <-- DEBUG
+        }
+
+    </script>
+</body>
+</html>

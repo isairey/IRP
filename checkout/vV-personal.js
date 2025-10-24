@@ -403,27 +403,22 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  document.addEventListener('DOMContentLoaded', function () {
-    const firstNameInput = document.getElementById('institucion');
-  
-    // Agregar un listener para el evento de entrada
-    firstNameInput.addEventListener('input', function () {
-      // Convertir el valor a mayúsculas
-      this.value = this.value.toUpperCase();
-  
-      // Verificar si el texto cumple con las restricciones
-      let regex = /^[a-zA-ZáéíóúÁÉÍÓÚÑñ\s]{3,70}$/;
-      if (!regex.test(this.value)) {
-        this.setCustomValidity('Se requiere un nombre válido.');
-        this.classList.add('is-invalid');
-        this.classList.remove('is-valid');
-      } else {
-        this.setCustomValidity('');
-        this.classList.remove('is-invalid');
-        this.classList.add('is-valid');
-      }
+/*document.addEventListener('DOMContentLoaded', function () {
+    const institucionSelect = document.getElementById('institucion');
+
+    institucionSelect.addEventListener('change', function () {
+        if (this.value === "") {
+            this.setCustomValidity('Se requiere una institución válida.');
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else {
+            this.setCustomValidity('');
+            this.classList.remove('is-invalid');
+            this.classList.add('is-valid');
+        }
     });
-  });
+});
+*/
 
   document.addEventListener('DOMContentLoaded', function () {
     const firstNameInput = document.getElementById('area_asignada');

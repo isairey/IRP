@@ -1,9 +1,5 @@
 <?php
 require_once __DIR__ . '/../pages/seccion.php';
-
-?>
-
-<?php
 require_once __DIR__ . '/../db/config.php';
 
 // Solo aceptar POST
@@ -17,11 +13,11 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 $idUsuario   = isset($_POST['id_usu']) ? (int) $_POST['id_usu'] : 0;
 $idSeccion   = isset($_POST['id_seccion']) ? (int) $_POST['id_seccion'] : 0;
 $idDiplomado = isset($_POST['id_diplomado']) ? (int) $_POST['id_diplomado'] : 0;
-$presente    = isset($_POST['presente']) ? (int) $_POST['presente'] : 0;
+$estado      = isset($_POST['estado']) ? $_POST['estado'] : '';
 
-if (!$idUsuario || !$idSeccion || !$idDiplomado) {
+if (!$idUsuario || !$idSeccion || !$idDiplomado || !in_array($estado, ['asistio','falta','permiso'])) {
     http_response_code(400);
-    echo "Datos incompletos";
+    echo "Datos incompletos o inválidos";
     exit;
 }
 
@@ -45,12 +41,13 @@ try {
     $stmtCheck = $conn->prepare("
         SELECT ID
         FROM asistencias
-        WHERE id_usu = :idUsuario AND ID_Seccion = :idSeccion
+        WHERE id_usu = :idUsuario AND ID_Seccion = :idSeccion AND ID_Diplomado = :idDiplomado
         LIMIT 1
     ");
     $stmtCheck->execute([
-        ':idUsuario' => $idUsuario,
-        ':idSeccion' => $idSeccion
+        ':idUsuario'   => $idUsuario,
+        ':idSeccion'   => $idSeccion,
+        ':idDiplomado' => $idDiplomado
     ]);
     $existe = $stmtCheck->fetch(PDO::FETCH_ASSOC);
 
@@ -58,26 +55,26 @@ try {
         // 3️⃣ Actualizar si ya existe
         $stmtUpd = $conn->prepare("
             UPDATE asistencias
-            SET presente = :presente, TipoUsuario = :tipoUsuario
+            SET estado = :estado, TipoUsuario = :tipoUsuario
             WHERE ID = :idAsistencia
         ");
         $stmtUpd->execute([
-            ':presente'    => $presente,
-            ':tipoUsuario' => $tipoUsuario,
-            ':idAsistencia'=> $existe['ID']
+            ':estado'       => $estado,
+            ':tipoUsuario'  => $tipoUsuario,
+            ':idAsistencia' => $existe['ID']
         ]);
         echo "Asistencia actualizada";
     } else {
         // 4️⃣ Insertar si no existe
         $stmtIns = $conn->prepare("
-            INSERT INTO asistencias (ID_Diplomado, id_usu, ID_Seccion, presente, TipoUsuario)
-            VALUES (:idDiplomado, :idUsuario, :idSeccion, :presente, :tipoUsuario)
+            INSERT INTO asistencias (ID_Diplomado, id_usu, ID_Seccion, estado, TipoUsuario)
+            VALUES (:idDiplomado, :idUsuario, :idSeccion, :estado, :tipoUsuario)
         ");
         $stmtIns->execute([
             ':idDiplomado' => $idDiplomado,
             ':idUsuario'   => $idUsuario,
             ':idSeccion'   => $idSeccion,
-            ':presente'    => $presente,
+            ':estado'      => $estado,
             ':tipoUsuario' => $tipoUsuario
         ]);
         echo "Asistencia registrada";

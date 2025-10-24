@@ -91,7 +91,6 @@ foreach ($dataRaw as $r){
 // --------------------------------------------------
 
 // 6.1 Contar cuántas secciones tiene el diplomado
-// 6.1 Contar total de secciones del diplomado
 $sqlTotalSecciones = $conn->prepare("
     SELECT COUNT(*) AS total 
     FROM secciones s
@@ -106,11 +105,11 @@ $sqlAsistencias = $conn->prepare("
     SELECT 
         a.id_usu,
         a.TipoUsuario,
-        SUM(a.presente) AS total_presentes
+        SUM(a.estado = 'asistio') AS total_asistencias
     FROM asistencias a
     WHERE a.ID_Diplomado = :id
     GROUP BY a.id_usu, a.TipoUsuario
-    HAVING total_presentes = :totalSecciones
+    HAVING total_asistencias = :totalSecciones
 ");
 $sqlAsistencias->execute([
     ':id' => $idDiplomado,
@@ -152,7 +151,7 @@ foreach ($registros as $r) {
         'Nombre' => $nombre,
         'Email' => $email,
         'Tipo' => ucfirst($r['TipoUsuario']),
-        'TotalAsistencias' => $r['total_presentes']
+        'TotalAsistencias' => $r['total_asistencias']
     ];
 }
 

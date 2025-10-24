@@ -336,7 +336,7 @@ require_once __DIR__ . '/../pages/footer.php';
                 <th>Estado Cita</th>
                 <th>Descripción</th>
                 <th>Fecha</th>
-              <!--  <th>Acciones</th> -->
+                <th>Acciones</th> 
             </tr>
         </thead>
         <hr class="my-3">
@@ -439,7 +439,10 @@ try {
         echo "<td>{$detalle['EstadoCita']}</td>";
         echo "<td>{$detalle['Descripcion']}</td>";
         echo "<td>{$detalle['FechaRegistro']}</td>";
-       
+       echo "<td>";
+        echo "<a href='../checkout/editar-atenciones.php?id={$detalle['ID_Detalle']}' class='btn btn-primary btn-sm'><i class='bi bi-pencil-square'></i></a> ";
+       // echo "<button class='btn btn-danger btn-sm eliminar-detalle' data-id='{$detalle['ID_Detalle']}'><i class='bi bi-trash3-fill'></i></button>";
+        echo "</td>";
         echo "</tr>";
     }
 
