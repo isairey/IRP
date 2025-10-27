@@ -235,25 +235,25 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="lastName" class="form-label">Apellido Paterno:</label>
-        <input type="text" class="form-control" id="lastName" name="apellido_paterno" placeholder="" required>
+        <input type="text" class="form-control" id="lastName" name="apellido_paterno" placeholder="" >
         <div class="invalid-feedback">Se requiere un apellido paterno válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="secondLastName" class="form-label">Apellido Materno:</label>
-        <input type="text" class="form-control" id="secondLastName" name="apellido_materno" placeholder="" required>
+        <input type="text" class="form-control" id="secondLastName" name="apellido_materno" placeholder="" >
         <div class="invalid-feedback">Se requiere un apellido materno válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="birthdate" class="form-label">Fecha de Nacimiento:</label>
-        <input type="date" class="form-control" id="birthdate" name="fecha_nacimiento" placeholder="" required>
+        <input type="date" class="form-control" id="birthdate" name="fecha_nacimiento" placeholder="" >
         <div class="invalid-feedback">Se requiere una fecha de nacimiento válida.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="sexo" class="form-label">Sexo</label>
-        <select class="form-select" id="sexo" name="sexo" aria-label="Selecciona una opción" required>
+        <select class="form-select" id="sexo" name="sexo" aria-label="Selecciona una opción" >
         <option selected disabled value="">Selecciona una opción...</option>
         <option value="MASCULINO">Masculino</option>
         <option value="FEMENINO">Femenino</option>
@@ -264,7 +264,7 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="genero" class="form-label">Género</label>
-        <select class="form-select" id="genero" name="genero" aria-label="Selecciona una opción" required>
+        <select class="form-select" id="genero" name="genero" aria-label="Selecciona una opción" >
         <option selected disabled value="">Selecciona una opción...</option>
         <option value="CISGÉNERO ">CISGÉNERO </option>
         <option value="TRANSGÉNERO">TRANSGÉNERO</option>
@@ -296,598 +296,347 @@ require_once __DIR__ . '/../pages/header.php';
         <div class="invalid-feedback">Se requiere un número exterior válido.</div>
     </div>
 
-    <div class="col-sm-6">
-        <label for="cp" class="form-label">Código Postal (CP)</label>
-        <input type="text" class="form-control" id="cp" name="cp" placeholder="">
-        <div class="invalid-feedback">Se requiere un código postal válido.</div>
-    </div>
 
-    <div class="col-sm-6"> 
-        <label for="municipio" class="form-label">Municipio</label>
-        <select class="form-select" id="municipioss" name="municipio" aria-label="Selecciona una opción" onchange="mostrarRegionn()">
-        <option selected disabled value="">Seleccionar municipio...</option>
-        <option value="CUILAPAM DE GUERRERO">CUILAPAM DE GUERRERO</option>
-        <option value="OAXACA DE JUÁREZ">OAXACA DE JUÁREZ</option>
-        <option value="SAN AGUSTIN DE LAS JUNTAS">SAN AGUSTIN DE LAS JUNTAS</option>
-        <option value="SAN AGUSTIN YATARENI">SAN AGUSTIN YATARENI</option>
-        <option value="SAN ANDRÉS HUAYAPAM">SAN ANDRÉS HUAYAPAM</option>
-        <option value="SAN ANDRÉS IXTLAHUACA">SAN ANDRÉS IXTLAHUACA</option>
-        <option value="SAN ANTONIO DE LA CAL">SAN ANTONIO DE LA CAL</option>
-        <option value="SAN BARTOLO COYOTEPEC">SAN BARTOLO COYOTEPEC</option>
-        <option value="SAN JACINTO AMILPAS">SAN JACINTO AMILPAS</option>
-        <option value="ANIMAS TRUJANO">ANIMAS TRUJANO</option>
-        <option value="SAN PEDRO IXTLAHUACA">SAN PEDRO IXTLAHUACA</option>
-        <option value="SAN RAYMUNDO JALPAN">SAN RAYMUNDO JALPAN</option>
-        <option value="SAN SEBASTIÁN TUTLA">SAN SEBASTIÁN TUTLA</option>
-        <option value="SANTA CRUZ AMILPAS">SANTA CRUZ AMILPAS</option>
-        <option value="SANTA CRUZ XOXOCOTLAN">SANTA CRUZ XOXOCOTLAN</option>
-        <option value="SANTA LUCIA DEL CAMINO">SANTA LUCIA DEL CAMINO</option>
-        <option value="SANTA MARÍA ATZOMPA">SANTA MARÍA ATZOMPA</option>
-        <option value="SANTA MARÍA COYOTEPEC">SANTA MARÍA COYOTEPEC</option>
-        <option value="SANTA MARÍA EL TULE">SANTA MARÍA EL TULE</option>
-        <option value="SANTO DOMINGO TOMALTEPEC">SANTO DOMINGO TOMALTEPEC</option>
-        <option value="TLALIXTAC DE CABRERA">TLALIXTAC DE CABRERA</option>
-        <option value="COATECAS ALTAS">COATECAS ALTAS</option>
-        <option value="LA COMPAÑÍA">LA COMPAÑÍA</option>
-        <option value="HEROICA CD. DE EJUTLA DE CRESPO">HEROICA CD. DE EJUTLA DE CRESPO</option>
-        <option value="LA PE">LA PE</option>
-        <option value="SAN AGUSTIN AMATENGO">SAN AGUSTIN AMATENGO</option>
-        <option value="SAN ANDRÉS ZABACHE">SAN ANDRÉS ZABACHE</option>
-        <option value="SAN JUAN LACHIGALLA">SAN JUAN LACHIGALLA</option>
-        <option value="SAN MARTIN DE LOS CANSECOS">SAN MARTIN DE LOS CANSECOS</option>
-        <option value="SAN MARTIN LACHILA">SAN MARTIN LACHILA</option>
-        <option value="SAN MIGUEL EJUTLA">SAN MIGUEL EJUTLA</option>
-        <option value="SAN VICENTE COATLAN">SAN VICENTE COATLAN</option>
-        <option value="TANICHE">TANICHE</option>
-        <option value="YOGANA">YOGANA</option>
-        <option value="GUADALUPE ETLA">GUADALUPE ETLA</option>
-        <option value="MAGDALENA APASCO">MAGDALENA APASCO</option>
-        <option value="NAZARENO ETLA">NAZARENO ETLA</option>
-        <option value="REYES ETLA">REYES ETLA</option>
-        <option value="SAN AGUSTÍN ETLA">SAN AGUSTÍN ETLA</option>
-        <option value="SAN ANDRÉS ZAUTLA">SAN ANDRÉS ZAUTLA</option>
-        <option value="SAN FELIPE TEJALAPAM">SAN FELIPE TEJALAPAM</option>
-        <option value="SAN FRANCISCO TELIXTLAHUACA">SAN FRANCISCO TELIXTLAHUACA</option>
-        <option value="SAN JERÓNIMO SOSOLA">SAN JERÓNIMO SOSOLA</option>
-        <option value="SAN JUAN BAUTISTA ATATLAUCA">SAN JUAN BAUTISTA ATATLAUCA</option>
-        <option value="SAN JUAN BAUTISTA GUELACHE">SAN JUAN BAUTISTA GUELACHE</option>
-        <option value="SAN JUAN BAUTISTA JAYACATLAN">SAN JUAN BAUTISTA JAYACATLAN</option>
-        <option value="SAN JUAN DEL ESTADO">SAN JUAN DEL ESTADO</option>
-        <option value="SAN LORENZO CACAOTEPEC">SAN LORENZO CACAOTEPEC</option>
-        <option value="SAN PABLO ETLA">SAN PABLO ETLA</option>
-        <option value="SAN PABLO HUITZO">SAN PABLO HUITZO</option>
-        <option value="VILLA DE ETLA">VILLA DE ETLA</option>
-        <option value="SANTA MARÍA PEÑOLES">SANTA MARÍA PEÑOLES</option>
-        <option value="SANTIAGO SUCHILQUITONGO">SANTIAGO SUCHILQUITONGO</option>
-        <option value="SANTIAGO TENANGO">SANTIAGO TENANGO</option>
-        <option value="SANTIAGO TLASOYALTEPEC">SANTIAGO TLASOYALTEPEC</option>
-        <option value="SANTO TOMÁS MAZALTEPEC">SANTO TOMÁS MAZALTEPEC</option>
-        <option value="SOLEDAD ETLA">SOLEDAD ETLA</option>
-        <option value="ASUNCIÓN OCOTLÁN">ASUNCIÓN OCOTLÁN</option>
-        <option value="MAGDALENA OCOTLAN">MAGDALENA OCOTLAN</option>
-        <option value="OCOTLAN DE MORELOS">OCOTLAN DE MORELOS</option>
-        <option value="SAN JOSÉ DEL PROGRESO">SAN JOSÉ DEL PROGRESO</option>
-        <option value="SAN ANTONINO CASTILLO VELASCO">SAN ANTONINO CASTILLO VELASCO</option>
-        <option value="SAN BALTAZAR CHICHICAPAM">SAN BALTAZAR CHICHICAPAM</option>
-        <option value="SAN DIONISIO OCOTLAN">SAN DIONISIO OCOTLAN</option>
-        <option value="SAN JERÓNIMO TAVICHE">SAN JERÓNIMO TAVICHE</option>
-        <option value="SAN JUAN CHILATECA">SAN JUAN CHILATECA</option>
-        <option value="SAN MARTÍN TILCAJETE">SAN MARTÍN TILCAJETE</option>
-        <option value="SAN MIGUEL TILQUIAPAM">SAN MIGUEL TILQUIAPAM</option>
-        <option value="SAN PEDRO APÓSTOL">SAN PEDRO APÓSTOL</option>
-        <option value="SAN PEDRO MARTIR">SAN PEDRO MARTIR</option>
-        <option value="SAN PEDRO TAVICHE">SAN PEDRO TAVICHE</option>
-        <option value="SANTA ANA ZEGACHE">SANTA ANA ZEGACHE</option>
-        <option value="SANTA CATARINA MINAS">SANTA CATARINA MINAS</option>
-        <option value="SANTA LUCIA OCOTLAN">SANTA LUCIA OCOTLAN</option>
-        <option value="SANTIAGO APÓSTOL">SANTIAGO APÓSTOL</option>
-        <option value="SANTO TOMÁS JALIEZA">SANTO TOMÁS JALIEZA</option>
-        <option value="YAXE">YAXE</option>
-        <option value="MAGDALENA TEITIPAC">MAGDALENA TEITIPAC</option>
-        <option value="ROJAS DE CUAHUTEMOC">ROJAS DE CUAHUTEMOC</option>
-        <option value="SAN BARTOLOMÉ QUIALANA">SAN BARTOLOMÉ QUIALANA</option>
-        <option value="SAN DIONISIO OCOTEPEC">SAN DIONISIO OCOTEPEC</option>
-        <option value="SAN FRANCISCO LACHIGOLO">SAN FRANCISCO LACHIGOLO</option>
-        <option value="SAN JUAN DEL RIO">SAN JUAN DEL RIO</option>
-        <option value="SAN JUAN GUELAVIA">SAN JUAN GUELAVIA</option>
-        <option value="SAN JUAN TEITIPAC">SAN JUAN TEITIPAC</option>
-        <option value="SAN LORENZO ALBARRADAS">SAN LORENZO ALBARRADAS</option>
-        <option value="SAN LUCAS QUIAVINI">SAN LUCAS QUIAVINI</option>
-        <option value="SAN PABLO VILLA DE MITLA">SAN PABLO VILLA DE MITLA</option>
-        <option value="SAN PEDRO QUIATONI">SAN PEDRO QUIATONI</option>
-        <option value="SAN PEDRO TOTOLAPAN">SAN PEDRO TOTOLAPAN</option>
-        <option value="SAN SEBASTIÁN ABASOLO">SAN SEBASTIÁN ABASOLO</option>
-        <option value="SAN SEBASTIÁN TEITIPAC">SAN SEBASTIÁN TEITIPAC</option>
-        <option value="SANTA ANA DEL VALLE">SANTA ANA DEL VALLE</option>
-        <option value="SANTA CRUZ PAPALUTLA">SANTA CRUZ PAPALUTLA</option>
-        <option value="SANTA MARÍA GUELACE">SANTA MARÍA GUELACE</option>
-        <option value="SANTA MARÍA ZOQUITLAN">SANTA MARÍA ZOQUITLAN</option>
-        <option value="SANTIAGO MATATLAN">SANTIAGO MATATLAN</option>
-        <option value="SANTO DOMINGO ALBARRADAS">SANTO DOMINGO ALBARRADAS</option>
-        <option value="TEOTITLAN DEL VALLE">TEOTITLAN DEL VALLE</option>
-        <option value="SAN JERONIMO TLACOCHAHUAYA">SAN JERONIMO TLACOCHAHUAYA</option>
-        <option value="TLACOLULA DE MATAMOROS">TLACOLULA DE MATAMOROS</option>
-        <option value="VILLA DE DIAZ ORDAZ">VILLA DE DIAZ ORDAZ</option>
-        <option value="SAN ANTONIO HUITEPEC">SAN ANTONIO HUITEPEC</option>
-        <option value="SAN MIGUEL PERAS">SAN MIGUEL PERAS</option>
-        <option value="SAN PABLO CUATRO VENADOS">SAN PABLO CUATRO VENADOS</option>
-        <option value="SANTA INES DEL MONTE">SANTA INES DEL MONTE</option>
-        <option value="TRINIDAD ZAACHILA">TRINIDAD ZAACHILA</option>
-        <option value="VILLA DE ZAACHILA">VILLA DE ZAACHILA</option>
-        <option value="CIÉNEGA DE ZIMATLAN">CIÉNEGA DE ZIMATLAN</option>
-        <option value="MAGDALENA MIXTEPEC">MAGDALENA MIXTEPEC</option>
-        <option value="SAN ANTONIO EL ALTO">SAN ANTONIO EL ALTO</option>
-        <option value="SAN BERNARDO MIXTEPEC">SAN BERNARDO MIXTEPEC</option>
-        <option value="SAN MIGUEL MIXTEPEC">SAN MIGUEL MIXTEPEC</option>
-        <option value="SAN PABLO HUIXTEPEC">SAN PABLO HUIXTEPEC</option>
-        <option value="SANTA ANA TLAPACOYAN">SANTA ANA TLAPACOYAN</option>
-        <option value="SANTA CATARINA QUIANE">SANTA CATARINA QUIANE</option>
-        <option value="SANTA CRUZ MIXTEPEC">SANTA CRUZ MIXTEPEC</option>
-        <option value="SANTA GERTRUDIS">SANTA GERTRUDIS</option>
-        <option value="SANTA INES YATZECHE">SANTA INES YATZECHE</option>
-        <option value="AYOQUEZCO DE ALDAMA">AYOQUEZCO DE ALDAMA</option>
-        <option value="ZIMATLÁN DE ALVAREZ">ZIMATLÁN DE ALVAREZ</option>
-        <option value="MARTIRES DE TACUBAYA">MARTIRES DE TACUBAYA</option>
-        <option value="PINOTEPA DE DON LUIS">PINOTEPA DE DON LUIS</option>
-        <option value="SAN AGUSTIN CHAYUCO">SAN AGUSTIN CHAYUCO</option>
-        <option value="SAN ANDRÉS HUAXPALTEPEC">SAN ANDRÉS HUAXPALTEPEC</option>
-        <option value="SAN ANTONIO TEPETLAPA">SAN ANTONIO TEPETLAPA</option>
-        <option value="SAN JOSE ESTANCIA GRANDE">SAN JOSE ESTANCIA GRANDE</option>
-        <option value="SAN JUAN BAUTISTA LO DE SOTO">SAN JUAN BAUTISTA LO DE SOTO</option>
-        <option value="SAN JUAN CACAHUATEPEC">SAN JUAN CACAHUATEPEC</option>
-        <option value="SAN JUAN COLORADO">SAN JUAN COLORADO</option>
-        <option value="SAN LORENZO">SAN LORENZO</option>
-        <option value="SAN MIGUEL TLACAMAMA">SAN MIGUEL TLACAMAMA</option>
-        <option value="SAN PEDRO ATOYAC">SAN PEDRO ATOYAC</option>
-        <option value="SAN PEDRO JICAYAN">SAN PEDRO JICAYAN</option>
-        <option value="SAN SEBASTIÁN IXCAPAC">SAN SEBASTIÁN IXCAPAC</option>
-        <option value="SANTA CATARINA MECHOACAN">SANTA CATARINA MECHOACAN</option>
-        <option value="SANTA MARÍA CORTIJO">SANTA MARÍA CORTIJO</option>
-        <option value="SANTA MARÍA HUAZOLOTITLAN">SANTA MARÍA HUAZOLOTITLAN</option>
-        <option value="SANTIAGO IXTAYUTLA">SANTIAGO IXTAYUTLA</option>
-        <option value="SANTIAGO JAMILTEPEC">SANTIAGO JAMILTEPEC</option>
-        <option value="SANTIAGO LLANO GRANDE">SANTIAGO LLANO GRANDE</option>
-        <option value="SANTIAGO PINOTEPA NACIONAL">SANTIAGO PINOTEPA NACIONAL</option>
-        <option value="SANTIAGO TEPEXTLA">SANTIAGO TEPEXTLA</option>
-        <option value="SANTIAGO TETEPEC">SANTIAGO TETEPEC</option>
-        <option value="SANTO DOMINGO ARMENTA">SANTO DOMINGO ARMENTA</option>
-        <option value="SAN GABRIEL MIXTEPEC">SAN GABRIEL MIXTEPEC</option>
-        <option value="SAN JUAN LACHAO">SAN JUAN LACHAO</option>
-        <option value="SAN JUAN QUIAHIJE">SAN JUAN QUIAHIJE</option>
-        <option value="SAN MIGUEL PANIXTLAHUACA">SAN MIGUEL PANIXTLAHUACA</option>
-        <option value="SAN PEDRO JUCHATENGO">SAN PEDRO JUCHATENGO</option>
-        <option value="SAN PEDRO MIXTEPEC">SAN PEDRO MIXTEPEC</option>
-        <option value="VILLA DE TUTUTEPEC DE MELCHOR OCAMPO">VILLA DE TUTUTEPEC DE MELCHOR OCAMPO</option>
-        <option value="SANTA CATARINA JUQUILA">SANTA CATARINA JUQUILA</option>
-        <option value="SANTA MARÍA TEMAXCALTEPEC">SANTA MARÍA TEMAXCALTEPEC</option>
-        <option value="SANTIAGO YAITEPEC">SANTIAGO YAITEPEC</option>
-        <option value="SANTOS REYES NOPALA">SANTOS REYES NOPALA</option>
-        <option value="TATALTEPEC DE VALDES">TATALTEPEC DE VALDES</option>
-        <option value="CANDELARIA LOXICHA">CANDELARIA LOXICHA</option>
-        <option value="PLUMA HIDALGO">PLUMA HIDALGO</option>
-        <option value="SAN AGUSTIN LOXICHA">SAN AGUSTIN LOXICHA</option>
-        <option value="SAN BALTAZAR LOXICHA">SAN BALTAZAR LOXICHA</option>
-        <option value="SAN BARTOLOMÉ LOXICHA">SAN BARTOLOMÉ LOXICHA</option>
-        <option value="SAN MATEO PIÑAS">SAN MATEO PIÑAS</option>
-        <option value="SAN MIGUEL DEL PUERO">SAN MIGUEL DEL PUERO</option>
-        <option value="SAN PEDRO EL ALTO">SAN PEDRO EL ALTO</option>
-        <option value="SAN PEDRO POCHUTLA">SAN PEDRO POCHUTLA</option>
-        <option value="SANTA CATARINA LOXICHA">SANTA CATARINA LOXICHA</option>
-        <option value="SANTA MARÍA COLOTEPEC">SANTA MARÍA COLOTEPEC</option>
-        <option value="SANTA MARÍA HUATULCO">SANTA MARÍA HUATULCO</option>
-        <option value="SANTA MARÍA TONAMECA">SANTA MARÍA TONAMECA</option>
-        <option value="SANTO DOMINGO DE MORELOS">SANTO DOMINGO DE MORELOS</option>
-        <option value="CONCEPCIÓN PÁPALO">CONCEPCIÓN PÁPALO</option>
-        <option value="CUYAMECALCO VILLA DE ZARAGOZA">CUYAMECALCO VILLA DE ZARAGOZA</option>
-        <option value="CHIQUIHUITLAN DE BENITO JUÁREZ">CHIQUIHUITLAN DE BENITO JUÁREZ</option>
-        <option value="SAN ANDRÉS TEOTILÁPAM">SAN ANDRÉS TEOTILÁPAM</option>
-        <option value="SAN FRANCISCO CHAPULAPA">SAN FRANCISCO CHAPULAPA</option>
-        <option value="SAN JUAN BAUTISTA CUICATLÁN">SAN JUAN BAUTISTA CUICATLÁN</option>
-        <option value="SAN JUAN BAUTISTA TLACOATZINTEPEC">SAN JUAN BAUTISTA TLACOATZINTEPEC</option>
-        <option value="SAN JUAN TEPEUXILA">SAN JUAN TEPEUXILA</option>
-        <option value="SAN MIGUEL SANTA FLOR">SAN MIGUEL SANTA FLOR</option>
-        <option value="SAN PEDRO JALTEPETONGO">SAN PEDRO JALTEPETONGO</option>
-        <option value="SAN PEDRO JOCOTIPAC">SAN PEDRO JOCOTIPAC</option>
-        <option value="SAN PEDRO SOCHIAPAM">SAN PEDRO SOCHIAPAM</option>
-        <option value="SAN PEDRO TEUTILA">SAN PEDRO TEUTILA</option>
-        <option value="SANTA ANA CUAUHTÉMOC">SANTA ANA CUAUHTÉMOC</option>
-        <option value="SANTA MARÍA PÁPALO">SANTA MARÍA PÁPALO</option>
-        <option value="SANTA MARÍA TEXCATITLÁN">SANTA MARÍA TEXCATITLÁN</option>
-        <option value="SANTA MARÍA TLALIXTAC">SANTA MARÍA TLALIXTAC</option>
-        <option value="SANTIAGO NACALTEPEC">SANTIAGO NACALTEPEC</option>
-        <option value="SANTOS REYES PÁPALO">SANTOS REYES PÁPALO</option>
-        <option value="VALERIO TRUJANO">VALERIO TRUJANO</option>
-        <option value="ELOXOCHITLÁN DE FLORES MAGÓN">ELOXOCHITLÁN DE FLORES MAGÓN</option>
-        <option value="SAN MIGUEL HUAUTEPEC">SAN MIGUEL HUAUTEPEC</option>
-        <option value="HUAUTLA DE JIMÉNEZ">HUAUTLA DE JIMÉNEZ</option>
-        <option value="MAZATLÁN VILLA DE FLORES">MAZATLÁN VILLA DE FLORES</option>
-        <option value="SAN ANTONIO NANAHUATIPAM">SAN ANTONIO NANAHUATIPAM</option>
-        <option value="SAN BARTOLOMÉ AYAUTLA">SAN BARTOLOMÉ AYAUTLA</option>
-        <option value="SAN FRANCISCO HUEHUETLÁN">SAN FRANCISCO HUEHUETLÁN</option>
-        <option value="SAN JERÓNIMO TECOATL">SAN JERÓNIMO TECOATL</option>
-        <option value="SAN JOSÉ TENANGO">SAN JOSÉ TENANGO</option>
-        <option value="SAN JUAN COATZOSPAM">SAN JUAN COATZOSPAM</option>
-        <option value="SAN JUAN DE LOS CUES">SAN JUAN DE LOS CUES</option>
-        <option value="SAN LORENZO CUANECUILTITLA">SAN LORENZO CUANECUILTITLA</option>
-        <option value="SAN LUCAS ZOQUIAPAM">SAN LUCAS ZOQUIAPAM</option>
-        <option value="SAN MARTÍN TOXPALAN">SAN MARTÍN TOXPALAN</option>
-        <option value="SAN MATEO YOLOXCHITLAN">SAN MATEO YOLOXCHITLAN</option>
-        <option value="SAN PEDRO OCOPETATILLO">SAN PEDRO OCOPETATILLO</option>
-        <option value="SANTA ANA ATEIXTLAHUACA">SANTA ANA ATEIXTLAHUACA</option>
-        <option value="SANTA CRUZ ACATEPEC">SANTA CRUZ ACATEPEC</option>
-        <option value="SANTA MARÍA LA ASUNCIÓN">SANTA MARÍA LA ASUNCIÓN</option>
-        <option value="SANTA MARÍA CHILCHOTLA">SANTA MARÍA CHILCHOTLA</option>
-        <option value="SANTA MARÍA IXCATLÁN">SANTA MARÍA IXCATLÁN</option>
-        <option value="SANTA MARÍA TECOMAVACA">SANTA MARÍA TECOMAVACA</option>
-        <option value="SANTA MARÍA TEOPOXCO">SANTA MARÍA TEOPOXCO</option>
-        <option value="SANTIAGO TEXCALCINGO">SANTIAGO TEXCALCINGO</option>
-        <option value="TEOTITLAN DE FLORES MAGÓN">TEOTITLAN DE FLORES MAGÓN</option>
-        <option value="ASUNCIÓN IXTALTEPEC">ASUNCIÓN IXTALTEPEC</option>
-        <option value="BARRIO DE LA SOLEDAD">BARRIO DE LA SOLEDAD</option>
-        <option value="CIUDAD IXTEPEC">CIUDAD IXTEPEC</option>
-        <option value="CHAHUITES">CHAHUITES</option>
-        <option value="EL ESPINAL">EL ESPINAL</option>
-        <option value="JUCHITAN DE ZARAGOZA">JUCHITAN DE ZARAGOZA</option>
-        <option value="MATIAS ROMERO">MATIAS ROMERO</option>
-        <option value="SANTIAGO NILTEPEC">SANTIAGO NILTEPEC</option>
-        <option value="REFORMA DE PINEDA">REFORMA DE PINEDA</option>
-        <option value="SAN DIONISIO DEL MAR">SAN DIONISIO DEL MAR</option>
-        <option value="SAN FRANCISCO DEL MAR">SAN FRANCISCO DEL MAR</option>
-        <option value="SAN FRANCISCO IXHUATAN">SAN FRANCISCO IXHUATAN</option>
-        <option value="SAN JUAN GUICHICOVI">SAN JUAN GUICHICOVI</option>
-        <option value="SAN MIGUEL CHIMALAPA">SAN MIGUEL CHIMALAPA</option>
-        <option value="SAN PEDRO TAPANATEPEC">SAN PEDRO TAPANATEPEC</option>
-        <option value="SANTA MARÍA CHIMALAPA">SANTA MARÍA CHIMALAPA</option>
-        <option value="SANTA MARÍA PETAPA">SANTA MARÍA PETAPA</option>
-        <option value="SANTA MARÍA XADANI">SANTA MARÍA XADANI</option>
-        <option value="SANTO DOMINGO INGENIO">SANTO DOMINGO INGENIO</option>
-        <option value="SANTO DOMINGO PETAPA">SANTO DOMINGO PETAPA</option>
-        <option value="SANTO DOMINGO ZANATEPEC">SANTO DOMINGO ZANATEPEC</option>
-        <option value="UNIÓN HIDALGO">UNIÓN HIDALGO</option>
-        <option value="GUEVEA DE HUMBOLT">GUEVEA DE HUMBOLT</option>
-        <option value="MAGDALENA TEQUISISTLAN">MAGDALENA TEQUISISTLAN</option>
-        <option value="MAGDALENA TLACOTEPEC">MAGDALENA TLACOTEPEC</option>
-        <option value="SALINA CRUZ">SALINA CRUZ</option>
-        <option value="SAN BLAS ATEMPA">SAN BLAS ATEMPA</option>
-        <option value="SAN MATEO DEL MAR">SAN MATEO DEL MAR</option>
-        <option value="SAN MIGUEL TENANGO">SAN MIGUEL TENANGO</option>
-        <option value="SAN PEDRO COMITANCILLO">SAN PEDRO COMITANCILLO</option>
-        <option value="SAN PEDRO HUAMELULA">SAN PEDRO HUAMELULA</option>
-        <option value="SAN PEDRO HUILOTEPEC">SAN PEDRO HUILOTEPEC</option>
-        <option value="SANTA MARÍA GUIENAGATI">SANTA MARÍA GUIENAGATI</option>
-        <option value="SANTA MARÍA JALAPA DEL MARQUEZ">SANTA MARÍA JALAPA DEL MARQUEZ</option>
-        <option value="SANTA MARÍA MIXTEQUILLA">SANTA MARÍA MIXTEQUILLA</option>
-        <option value="SANTA MARÍA TOTOLAPILLA">SANTA MARÍA TOTOLAPILLA</option>
-        <option value="SANTIAGO ASTATA">SANTIAGO ASTATA</option>
-        <option value="SANTIAGO LACHIGUIRI">SANTIAGO LACHIGUIRI</option>
-        <option value="SANTIAGO LAOLLAGA">SANTIAGO LAOLLAGA</option>
-        <option value="SANTO DOMINGO CHIHUITAN">SANTO DOMINGO CHIHUITAN</option>
-        <option value="SANTO DOMINGO TEHUANTEPEC">SANTO DOMINGO TEHUANTEPEC</option>
-        <option value="CONCEPCIÓN BUENAVISTA">CONCEPCIÓN BUENAVISTA</option>
-        <option value="SANTA MAGDALENA JICOTLÁN">SANTA MAGDALENA JICOTLÁN</option>
-        <option value="SAN CRISTÓBAL SUCHIXTLAHUACA">SAN CRISTÓBAL SUCHIXTLAHUACA</option>
-        <option value="SAN FRANCISCO TEOPAN">SAN FRANCISCO TEOPAN</option>
-        <option value="SAN JUAN BAUTISTA COIXTLAHUACA">SAN JUAN BAUTISTA COIXTLAHUACA</option>
-        <option value="SAN MATEO TLAPILTEPEC">SAN MATEO TLAPILTEPEC</option>
-        <option value="SAN MIGUEL TEQUIXTEPEC">SAN MIGUEL TEQUIXTEPEC</option>
-        <option value="SAN MIGUEL TULANCINGO">SAN MIGUEL TULANCINGO</option>
-        <option value="SANTA MARÍA NATIVITAS">SANTA MARÍA NATIVITAS</option>
-        <option value="SANTIAGO IHUITLÁN PLUMAS">SANTIAGO IHUITLÁN PLUMAS</option>
-        <option value="SANTIAGO TEPETLAPA">SANTIAGO TEPETLAPA</option>
-        <option value="TEPELMEME VILLA DE MORELOS">TEPELMEME VILLA DE MORELOS</option>
-        <option value="TLACOTEPEC PLUMAS">TLACOTEPEC PLUMAS</option>
-        <option value="ASUNCIÓN CUYOTEPEJI">ASUNCIÓN CUYOTEPEJI</option>
-        <option value="COSOLTEPEC">COSOLTEPEC</option>
-        <option value="FRESNILLO DE TRUJANO">FRESNILLO DE TRUJANO</option>
-        <option value="HUAJUAPAM DE LEÓN">HUAJUAPAM DE LEÓN</option>
-        <option value="MARISCALA DE JUÁREZ">MARISCALA DE JUÁREZ</option>
-        <option value="SAN ANDRÉS DINICUITI">SAN ANDRÉS DINICUITI</option>
-        <option value="SAN JERÓNIMO SILACOYOAPILLA">SAN JERÓNIMO SILACOYOAPILLA</option>
-        <option value="SAN JORGE NUCHITA">SAN JORGE NUCHITA</option>
-        <option value="SAN JOSÉ AYUQUILILLA">SAN JOSÉ AYUQUILILLA</option>
-        <option value="SAN JUAN BAUTISTA SUCHIXTEPEC">SAN JUAN BAUTISTA SUCHIXTEPEC</option>
-        <option value="SAN MARCOS ARTEAGA">SAN MARCOS ARTEAGA</option>
-        <option value="SAN MARTÍN ZACATEPEC">SAN MARTÍN ZACATEPEC</option>
-        <option value="SAN MIGUEL AMATITLÁN">SAN MIGUEL AMATITLÁN</option>
-        <option value="SAN PEDRO Y SAN PABLO TEQUIXTEPEC">SAN PEDRO Y SAN PABLO TEQUIXTEPEC</option>
-        <option value="SAN SIMÓN ZAHUATLÁN">SAN SIMÓN ZAHUATLÁN</option>
-        <option value="SANTA CATARINA ZAPOQUILLA">SANTA CATARINA ZAPOQUILLA</option>
-        <option value="SANTA CRUZ TACACHE DE MINA">SANTA CRUZ TACACHE DE MINA</option>
-        <option value="SANTA MARÍA CAMOTLÁN">SANTA MARÍA CAMOTLÁN</option>
-        <option value="SANTIAGO AYUQUILLA">SANTIAGO AYUQUILLA</option>
-        <option value="SANTIAGO CACALOXTEPEC">SANTIAGO CACALOXTEPEC</option>
-        <option value="SANTIAGO CHAZUMBA">SANTIAGO CHAZUMBA</option>
-        <option value="SANTIAGO HUAJOLOTITLÁN">SANTIAGO HUAJOLOTITLÁN</option>
-        <option value="SANTIAGO MILTEPEC">SANTIAGO MILTEPEC</option>
-        <option value="SANTO DOMINGO TONALÁ">SANTO DOMINGO TONALÁ</option>
-        <option value="SANTO DOMINGO YODOHINO">SANTO DOMINGO YODOHINO</option>
-        <option value="SANTOS REYES YUCUNA">SANTOS REYES YUCUNA</option>
-        <option value="TEZOATLÁN DE SEGURA Y LUNA">TEZOATLÁN DE SEGURA Y LUNA</option>
-        <option value="ZAPOTITLÁN PALMAS">ZAPOTITLÁN PALMAS</option>
-        <option value="COICOYÁN DE LAS FLORES">COICOYÁN DE LAS FLORES</option>
-        <option value="SAN JUAN MIXTEPEC">SAN JUAN MIXTEPEC</option>
-        <option value="SAN MARTÍN PERAS">SAN MARTÍN PERAS</option>
-        <option value="SAN MIGUEL TLACOTEPEC">SAN MIGUEL TLACOTEPEC</option>
-        <option value="SAN SEBASTIÁN TECOMAXTLAHUACA">SAN SEBASTIÁN TECOMAXTLAHUACA</option>
-        <option value="SANTIAGO JUXTLAHUACA">SANTIAGO JUXTLAHUACA</option>
-        <option value="SANTOS REYES TEPEJILLO">SANTOS REYES TEPEJILLO</option>
-        <option value="ASUNCIÓN NOCHIXTLÁN">ASUNCIÓN NOCHIXTLÁN</option>
-        <option value="MAGDALENA JALTEPEC">MAGDALENA JALTEPEC</option>
-        <option value="MAGDALENA ZAHUATLÁN">MAGDALENA ZAHUATLÁN</option>
-        <option value="SAN ANDRÉS NUXIÑO">SAN ANDRÉS NUXIÑO</option>
-        <option value="SAN ANDRÉS SINAXTLA">SAN ANDRÉS SINAXTLA</option>
-        <option value="SAN FRANCISCO CHINDÚA">SAN FRANCISCO CHINDÚA</option>
-        <option value="SAN FRANCISCO JALTEPETONGO">SAN FRANCISCO JALTEPETONGO</option>
-        <option value="SAN FRANCISCO NUXAÑO">SAN FRANCISCO NUXAÑO</option>
-        <option value="SAN JUAN DIUXI">SAN JUAN DIUXI</option>
-        <option value="SAN JUAN SAYULTEPEC">SAN JUAN SAYULTEPEC</option>
-        <option value="SAN JUAN TAMAZOLA">SAN JUAN TAMAZOLA</option>
-        <option value="SAN JUAN YUCUITA">SAN JUAN YUCUITA</option>
-        <option value="SAN MATEO ETLATONGO">SAN MATEO ETLATONGO</option>
-        <option value="SAN MATEO SINDIHUI">SAN MATEO SINDIHUI</option>
-        <option value="SAN MIGUEL CHICAHUA">SAN MIGUEL CHICAHUA</option>
-        <option value="SAN MIGUEL HUATLA">SAN MIGUEL HUATLA</option>
-        <option value="SAN MIGUEL PIEDRAS">SAN MIGUEL PIEDRAS</option>
-        <option value="SAN MIGUEL TECOMATLÁN">SAN MIGUEL TECOMATLÁN</option>
-        <option value="SAN PEDRO COXCALTEPEC CÁNTAROS">SAN PEDRO COXCALTEPEC CÁNTAROS</option>
-        <option value="SAN PEDRO TEOZACOALCO">SAN PEDRO TEOZACOALCO</option>
-        <option value="SAN PEDRO TIDAÁ">SAN PEDRO TIDAÁ</option>
-        <option value="SANTA MARÍA APAZCO">SANTA MARÍA APAZCO</option>
-        <option value="SANTA MARÍA CHACHOAPAM">SANTA MARÍA CHACHOAPAM</option>
-        <option value="SANTIAGO APOALA">SANTIAGO APOALA</option>
-        <option value="SANTIAGO HUAUCLILLA">SANTIAGO HUAUCLILLA</option>
-        <option value="SANTIAGO TILALTONGO">SANTIAGO TILALTONGO</option>
-        <option value="SANTIAGO TILLO">SANTIAGO TILLO</option>
-        <option value="SANTO DOMINGO NUXAÁ">SANTO DOMINGO NUXAÁ</option>
-        <option value="SANTO DOMINGO YANHUITLÁN">SANTO DOMINGO YANHUITLÁN</option>
-        <option value="MAGDALENA YODOCONO DE PORFIRIO DÍAZ">MAGDALENA YODOCONO DE PORFIRIO DÍAZ</option>
-        <option value="YUTANDUCHI DE GUERRERO">YUTANDUCHI DE GUERRERO</option>
-        <option value="SANTA INÉS DE ZARAGOZA">SANTA INÉS DE ZARAGOZA</option>
-        <option value="CALIHUALA">CALIHUALA</option>
-        <option value="GUADALUPE DE RAMÍREZ">GUADALUPE DE RAMÍREZ</option>
-        <option value="IXPANTEPEC NIEVES">IXPANTEPEC NIEVES</option>
-        <option value="SAN AGUSTÍN ATENANGO">SAN AGUSTÍN ATENANGO</option>
-        <option value="SAN ANDRÉS TEPETLAPA">SAN ANDRÉS TEPETLAPA</option>
-        <option value="SAN FRANCISCO TLAPANCINGO">SAN FRANCISCO TLAPANCINGO</option>
-        <option value="SAN JUAN BAUTISTA TLACHICHILCO">SAN JUAN BAUTISTA TLACHICHILCO</option>
-        <option value="SAN JUAN CIENEGUILLA">SAN JUAN CIENEGUILLA</option>
-        <option value="SAN JUAN IHUALTEPEC">SAN JUAN IHUALTEPEC</option>
-        <option value="SAN LORENZO VICTORIA">SAN LORENZO VICTORIA</option>
-        <option value="SAN MATEO NEJAPAM">SAN MATEO NEJAPAM</option>
-        <option value="SAN MIGUEL AHUEHUETITLAN">SAN MIGUEL AHUEHUETITLAN</option>
-        <option value="SAN NICOLÁS HIDALGO">SAN NICOLÁS HIDALGO</option>
-        <option value="SANTA CRUZ DE BRAVO">SANTA CRUZ DE BRAVO</option>
-        <option value="SANTIAGO DEL RÍO">SANTIAGO DEL RÍO</option>
-        <option value="SANTIAGO TAMAZOLA">SANTIAGO TAMAZOLA</option>
-        <option value="SANTIAGO YUCUYACHI">SANTIAGO YUCUYACHI</option>
-        <option value="SILACAYOAPAM">SILACAYOAPAM</option>
-        <option value="ZAPOTITLAN LAGUNAS">ZAPOTITLAN LAGUNAS</option>
-        <option value="SAN ANDRÉS LAGUNAS">SAN ANDRÉS LAGUNAS</option>
-        <option value="SAN ANTONIO MONTE VERDE">SAN ANTONIO MONTE VERDE</option>
-        <option value="SAN ANTONIO ACUTLA">SAN ANTONIO ACUTLA</option>
-        <option value="SAN BARTOLO SOYALTEPEC">SAN BARTOLO SOYALTEPEC</option>
-        <option value="SAN JUAN TEPOSCOLULA">SAN JUAN TEPOSCOLULA</option>
-        <option value="SAN PEDRO NOPALA">SAN PEDRO NOPALA</option>
-        <option value="SAN PEDRO TOPILTEPEC">SAN PEDRO TOPILTEPEC</option>
-        <option value="SAN PEDRO Y SAN PABLO TEPOSCOLULA">SAN PEDRO Y SAN PABLO TEPOSCOLULA</option>
-        <option value="SAN PEDRO YUCUNAMA">SAN PEDRO YUCUNAMA</option>
-        <option value="SAN SEBASTIÁN NICANANDUTA">SAN SEBASTIÁN NICANANDUTA</option>
-        <option value="VILLA CHILAPA DE DÍAZ">VILLA CHILAPA DE DÍAZ</option>
-        <option value="SANTA MARÍA NDUAYACO">SANTA MARÍA NDUAYACO</option>
-        <option value="SANTIAGO NEJAPILLA">SANTIAGO NEJAPILLA</option>
-        <option value="VILLA TEJUPAM DE LA UNIÓN">VILLA TEJUPAM DE LA UNIÓN</option>
-        <option value="SANTIAGO YOLOMÉCATL">SANTIAGO YOLOMÉCATL</option>
-        <option value="SANTO DOMINGO TLATAYAPAM">SANTO DOMINGO TLATAYAPAM</option>
-        <option value="SANTO DOMINGO TONALTEPEC">SANTO DOMINGO TONALTEPEC</option>
-        <option value="SAN VICENTE NUYU">SAN VICENTE NUYU</option>
-        <option value="VILLA DE TAMAZULAPAM DEL PROGRESO">VILLA DE TAMAZULAPAM DEL PROGRESO</option>
-        <option value="SANTIAGO TEOTONGO">SANTIAGO TEOTONGO</option>
-        <option value="LA TRINIDAD VISTA HERMOSA">LA TRINIDAD VISTA HERMOSA</option>
-        <option value="CHALCATONGO DE HIDALGO">CHALCATONGO DE HIDALGO</option>
-        <option value="MAGDALENA PEÑASCO">MAGDALENA PEÑASCO</option>
-        <option value="SAN AGUSTÍN TLACOTEPEC">SAN AGUSTÍN TLACOTEPEC</option>
-        <option value="SAN ANTONIO SINACAHUA">SAN ANTONIO SINACAHUA</option>
-        <option value="SAN BARTOLOMÉ YUCUAÑE">SAN BARTOLOMÉ YUCUAÑE</option>
-        <option value="SAN CRISTÓBAL AMOLTEPEC">SAN CRISTÓBAL AMOLTEPEC</option>
-        <option value="SAN ESTEBAN ATATLAHUACA">SAN ESTEBAN ATATLAHUACA</option>
-        <option value="SAN JUAN ACHIUTLA">SAN JUAN ACHIUTLA</option>
-        <option value="SAN JUAN ÑUMI">SAN JUAN ÑUMI</option>
-        <option value="SAN JUAN TEITA">SAN JUAN TEITA</option>
-        <option value="SAN MARTÍN HUAMELULPAM">SAN MARTÍN HUAMELULPAM</option>
-        <option value="SAN MARTÍN ITUNYOSO">SAN MARTÍN ITUNYOSO</option>
-        <option value="SAN MATEO PEÑASCO">SAN MATEO PEÑASCO</option>
-        <option value="SAN MIGUEL ACHIUTLA">SAN MIGUEL ACHIUTLA</option>
-        <option value="SAN MIGUEL EL GRANDE">SAN MIGUEL EL GRANDE</option>
-        <option value="SAN PABLO TIJALTEPEC">SAN PABLO TIJALTEPEC</option>
-        <option value="SAN PEDRO MARTIR YUCOXACO">SAN PEDRO MARTIR YUCOXACO</option>
-        <option value="SAN PEDRO MOLINOS">SAN PEDRO MOLINOS</option>
-        <option value="SANTA CATARINA TAYATA">SANTA CATARINA TAYATA</option>
-        <option value="SANTA CATARINA TICUA">SANTA CATARINA TICUA</option>
-        <option value="SANTA CATARINA YOSONOTU">SANTA CATARINA YOSONOTU</option>
-        <option value="SANTA CRUZ NUNDACO">SANTA CRUZ NUNDACO</option>
-        <option value="SANTA CRUZ TACAHUA">SANTA CRUZ TACAHUA</option>
-        <option value="SANTA CRUZ TAYATA">SANTA CRUZ TAYATA</option>
-        <option value="HEROICA CIUDAD DE TLAXIACO">HEROICA CIUDAD DE TLAXIACO</option>
-        <option value="SANTA MARÍA DEL ROSARIO">SANTA MARÍA DEL ROSARIO</option>
-        <option value="SANTA MARÍA TATALTEPEC">SANTA MARÍA TATALTEPEC</option>
-        <option value="SANTA MARÍA YOLOTEPEC">SANTA MARÍA YOLOTEPEC</option>
-        <option value="SANTA MARÍA YOSOYUA">SANTA MARÍA YOSOYUA</option>
-        <option value="SANTA MARÍA YUCUITI">SANTA MARÍA YUCUITI</option>
-        <option value="SANTIAGO NUNDICHI">SANTIAGO NUNDICHI</option>
-        <option value="SANTIAGO NOYOO">SANTIAGO NOYOO</option>
-        <option value="SANTIAGO YOSONDUA">SANTIAGO YOSONDUA</option>
-        <option value="SANTO DOMINGO IXCATLAN">SANTO DOMINGO IXCATLAN</option>
-        <option value="SANTO TOMÁS OCOTEPEC">SANTO TOMÁS OCOTEPEC</option>
-        <option value="SAN JUAN COMALTEPEC">SAN JUAN COMALTEPEC</option>
-        <option value="SAN JUAN LALANA">SAN JUAN LALANA</option>
-        <option value="SAN JUAN PETLAPA">SAN JUAN PETLAPA</option>
-        <option value="SANTIAGO CHOAPAM">SANTIAGO CHOAPAM</option>
-        <option value="SANTIAGO JOCOTEPEC">SANTIAGO JOCOTEPEC</option>
-        <option value="SANTIAGO YAVEO">SANTIAGO YAVEO</option>
-        <option value="ACATLÁN DE PÉREZ FIGUEROA">ACATLÁN DE PÉREZ FIGUEROA</option>
-        <option value="AYOTZINTEPEC">AYOTZINTEPEC</option>
-        <option value="COSOAPA">COSOAPA</option>
-        <option value="LOMA BONITA">LOMA BONITA</option>
-        <option value="SAN FELIPE JALAPA DE DÍAZ">SAN FELIPE JALAPA DE DÍAZ</option>
-        <option value="SAN FELIPE USILA">SAN FELIPE USILA</option>
-        <option value="SAN JOSÉ CHILTEPEC">SAN JOSÉ CHILTEPEC</option>
-        <option value="SAN JOSÉ INDEPENDENCIA">SAN JOSÉ INDEPENDENCIA</option>
-        <option value="SAN JUAN BAUTISTA TUXTEPEC">SAN JUAN BAUTISTA TUXTEPEC</option>
-        <option value="SAN LUCAS OJITLÁN">SAN LUCAS OJITLÁN</option>
-        <option value="SAN MIGUEL SOYALTEPEC">SAN MIGUEL SOYALTEPEC</option>
-        <option value="SAN PEDRO IXCATLÁN">SAN PEDRO IXCATLÁN</option>
-        <option value="SANTA MRÍA JACATEPEC">SANTA MRÍA JACATEPEC</option>
-        <option value="SAN JUAN BAUTISTA VALLE NACIONAL">SAN JUAN BAUTISTA VALLE NACIONAL</option>
-        <option value="ABEJONES">ABEJONES</option>
-        <option value="GUELATAO DE JUÁREZ">GUELATAO DE JUÁREZ</option>
-        <option value="IXTLÁN DE JUÁREZ">IXTLÁN DE JUÁREZ</option>
-        <option value="NATIVIDAD">NATIVIDAD</option>
-        <option value="SAN JUAN ATEPEC">SAN JUAN ATEPEC</option>
-        <option value="SAN JUAN CHICOMEZÚCHIL">SAN JUAN CHICOMEZÚCHIL</option>
-        <option value="SAN JUAN EVANGELISTA ANALCO">SAN JUAN EVANGELISTA ANALCO</option>
-        <option value="SAN JUAN QUIOTEPEC">SAN JUAN QUIOTEPEC</option>
-        <option value="CAPULALPAM DE MÉNDEZ">CAPULALPAM DE MÉNDEZ</option>
-        <option value="SAN MIGUEL ALOÁPAM">SAN MIGUEL ALOÁPAM</option>
-        <option value="SAN MIGUEL AMATLÁN">SAN MIGUEL AMATLÁN</option>
-        <option value="SAN MIGUEL DEL RÍO">SAN MIGUEL DEL RÍO</option>
-        <option value="SAN MIGUEL YOTAO">SAN MIGUEL YOTAO</option>
-        <option value="SAN PABLO MACUILTIANGUIS">SAN PABLO MACUILTIANGUIS</option>
-        <option value="SAN PEDRO YANERI">SAN PEDRO YANERI</option>
-        <option value="SAN PEDRO YOLOX">SAN PEDRO YOLOX</option>
-        <option value="SANTA ANA YANERI">SANTA ANA YANERI</option>
-        <option value="SANTA CATARINA IXTEPEJI">SANTA CATARINA IXTEPEJI</option>
-        <option value="SANTA CATARINA LACHATAO">SANTA CATARINA LACHATAO</option>
-        <option value="SANTA MARÍA JALTIANGUIS">SANTA MARÍA JALTIANGUIS</option>
-        <option value="SANTA MARÍA YAVESÍA">SANTA MARÍA YAVESÍA</option>
-        <option value="SANTIAGO COMALTEPEC">SANTIAGO COMALTEPEC</option>
-        <option value="SANTIAGO LAXOPA">SANTIAGO LAXOPA</option>
-        <option value="SANTIAGO XIACUÍ">SANTIAGO XIACUÍ</option>
-        <option value="NUEVO ZOQUIAPAM">NUEVO ZOQUIAPAM</option>
-        <option value="TEOCOCUILCO DE MARCOS PÉREZ">TEOCOCUILCO DE MARCOS PÉREZ</option>
-        <option value="ASUNCIÓN CACALOTEPEC">ASUNCIÓN CACALOTEPEC</option>
-        <option value="TAMAZALUPAM DEL ESPÍRITU SANTO">TAMAZALUPAM DEL ESPÍRITU SANTO</option>
-        <option value="MIXISTLÁN DE LA REFORMA">MIXISTLÁN DE LA REFORMA</option>
-        <option value="SAN JUAN COTZOCON">SAN JUAN COTZOCON</option>
-        <option value="SAN JUAN MAZATLÁN">SAN JUAN MAZATLÁN</option>
-        <option value="SAN LUCAS CAMOTLÁN">SAN LUCAS CAMOTLÁN</option>
-        <option value="SAN MIGUEL QUETZALTEPEC">SAN MIGUEL QUETZALTEPEC</option>
-        <option value="SAN PEDRO OCOTEPEC">SAN PEDRO OCOTEPEC</option>
-        <option value="SAN PEDRO Y SAN PABLO AYUTLA">SAN PEDRO Y SAN PABLO AYUTLA</option>
-        <option value="SANTA MARÍA ALOTEPEC">SANTA MARÍA ALOTEPEC</option>
-        <option value="SANTA MARÍA TEPANTLALI">SANTA MARÍA TEPANTLALI</option>
-        <option value="SANTA MARÍA TLAHUILTOLTEPEC">SANTA MARÍA TLAHUILTOLTEPEC</option>
-        <option value="SANTIAGO ATITLÁN">SANTIAGO ATITLÁN</option>
-        <option value="SANTIAGO IXCUINTEPEC">SANTIAGO IXCUINTEPEC</option>
-        <option value="SANTIAGO ZACATEPEC">SANTIAGO ZACATEPEC</option>
-        <option value="SANTO DOMINGO TEPUXTEPEC">SANTO DOMINGO TEPUXTEPEC</option>
-        <option value="TOTONTEPEC VILLA DE MORELOS">TOTONTEPEC VILLA DE MORELOS</option>
-        <option value="VILLA HIDALGO">VILLA HIDALGO</option>
-        <option value="SAN ANDRÉS SOLAGA">SAN ANDRÉS SOLAGA</option>
-        <option value="SAN ANDRÉS YAA">SAN ANDRÉS YAA</option>
-        <option value="SAN BALTAZAR YATZACHI EL BAJO">SAN BALTAZAR YATZACHI EL BAJO</option>
-        <option value="SAN BARTOLOMÉ ZOOGOCHO">SAN BARTOLOMÉ ZOOGOCHO</option>
-        <option value="SAN CRISTÓBAL LACHIRIOAG">SAN CRISTÓBAL LACHIRIOAG</option>
-        <option value="SAN FRANCISCO CAJONOS">SAN FRANCISCO CAJONOS</option>
-        <option value="SAN ILDEFONSO VILLA ALTA">SAN ILDEFONSO VILLA ALTA</option>
-        <option value="SAN JUAN JUQUILA VIJANOS">SAN JUAN JUQUILA VIJANOS</option>
-        <option value="SAN JUAN TABAA">SAN JUAN TABAA</option>
-        <option value="SAN JUAN YAEE">SAN JUAN YAEE</option>
-        <option value="SAN JUAN YATZONA">SAN JUAN YATZONA</option>
-        <option value="SAN MATEO CAJONOS">SAN MATEO CAJONOS</option>
-        <option value="SAN MELCHOR BETAZA">SAN MELCHOR BETAZA</option>
-        <option value="VILLA TALEA DE CASTRO">VILLA TALEA DE CASTRO</option>
-        <option value="SAN PABLO YAGANIZA">SAN PABLO YAGANIZA</option>
-        <option value="SAN PEDRO CAJONOS">SAN PEDRO CAJONOS</option>
-        <option value="SANTA MARÍA TEMAXCALAPA">SANTA MARÍA TEMAXCALAPA</option>
-        <option value="SANTA MARÍA YALINA">SANTA MARÍA YALINA</option>
-        <option value="SANTIAGO CAMOTLÁN">SANTIAGO CAMOTLÁN</option>
-        <option value="SANTIAGO LALOPA">SANTIAGO LALOPA</option>
-        <option value="SANTIAGO ZOOCHILA">SANTIAGO ZOOCHILA</option>
-        <option value="SANTO DOMINGO ROAYAGA">SANTO DOMINGO ROAYAGA</option>
-        <option value="SANTO DOMINGO XAGACIA">SANTO DOMINGO XAGACIA</option>
-        <option value="TANETZE DE ZARAGOZA">TANETZE DE ZARAGOZA</option>
-        <option value="MIAHUATLAN DE PORFIRIO DÍAZ">MIAHUATLAN DE PORFIRIO DÍAZ</option>
-        <option value="MONJAS">MONJAS</option>
-        <option value="SAN ANDRÉS PAXTLAN">SAN ANDRÉS PAXTLAN</option>
-        <option value="SAN CRISTÓBAL AMATLAN">SAN CRISTÓBAL AMATLAN</option>
-        <option value="SAN FRANCISCO LOGUECHE">SAN FRANCISCO LOGUECHE</option>
-        <option value="SAN FRANCISCO OZOLOTEPEC">SAN FRANCISCO OZOLOTEPEC</option>
-        <option value="SAN ILDENFONSO AMATLAN">SAN ILDENFONSO AMATLAN</option>
-        <option value="SAN JERÓNIMO COATLAN">SAN JERÓNIMO COATLAN</option>
-        <option value="SAN JOSÉ DEL PEÑASCO">SAN JOSÉ DEL PEÑASCO</option>
-        <option value="SAN JOSE LACHIGUIRI">SAN JOSE LACHIGUIRI</option>
-        <option value="SAN JUAN MIXTEPEC">SAN JUAN MIXTEPEC</option>
-        <option value="SAN JUAN OZOLOTEPEC">SAN JUAN OZOLOTEPEC</option>
-        <option value="SAN LUIS AMATLAN">SAN LUIS AMATLAN</option>
-        <option value="SAN MARCIAL OZOLOTEPEC">SAN MARCIAL OZOLOTEPEC</option>
-        <option value="SAN MATEO RIO HONDO">SAN MATEO RIO HONDO</option>
-        <option value="SAN MIGUEL COATLAN">SAN MIGUEL COATLAN</option>
-        <option value="SAN MIGUEL SUCHIXTEPEC">SAN MIGUEL SUCHIXTEPEC</option>
-        <option value="SAN NICOLÁS">SAN NICOLÁS</option>
-        <option value="SAN PABLO COATLAN">SAN PABLO COATLAN</option>
-        <option value="SAN PEDRO MIXTEPEC">SAN PEDRO MIXTEPEC</option>
-        <option value="SAN SEBASTIÁN COATLAN">SAN SEBASTIÁN COATLAN</option>
-        <option value="SAN SEBASTIÁN RÍO HONDO">SAN SEBASTIÁN RÍO HONDO</option>
-        <option value="SAN SIMÓN ALMOLONGAS">SAN SIMÓN ALMOLONGAS</option>
-        <option value="SANTA ANA MIAHUATLAN">SANTA ANA MIAHUATLAN</option>
-        <option value="SANTA CATARINA CUIXTL">SANTA CATARINA CUIXTL</option>
-        <option value="SANTA CRUZ XITLA">SANTA CRUZ XITLA</option>
-        <option value="SANTA LUCÍA MIAHUATLAN">SANTA LUCÍA MIAHUATLAN</option>
-        <option value="SANTA MARÍA OZOLOTEPEC">SANTA MARÍA OZOLOTEPEC</option>
-        <option value="SANTIAGO XANICA">SANTIAGO XANICA</option>
-        <option value="SANTO DOMINGO OZOLOTEPEC">SANTO DOMINGO OZOLOTEPEC</option>
-        <option value="SANTO TOMÁS TAMAZULAPAM">SANTO TOMÁS TAMAZULAPAM</option>
-        <option value="SITIO DE XITLAPEHUA">SITIO DE XITLAPEHUA</option>
-        <option value="CONSTANCIA DEL ROSARIO">CONSTANCIA DEL ROSARIO</option>
-        <option value="MESONES HIDALGO">MESONES HIDALGO</option>
-        <option value="PUTLA VILLA DE GUERRERO">PUTLA VILLA DE GUERRERO</option>
-        <option value="LA REFORMA">LA REFORMA</option>
-        <option value="SAN ANDRÉS CABECERA NUEVA">SAN ANDRÉS CABECERA NUEVA</option>
-        <option value="SAN PEDRO AMUZGOS">SAN PEDRO AMUZGOS</option>
-        <option value="SANTA CRUZ ITUNDUJIA">SANTA CRUZ ITUNDUJIA</option>
-        <option value="SANTA LUCÍA MONTEVERDE">SANTA LUCÍA MONTEVERDE</option>
-        <option value="SANTA MARÍA IPALAPA">SANTA MARÍA IPALAPA</option>
-        <option value="SANTA MARÍA ZACATEPEC">SANTA MARÍA ZACATEPEC</option>
-        <option value="SAN FRANCISCO CAHUACUA">SAN FRANCISCO CAHUACUA</option>
-        <option value="SAN FRANCISCO SOLA">SAN FRANCISCO SOLA</option>
-        <option value="SAN ILDEFONSO SOLA">SAN ILDEFONSO SOLA</option>
-        <option value="SAN JACINTO TLACOTEPEC">SAN JACINTO TLACOTEPEC</option>
-        <option value="SAN LORENZO TEXMELUCAN">SAN LORENZO TEXMELUCAN</option>
-        <option value="VILLA SOLA DE VEGA">VILLA SOLA DE VEGA</option>
-        <option value="SANTA CRUZ ZENZONTEPEC">SANTA CRUZ ZENZONTEPEC</option>
-        <option value="SANTA MARÍA LACHIXIO">SANTA MARÍA LACHIXIO</option>
-        <option value="SANTA MARÍA SOLA">SANTA MARÍA SOLA</option>
-        <option value="SANTA MARÍA ZANIZA">SANTA MARÍA ZANIZA</option>
-        <option value="SANTIAGO AMOLTEPEC">SANTIAGO AMOLTEPEC</option>
-        <option value="SANTIAGO MINAS">SANTIAGO MINAS</option>
-        <option value="SANTIAGO TEXTITLAN">SANTIAGO TEXTITLAN</option>
-        <option value="SANTO DOMINGO TEOJOMULCO">SANTO DOMINGO TEOJOMULCO</option>
-        <option value="SAN VICENTE LACHIXIO">SAN VICENTE LACHIXIO</option>
-        <option value="ZAPOTITLÁN DEL RÍO">ZAPOTITLÁN DEL RÍO</option>
-        <option value="ASUNCION TLACOLULITA">ASUNCION TLACOLULITA</option>
-        <option value="NEJAPA DE MADERO">NEJAPA DE MADERO</option>
-        <option value="SANTA CATARINA QUIOQUITANI">SANTA CATARINA QUIOQUITANI</option>
-        <option value="SAN BARTOLO YAUTEPEC">SAN BARTOLO YAUTEPEC</option>
-        <option value="SAN CARLOS YAUTEPEC">SAN CARLOS YAUTEPEC</option>
-        <option value="SAN JUAN JUQUILA MIXES">SAN JUAN JUQUILA MIXES</option>
-        <option value="SAN JUAN LAJARCIA">SAN JUAN LAJARCIA</option>
-        <option value="SAN PEDRO MARTIR QUIECHAPA">SAN PEDRO MARTIR QUIECHAPA</option>
-        <option value="SANTA ANA TAVELA">SANTA ANA TAVELA</option>
-        <option value="SANTA CATARINA QUIERI">SANTA CATARINA QUIERI</option>
-        <option value="SANTA MARÍA ECATEPEC">SANTA MARÍA ECATEPEC</option>
-        <option value="SANTA MARÍA QUIEGOLANI">SANTA MARÍA QUIEGOLANI</option>
 
-        
 
-    </select>
-    <div class="invalid-feedback">Se requiere una selección válida.</div>
-    </div>
 
-    <div class="col-sm-6">
-        <label for="colonia" class="form-label">Colonia</label>
-        <input type="text" class="form-control" id="colonia" name="colonia" placeholder="">
-        <div class="invalid-feedback">Se requiere una colonia válida.</div>
-    </div>
+
+
+     <input type="hidden" id="selected_region_id">
+        <input type="hidden" id="selected_distrito_id">
+        <input type="hidden" id="selected_municipio_id">
+        <input type="hidden" id="selected_localidad_id"> 
+
+
+        <div class="col-sm-6">
+  <label for="cp" class="form-label">Código Postal (CP)</label>
+  <input type="number" max="100000" min="1" class="form-control" id="cp" name="cp" placeholder="">
+  <div class="invalid-feedback">Se requiere un código postal válido.</div>
+</div>
+
+        <div class="col-sm-6">
+
+            <label for="input_region" class="form-label">Región:</label>
+            <input type="text" class="form-control" id="input_region" name="region" placeholder="Escribe para buscar región..." autocomplete="off">
+            <div class="sugerencias" id="sug_region"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_distrito" class="form-label">Distrito:</label>
+            <input type="text" id="input_distrito" class="form-control" placeholder="Escribe para buscar distrito..." autocomplete="off">
+            <div class="sugerencias" id="sug_distrito"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_municipio" class="form-label">Municipio:</label>
+            <input type="text" id="input_municipio" class="form-control" name="municipio" placeholder="Escribe para buscar municipio..." autocomplete="off">
+            <div class="sugerencias" id="sug_municipio"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_localidad" class="form-label">Localidad:</label>
+            <input type="text" id="input_localidad" class="form-control" name="colonia" placeholder="Escribe el nombre de la localidad..." autocomplete="off">
+            <div class="sugerencias" id="sug_localidad"></div>
+        </div>
+
+        <div id="detalles" style="display: none;">
+           
+            <p><strong>Localidad:</strong> <span id="res_localidad"></span></p>
+            <p><strong>Municipio:</strong> <span id="res_municipio"></span></p>
+            <p><strong>Distrito:</strong> <span id="res_distrito"></span></p>
+            <p><strong>Región:</strong> <span id="res_region"></span></p>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+  <script>
+        // --- Referencias a los elementos ---
+        const inputs = {
+            region: document.getElementById('input_region'),
+            distrito: document.getElementById('input_distrito'),
+            municipio: document.getElementById('input_municipio'),
+            localidad: document.getElementById('input_localidad')
+        };
+        const suggestions = {
+            region: document.getElementById('sug_region'),
+            distrito: document.getElementById('sug_distrito'),
+            municipio: document.getElementById('sug_municipio'),
+            localidad: document.getElementById('sug_localidad')
+        };
+        const selectedIds = {
+            region: document.getElementById('selected_region_id'),
+            distrito: document.getElementById('selected_distrito_id'),
+            municipio: document.getElementById('selected_municipio_id'),
+            localidad: document.getElementById('selected_localidad_id') // Añadido
+        };
+
+        // --- LÓGICA DE BÚSQUEDA (keyup) ---
+
+        inputs.region.addEventListener('keyup', e => handleSearch('region', e.target.value));
+        inputs.distrito.addEventListener('keyup', e => handleSearch('distrito', e.target.value));
+        inputs.municipio.addEventListener('keyup', e => handleSearch('municipio', e.target.value));
+        inputs.localidad.addEventListener('keyup', e => handleSearch('localidad', e.target.value));
+
+        async function handleSearch(type, query) {
+            // Limpia sugerencias si la búsqueda es muy corta o vacía
+            if (query.length < 2) {
+                suggestions[type].innerHTML = '';
+                // Si el campo se vació manualmente, también resetea su ID oculto y los hijos
+                if (query.length === 0) {
+                     if(selectedIds[type]) {
+                        selectedIds[type].value = '';
+                    }
+                    resetChildren(type);
+                }
+                return;
+            }
+
+            // Construye parámetros base
+            const params = new URLSearchParams({ type: type, q: query });
+
+            // --- Lógica de filtrado en cascada ---
+            // Añade IDs de niveles superiores a los parámetros si existen
+            if (type === 'distrito' && selectedIds.region.value) {
+                params.append('region_id', selectedIds.region.value);
+            }
+            if (type === 'municipio') {
+                 if (selectedIds.distrito.value) params.append('distrito_id', selectedIds.distrito.value);
+                 else if (selectedIds.region.value) params.append('region_id', selectedIds.region.value); // Filtro por región si no hay distrito
+            }
+            if (type === 'localidad') {
+                if (selectedIds.municipio.value) params.append('municipio_id', selectedIds.municipio.value);
+                else if (selectedIds.distrito.value) params.append('distrito_id', selectedIds.distrito.value);
+                else if (selectedIds.region.value) params.append('region_id', selectedIds.region.value);
+            }
+
+            try {
+                // Llama a la API
+                const response = await fetch(`./api.php?${params.toString()}`);
+                 if (!response.ok) { // Verifica si la respuesta HTTP fue exitosa
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                 }
+                const data = await response.json();
+                 // Verifica si la respuesta JSON contiene un error del backend
+                 if (data.error) {
+                    console.error("Error del backend:", data.error);
+                    suggestions[type].innerHTML = `<div>Error: ${data.error}</div>`; // Muestra error en sugerencias
+                 } else {
+                    mostrarSugerencias(type, data); // Muestra sugerencias si todo ok
+                 }
+            } catch (error) {
+                // Captura errores de red o de parseo JSON
+                console.error("Error en fetch o procesando JSON:", error);
+                suggestions[type].innerHTML = `<div>Error al buscar: ${error.message}</div>`; // Muestra error
+            }
+        }
+
+        // --- FUNCIÓN genérica para mostrar sugerencias (ACTUALIZADA) ---
+        function mostrarSugerencias(type, data) {
+            const sugBox = suggestions[type];
+            sugBox.innerHTML = ''; // Limpia sugerencias anteriores
+
+            // Verifica si data es un array; si no, muestra mensaje o error
+            if (!Array.isArray(data)) {
+                 console.warn("La respuesta de la API no es un array:", data);
+                 sugBox.innerHTML = '<div>No se recibieron sugerencias válidas.</div>';
+                 return;
+            }
+            if (data.length === 0) {
+                 sugBox.innerHTML = '<div>No hay coincidencias.</div>';
+                 return;
+            }
+
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                // Determina el ID correcto a usar según el tipo y los nombres de columna de tu API
+                let id_value = item.id_region || item.id_distrito || item.id_municipio_inegi || item.id_asentamiento;
+
+                // Asegura que item.nombre exista antes de usarlo
+                div.innerHTML = `<strong>${item.nombre || 'Nombre no disponible'}</strong>`;
+
+                // Añadir info extra si es localidad (asentamiento)
+                if (type === 'localidad' && item.tipo_asentamiento) {
+                     div.innerHTML += `<small>${item.tipo_asentamiento} - CP: ${item.codigo_postal || 'N/A'}</small>`;
+                }
+
+                // Añade el listener SOLO si id_value es válido
+                if (id_value !== undefined && id_value !== null) {
+                    // Pasamos type, el objeto item completo y el id_value extraído
+                    div.addEventListener('click', () => handleSuggestionClick(type, item, id_value));
+                } else {
+                    console.warn("Item sin ID válido encontrado:", item); // Advertencia si un item no tiene ID
+                }
+                sugBox.appendChild(div);
+            });
+        }
+
+        // --- FUNCIÓN genérica para manejar clic en sugerencia (ACTUALIZADA) ---
+        async function handleSuggestionClick(type, itemData, id) { // Recibe el ID extraído también
+            console.log(`Clic en sugerencia - Tipo: ${type}, ID: ${id}, Nombre: ${itemData.nombre}`); // <-- DEBUG
+
+            // 1. Limpiar todas las cajas de sugerencias
+            Object.values(suggestions).forEach(sug => sug.innerHTML = '');
+
+            // 2. Ocultar el panel de detalles (se mostrará después si aplica)
+            document.getElementById('detalles').style.display = 'none';
+
+            // *** 3. Rellenar el campo clickeado INMEDIATAMENTE ***
+            inputs[type].value = itemData.nombre; // Usa el nombre del item clickeado
+            // Guardar ID seleccionado en el campo oculto correspondiente
+            if (selectedIds[type]) {
+                selectedIds[type].value = id;
+            }
+             // Si se hizo clic en un nivel superior, limpiar los hijos AHORA para evitar búsquedas con filtros incorrectos
+             resetChildren(type);
+
+
+            // 4. Llamar a la API para obtener TODOS los detalles y rellenar campos
+            console.log(`Fetching details for ${type} with ID: ${id}`); // <-- DEBUG
+            await fetchFullDetails(type, id); // Llama siempre para asegurar consistencia y rellenar todo
+        }
+
+        // --- FUNCIÓN para obtener detalles y rellenar todo (SIN CAMBIOS RESPECTO A LA ANTERIOR) ---
+        async function fetchFullDetails(type, id) {
+            // Construye el nombre del parámetro esperado por api.php (ej: 'municipio_id')
+            const paramName = (type === 'localidad') ? 'localidad_id' : `${type}_id`;
+
+            try {
+                const response = await fetch(`./api.php?type=get_full_details&${paramName}=${id}`);
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                const details = await response.json();
+                if (details.error) {
+                     console.error("Error del backend en get_full_details:", details.error);
+                     // Podrías mostrar un mensaje al usuario aquí
+                } else {
+                    // 4. Rellenar todos los campos con la información obtenida
+                    populateFields(details);
+                }
+            } catch (error) {
+                 console.error("Error en fetchFullDetails:", error);
+                 // Podrías mostrar un mensaje al usuario aquí
+            }
+        }
+
+
+       // --- FUNCIÓN para rellenar los campos (ACTUALIZADA CON DEBUG) ---
+       // --- FUNCIÓN para rellenar los campos (ACTUALIZADA CON CP) ---
+function populateFields(details) {
+    console.log("Datos recibidos para rellenar:", details); // DEBUG
+
+    // Región
+    if (details.region_id !== undefined && details.region_nombre !== undefined) {
+        inputs.region.value = details.region_nombre || '';
+        selectedIds.region.value = details.region_id || '';
+    } else {
+        inputs.region.value = '';
+        selectedIds.region.value = '';
+    }
+
+    // Distrito
+    if (details.distrito_id !== undefined && details.distrito_nombre !== undefined) {
+        inputs.distrito.value = details.distrito_nombre || '';
+        selectedIds.distrito.value = details.distrito_id || '';
+    } else {
+        inputs.distrito.value = '';
+        selectedIds.distrito.value = '';
+    }
+
+    // Municipio
+    if (details.municipio_id !== undefined && details.municipio_nombre !== undefined) {
+        inputs.municipio.value = details.municipio_nombre || '';
+        selectedIds.municipio.value = details.municipio_id || '';
+    } else {
+        inputs.municipio.value = '';
+        selectedIds.municipio.value = '';
+    }
+
+    // Localidad
+    if (details.localidad_id !== undefined && details.localidad_nombre !== undefined) {
+        inputs.localidad.value = details.localidad_nombre || '';
+        selectedIds.localidad.value = details.localidad_id || '';
+    } else {
+        inputs.localidad.value = '';
+        selectedIds.localidad.value = '';
+    }
+
+    // --- NUEVO: Código Postal ---
+    if (details.codigo_postal !== undefined && details.codigo_postal !== null) {
+        document.getElementById('cp').value = details.codigo_postal;
+    } else {
+        document.getElementById('cp').value = '';
+    }
+
+    // Mostrar detalles
+    if (details.localidad_id !== null && details.localidad_id !== undefined) {
+        document.getElementById('res_localidad').textContent = details.localidad_nombre || 'N/A';
+        document.getElementById('res_municipio').textContent = details.municipio_nombre || 'N/A';
+        document.getElementById('res_distrito').textContent = details.distrito_nombre || 'N/A';
+        document.getElementById('res_region').textContent = details.region_nombre || 'N/A';
+        // Añadir info extra si existe
+        let detallesExtra = '';
+        if (details.tipo_asentamiento) detallesExtra += ` (${details.tipo_asentamiento})`;
+        if (details.codigo_postal) detallesExtra += ` - CP: ${details.codigo_postal}`;
+        document.getElementById('res_localidad').textContent += detallesExtra;
+
+        document.getElementById('detalles').style.display = 'block';
+    } else {
+        document.getElementById('detalles').style.display = 'none';
+    }
+}
+
+
+        // --- FUNCIÓN para resetear campos hijos ---
+        function resetChildren(typeChanged) {
+             console.log(`Reseteando hijos de ${typeChanged}`); // <-- DEBUG
+             document.getElementById('detalles').style.display = 'none'; // Oculta detalles siempre
+             // Define la jerarquía para saber qué limpiar
+             const hierarchy = ['region', 'distrito', 'municipio', 'localidad'];
+             const startIndex = hierarchy.indexOf(typeChanged);
+
+             // Si se encontró el tipo y no es el último nivel
+             if (startIndex > -1 && startIndex < hierarchy.length - 1) {
+                // Itera sobre los niveles inferiores
+                for (let i = startIndex + 1; i < hierarchy.length; i++) {
+                    const childType = hierarchy[i];
+                    if (inputs[childType]) {
+                        inputs[childType].value = ''; // Limpia input visible
+                        inputs[childType].placeholder = `Escribe para buscar ${childType}...`; // Restaura placeholder si es necesario
+                    }
+                    if (selectedIds[childType]) {
+                        selectedIds[childType].value = ''; // Limpia ID oculto
+                    }
+                     if (suggestions[childType]) {
+                        suggestions[childType].innerHTML = ''; // Limpia sugerencias hijas
+                    }
+                }
+             }
+             // Si se borra la localidad, solo ocultamos detalles (ya hecho arriba)
+        }
+
+       // --- ¡NUEVA! Función para limpiar todos los campos (se puede llamar si necesitas un botón "Limpiar todo") ---
+         function resetFields() {
+             Object.values(inputs).forEach(input => input.value = '');
+             Object.values(selectedIds).forEach(hidden => hidden.value = '');
+             Object.values(suggestions).forEach(sug => sug.innerHTML = ''); // Limpia todas las sugerencias
+             document.getElementById('detalles').style.display = 'none';
+             console.log("Todos los campos reseteados."); // <-- DEBUG
+        }
+
+    </script>
+   
+
+
 
     <div class="col-sm-6">
         <label for="estado" class="form-label">Estado</label>
@@ -896,22 +645,8 @@ require_once __DIR__ . '/../pages/header.php';
     </div>
 
     <div class="col-sm-6">
-    <label for="region" class="form-label">Región</label>
-    <select class="form-select" id="region" name="region" >
-        <option value="">Selecciona una región</option>
-        <option value="Valles Centrales">Valles Centrales</option>
-        <option value="Istmo">Istmo</option>
-        <option value="Costa">Costa</option>
-        <option value="Sierra Norte">Sierra Norte</option>
-        <option value="Sierra Sur">Sierra Sur</option>
-        <option value="Mixteca">Mixteca</option>
-    </select>
-    <div class="invalid-feedback">Se requiere una región válida.</div>
-</div>
-
-    <div class="col-sm-6">
   <label for="pais_procedencia" class="form-label">PAÍS DE PROCEDENCIA</label>
-  <select class="form-select" id="pais_procedencia" name="pais_procedencia" required>
+  <select class="form-select" id="pais_procedencia" name="pais_procedencia" >
     <option value="">SELECCIONA UN PAÍS</option>
     <option value="MÉXICO" selected>MÉXICO</option>
     <option value="GUATEMALA">GUATEMALA</option>
@@ -1021,7 +756,7 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
   <label for="grado_academico" class="form-label">GRADO ACADÉMICO</label>
-  <select class="form-select" id="grado_academico" name="grado_academico" required>
+  <select class="form-select" id="grado_academico" name="grado_academico" >
     <option value="">SELECCIONA UN GRADO ACADÉMICO</option>
     <option value="SIN ESTUDIOS">SIN ESTUDIOS</option>
     <option value="PRIMARIA INCOMPLETA">PRIMARIA INCOMPLETA</option>
@@ -1048,7 +783,7 @@ require_once __DIR__ . '/../pages/header.php';
 
  <div class="col-sm-6">
     <label for="institucion" class="form-label">INSTITUCIÓN PROVENIENTE</label>
-    <select class="form-select" id="institucionn" name="institucion" required>
+    <select class="form-select" id="institucionn" name="institucion" >
         <option value="">SELECCIONA UNA INSTITUCIÓN</option>
         <?php
         require_once "../db/config.php"; // Ajusta la ruta
@@ -1091,7 +826,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <div class="col-sm-6">
         <label for="area_asignada" class="form-label">Área Asignada</label>
-        <select class="form-select" id="area_asignada" name="area_asignada" aria-label="Selecciona una opción" required>
+        <select class="form-select" id="area_asignada" name="area_asignada" aria-label="Selecciona una opción" >
         <option selected disabled value="">Selecciona una opción...</option>
         <option value="PSICOLÓGICA">PSICOLÓGICA</option>
         <option value="JURÍDICA">JURÍDICA</option>
@@ -1119,7 +854,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <div class="col-sm-6">
         <label for="clasificacion_personal" class="form-label">Clasificación Personal</label>
-        <select class="form-select" id="clasificacion_personal" name="clasificacion_personal" aria-label="Selecciona una opción" required>
+        <select class="form-select" id="clasificacion_personal" name="clasificacion_personal" aria-label="Selecciona una opción" >
         <option selected disabled value="">Selecciona una opción...</option>
         <option value="BASE">BASE</option>
         <option value="JÓVENES CONSTRUYENDO EL FUTURO">JÓVENES CONSTRUYENDO EL FUTURO (JCF)</option>
@@ -1156,7 +891,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     <div class="col-sm-6">
         <label for="estatus_personal" class="form-label">Estatus del Personal</label>
-        <select class="form-select" id="estatus_personal" name="estatus_personal" aria-label="Selecciona una opción" required>
+        <select class="form-select" id="estatus_personal" name="estatus_personal" aria-label="Selecciona una opción" >
         <option selected disabled value="">Selecciona una opción...</option>
         <option value="ACTIVO">ACTIVO</option>
         <option value="INACTIVO">INACTIVO</option>
@@ -1227,7 +962,7 @@ document.addEventListener('DOMContentLoaded', function () {
     <div class="col-sm-12">
     <div class="mb-3">
         <label for="password" class="col-form-label">Contraseña</label>
-        <input type="password" id="password" class="form-control" name="password" aria-describedby="passwordHelpInline" required>
+        <input type="password" id="password" class="form-control" name="password" aria-describedby="passwordHelpInline" >
         <div class="invalid-feedback">Se requiere Problemas de Movilidad válido.</div>
     </div>
 
@@ -1238,7 +973,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             <hr class="my-4">
 
-    <button class="w-100 btn btn-primary btn-lg" type="submit"  onclick="return confirmarEnvio();">Registrar</button>
+    <button class="w-100 btn btn-primary btn-lg" type="submit" >Registrar</button>
     </form>
     </div>
     </div>

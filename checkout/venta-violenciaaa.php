@@ -62,6 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id_tipo_violencia"])) 
         }
     }
 } elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
+    
     // Si se envió el formulario pero no se recibieron datos de tipos de violencia, mostrar una alerta
     echo "<script>alert('No se han recibido datos de tipos de violencia.');</script>";
 }
@@ -86,11 +87,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id_tipo_violencia"])) 
     </style>
 </head>
 <body>
+
+
     <div class="container">
         <h2>Registrar Tipos de Violencia Detectada</h2>
         <h4>Usuaria:<?php echo htmlspecialchars($nombre_completo); ?></h4>
         <div class="alert alert-info" role="alert">
         ¡Selecciona las casillas con el tipo de violencia detectada!
+        </div>
+
+        <div class="alert alert-info" role="alert">
+        Antes de Reguistrar El tipo de Violencia Verifica que se Reguistre El Usuario Correctamente 
         </div>
         <form method="post" action="venta-violenciaaa.php" class="row g-3 needs-validation" novalidate>
         <label for="usuario_id">Seleccione un Usuario:</label>

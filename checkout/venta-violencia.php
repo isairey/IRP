@@ -76,6 +76,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id_tipo_violencia"])) 
         <div class="alert alert-info" role="alert">
         Selecciona las casillas con el tipo de violencia detectada!
         </div>
+
+
+        <div class="alert alert-info" role="alert">
+        Antes de Reguistrar El tipo de Violencia Verifica que se Reguistre El Usuario Correctamente 
+        </div>
         <form method="post" action="venta-violencia.php" class="row g-3 needs-validation" novalidate>
             <label class="form-label">Tipos de Violencia:</label><br>
             <!-- Aquí deberías manejar la parte PHP que obtiene los tipos de violencia, lo dejo como comentario -->

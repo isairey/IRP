@@ -90,10 +90,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':id' => $id
         ]);
 
-        header("Location: ../pages/ver-feminicidio.php?status=updated");
+        header("Location: ../pages/ver-feminicidio.php?statuss=updated");
         exit;
     } catch (PDOException $e) {
-        header("Location: ../pages/ver-feminicidio.php?status=error&msg=" . urlencode($e->getMessage()));
+        header("Location: ../pages/ver-feminicidio.php?statuss=error&msg=" . urlencode($e->getMessage()));
         exit();
     }
 }
@@ -226,10 +226,100 @@ require_once __DIR__ . '/../pages/header.php';
                     <input type="text" class="form-control" name="Ocupacion" value="<?= htmlspecialchars($fem['Ocupacion']) ?>">
                 </div>
 
-                <div class="col-md-4">
-                    <label class="form-label">Lugar de Origen</label>
-                    <input type="text" class="form-control" name="LugarOrigen" value="<?= htmlspecialchars($fem['LugarOrigen']) ?>">
-                </div>
+
+
+
+ <div class="col-sm-6 position-relative">
+    <label for="lugar_origen" class="form-label">Lugar de Origen</label>
+    <input type="text" class="form-control" id="lugar_origen" name="LugarOrigen"
+          value="<?= htmlspecialchars($fem['LugarOrigen'] ?? 'SIN DATOS') ?>" autocomplete="off" >
+    <div class="sugerencias" id="sug_lugar_origen" 
+         style="border:1px solid #ccc; max-height:150px; overflow-y:auto; position:absolute; background:#fff; width:95%; z-index:1000;">
+    </div>
+    <input type="hidden" id="selected_origen_id" name="selected_origen_id">
+    <div class="invalid-feedback">Se requiere un municipio válido.</div>
+</div>
+
+
+<?php
+$host = 'localhost';
+$db   = 'oaxacaa';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+
+    $stmt = $pdo->query("SELECT id_municipio_inegi, nombre FROM municipios ORDER BY nombre ASC");
+    $municipios = $stmt->fetchAll();
+
+    $municipios_json = json_encode($municipios, JSON_UNESCAPED_UNICODE);
+} catch (PDOException $e) {
+    $municipios_json = json_encode([]);
+    echo "<script>console.error('Error al cargar municipios: " . $e->getMessage() . "');</script>";
+}
+?>
+
+
+<script>
+const inputOrigen = document.getElementById('lugar_origen');
+const sugOrigen = document.getElementById('sug_lugar_origen');
+const hiddenOrigenId = document.getElementById('selected_origen_id');
+
+// Municipios cargados desde PHP
+const municipios = <?php echo $municipios_json; ?>;
+
+// Mostrar sugerencias mientras se escribe
+inputOrigen.addEventListener('input', function() {
+    const val = this.value.toLowerCase().trim();
+    sugOrigen.innerHTML = '';
+
+    if (!val) {
+        hiddenOrigenId.value = '';
+        return;
+    }
+
+    const filtered = municipios.filter(m => m.nombre.toLowerCase().includes(val));
+
+    if (filtered.length === 0) {
+        sugOrigen.innerHTML = '<div style="padding:5px;">No hay coincidencias</div>';
+        hiddenOrigenId.value = '';
+        return;
+    }
+
+    filtered.forEach(m => {
+        const div = document.createElement('div');
+        div.textContent = m.nombre;
+        div.style.padding = '5px';
+        div.style.cursor = 'pointer';
+        div.addEventListener('click', () => {
+            inputOrigen.value = m.nombre;
+            hiddenOrigenId.value = m.id_municipio_inegi;
+            sugOrigen.innerHTML = '';
+        });
+        div.addEventListener('mouseover', () => div.style.background = '#f1f1f1');
+        div.addEventListener('mouseout', () => div.style.background = '#fff');
+        sugOrigen.appendChild(div);
+    });
+});
+
+// Ocultar sugerencias al perder el foco
+inputOrigen.addEventListener('blur', () => {
+    setTimeout(() => { sugOrigen.innerHTML = ''; }, 150);
+});
+</script>
+
+
+
+
+
+
 
                 <!-- NUEVOS CAMPOS AÑADIDOS -->
                 <div class="col-md-4">
@@ -257,26 +347,407 @@ require_once __DIR__ . '/../pages/header.php';
                     <input type="text" class="form-control" name="SituacionJuridica" value="<?= htmlspecialchars($fem['SituacionJuridica']) ?>">
                 </div>
 
-                <!-- Resto de los campos existentes -->
-                <div class="col-md-3">
-                    <label class="form-label">Municipio</label>
-                    <input type="text" class="form-control" name="Municipio" value="<?= htmlspecialchars($fem['Municipio']) ?>">
-                </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Región</label>
-                    <input type="text" class="form-control" name="Region" value="<?= htmlspecialchars($fem['Region']) ?>">
-                </div>
+
+
+
+
+
+                <!-- Resto de los campos existentes -->
+              
 
                 <div class="col-md-3">
                     <label class="form-label">Estado</label>
                     <input type="text" class="form-control" name="Estado" value="<?= htmlspecialchars($fem['Estado']) ?>">
                 </div>
 
-                <div class="col-md-3">
-                    <label class="form-label">Clave Municipio</label>
-                    <input type="text" class="form-control" name="ClaveMunicipio" value="<?= htmlspecialchars($fem['ClaveMunicipio']) ?>">
-                </div>
+             
+
+
+
+
+
+
+     <input type="hidden" id="selected_region_id">
+        <input type="hidden" id="selected_distrito_id">
+        <input type="hidden" id="selected_municipio_id">
+        <input type="hidden" id="selected_localidad_id"> 
+
+
+        <div class="col-sm-6">
+  <label for="cp" class="form-label">Código Postal (CP)</label>
+  <input type="number" max="100000" min="1" class="form-control" id="cp"  placeholder="">
+  <div class="invalid-feedback">Se requiere un código postal válido.</div>
+</div>
+
+        <div class="col-sm-6">
+
+            <label for="input_region" class="form-label">Región:</label>
+            <input type="text" class="form-control" id="input_region" name="Region"  value="<?= htmlspecialchars($fem['Region']) ?>" autocomplete="off">
+            <div class="sugerencias" id="sug_region"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_distrito" class="form-label">Distrito:</label>
+            <input type="text" id="input_distrito" class="form-control" placeholder="Escribe para buscar distrito..." autocomplete="off">
+            <div class="sugerencias" id="sug_distrito"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_municipio" class="form-label">Municipio:</label>
+            <input type="text" id="input_municipio" class="form-control" name="Municipio" value="<?= htmlspecialchars($fem['Municipio']) ?>" autocomplete="off">
+            <div class="sugerencias" id="sug_municipio"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_localidad" class="form-label">Localidad:</label>
+            <input type="text" id="input_localidad" class="form-control"  placeholder="Escribe el nombre de la localidad..." autocomplete="off">
+            <div class="sugerencias" id="sug_localidad"></div>
+        </div>
+
+       
+
+
+
+
+
+
+
+
+
+
+
+  <script>
+        // --- Referencias a los elementos ---
+        const inputs = {
+            region: document.getElementById('input_region'),
+            distrito: document.getElementById('input_distrito'),
+            municipio: document.getElementById('input_municipio'),
+            localidad: document.getElementById('input_localidad')
+        };
+        const suggestions = {
+            region: document.getElementById('sug_region'),
+            distrito: document.getElementById('sug_distrito'),
+            municipio: document.getElementById('sug_municipio'),
+            localidad: document.getElementById('sug_localidad')
+        };
+        const selectedIds = {
+            region: document.getElementById('selected_region_id'),
+            distrito: document.getElementById('selected_distrito_id'),
+            municipio: document.getElementById('selected_municipio_id'),
+            localidad: document.getElementById('selected_localidad_id') // Añadido
+        };
+
+        // --- LÓGICA DE BÚSQUEDA (keyup) ---
+
+        inputs.region.addEventListener('keyup', e => handleSearch('region', e.target.value));
+        inputs.distrito.addEventListener('keyup', e => handleSearch('distrito', e.target.value));
+        inputs.municipio.addEventListener('keyup', e => handleSearch('municipio', e.target.value));
+        inputs.localidad.addEventListener('keyup', e => handleSearch('localidad', e.target.value));
+
+        async function handleSearch(type, query) {
+            // Limpia sugerencias si la búsqueda es muy corta o vacía
+            if (query.length < 2) {
+                suggestions[type].innerHTML = '';
+                // Si el campo se vació manualmente, también resetea su ID oculto y los hijos
+                if (query.length === 0) {
+                     if(selectedIds[type]) {
+                        selectedIds[type].value = '';
+                    }
+                    resetChildren(type);
+                }
+                return;
+            }
+
+            // Construye parámetros base
+            const params = new URLSearchParams({ type: type, q: query });
+
+            // --- Lógica de filtrado en cascada ---
+            // Añade IDs de niveles superiores a los parámetros si existen
+            if (type === 'distrito' && selectedIds.region.value) {
+                params.append('region_id', selectedIds.region.value);
+            }
+            if (type === 'municipio') {
+                 if (selectedIds.distrito.value) params.append('distrito_id', selectedIds.distrito.value);
+                 else if (selectedIds.region.value) params.append('region_id', selectedIds.region.value); // Filtro por región si no hay distrito
+            }
+            if (type === 'localidad') {
+                if (selectedIds.municipio.value) params.append('municipio_id', selectedIds.municipio.value);
+                else if (selectedIds.distrito.value) params.append('distrito_id', selectedIds.distrito.value);
+                else if (selectedIds.region.value) params.append('region_id', selectedIds.region.value);
+            }
+
+            try {
+                // Llama a la API
+                const response = await fetch(`./api.php?${params.toString()}`);
+                 if (!response.ok) { // Verifica si la respuesta HTTP fue exitosa
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                 }
+                const data = await response.json();
+                 // Verifica si la respuesta JSON contiene un error del backend
+                 if (data.error) {
+                    console.error("Error del backend:", data.error);
+                    suggestions[type].innerHTML = `<div>Error: ${data.error}</div>`; // Muestra error en sugerencias
+                 } else {
+                    mostrarSugerencias(type, data); // Muestra sugerencias si todo ok
+                 }
+            } catch (error) {
+                // Captura errores de red o de parseo JSON
+                console.error("Error en fetch o procesando JSON:", error);
+                suggestions[type].innerHTML = `<div>Error al buscar: ${error.message}</div>`; // Muestra error
+            }
+        }
+
+        // --- FUNCIÓN genérica para mostrar sugerencias (ACTUALIZADA) ---
+        function mostrarSugerencias(type, data) {
+            const sugBox = suggestions[type];
+            sugBox.innerHTML = ''; // Limpia sugerencias anteriores
+
+            // Verifica si data es un array; si no, muestra mensaje o error
+            if (!Array.isArray(data)) {
+                 console.warn("La respuesta de la API no es un array:", data);
+                 sugBox.innerHTML = '<div>No se recibieron sugerencias válidas.</div>';
+                 return;
+            }
+            if (data.length === 0) {
+                 sugBox.innerHTML = '<div>No hay coincidencias.</div>';
+                 return;
+            }
+
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                // Determina el ID correcto a usar según el tipo y los nombres de columna de tu API
+                let id_value = item.id_region || item.id_distrito || item.id_municipio_inegi || item.id_asentamiento;
+
+                // Asegura que item.nombre exista antes de usarlo
+                div.innerHTML = `<strong>${item.nombre || 'Nombre no disponible'}</strong>`;
+
+                // Añadir info extra si es localidad (asentamiento)
+                if (type === 'localidad' && item.tipo_asentamiento) {
+                     div.innerHTML += `<small>${item.tipo_asentamiento} - CP: ${item.codigo_postal || 'N/A'}</small>`;
+                }
+
+                // Añade el listener SOLO si id_value es válido
+                if (id_value !== undefined && id_value !== null) {
+                    // Pasamos type, el objeto item completo y el id_value extraído
+                    div.addEventListener('click', () => handleSuggestionClick(type, item, id_value));
+                } else {
+                    console.warn("Item sin ID válido encontrado:", item); // Advertencia si un item no tiene ID
+                }
+                sugBox.appendChild(div);
+            });
+        }
+
+        // --- FUNCIÓN genérica para manejar clic en sugerencia (ACTUALIZADA) ---
+        async function handleSuggestionClick(type, itemData, id) { // Recibe el ID extraído también
+            console.log(`Clic en sugerencia - Tipo: ${type}, ID: ${id}, Nombre: ${itemData.nombre}`); // <-- DEBUG
+
+            // 1. Limpiar todas las cajas de sugerencias
+            Object.values(suggestions).forEach(sug => sug.innerHTML = '');
+
+            // 2. Ocultar el panel de detalles (se mostrará después si aplica)
+            document.getElementById('detalles').style.display = 'none';
+
+            // *** 3. Rellenar el campo clickeado INMEDIATAMENTE ***
+            inputs[type].value = itemData.nombre; // Usa el nombre del item clickeado
+            // Guardar ID seleccionado en el campo oculto correspondiente
+            if (selectedIds[type]) {
+                selectedIds[type].value = id;
+            }
+             // Si se hizo clic en un nivel superior, limpiar los hijos AHORA para evitar búsquedas con filtros incorrectos
+             resetChildren(type);
+
+
+            // 4. Llamar a la API para obtener TODOS los detalles y rellenar campos
+            console.log(`Fetching details for ${type} with ID: ${id}`); // <-- DEBUG
+            await fetchFullDetails(type, id); // Llama siempre para asegurar consistencia y rellenar todo
+        }
+
+        // --- FUNCIÓN para obtener detalles y rellenar todo (SIN CAMBIOS RESPECTO A LA ANTERIOR) ---
+        async function fetchFullDetails(type, id) {
+            // Construye el nombre del parámetro esperado por api.php (ej: 'municipio_id')
+            const paramName = (type === 'localidad') ? 'localidad_id' : `${type}_id`;
+
+            try {
+                const response = await fetch(`./api.php?type=get_full_details&${paramName}=${id}`);
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                const details = await response.json();
+                if (details.error) {
+                     console.error("Error del backend en get_full_details:", details.error);
+                     // Podrías mostrar un mensaje al usuario aquí
+                } else {
+                    // 4. Rellenar todos los campos con la información obtenida
+                    populateFields(details);
+                }
+            } catch (error) {
+                 console.error("Error en fetchFullDetails:", error);
+                 // Podrías mostrar un mensaje al usuario aquí
+            }
+        }
+
+
+       // --- FUNCIÓN para rellenar los campos (ACTUALIZADA CON DEBUG) ---
+       // --- FUNCIÓN para rellenar los campos (ACTUALIZADA CON CP) ---
+function populateFields(details) {
+    console.log("Datos recibidos para rellenar:", details); // DEBUG
+
+    // Región
+    if (details.region_id !== undefined && details.region_nombre !== undefined) {
+        inputs.region.value = details.region_nombre || '';
+        selectedIds.region.value = details.region_id || '';
+    } else {
+        inputs.region.value = '';
+        selectedIds.region.value = '';
+    }
+
+    // Distrito
+    if (details.distrito_id !== undefined && details.distrito_nombre !== undefined) {
+        inputs.distrito.value = details.distrito_nombre || '';
+        selectedIds.distrito.value = details.distrito_id || '';
+    } else {
+        inputs.distrito.value = '';
+        selectedIds.distrito.value = '';
+    }
+
+    // Municipio
+  // Municipio
+if (details.municipio_id !== undefined && details.municipio_nombre !== undefined) {
+    inputs.municipio.value = details.municipio_nombre || '';
+    selectedIds.municipio.value = details.municipio_id || '';
+
+    // ¡AQUI! Llenar el input de clave_municipio
+    document.getElementById('clave_municipio').value = details.municipio_id || '';
+} else {
+    inputs.municipio.value = '';
+    selectedIds.municipio.value = '';
+    document.getElementById('clave_municipio').value = '';
+}
+
+
+    // Localidad
+    if (details.localidad_id !== undefined && details.localidad_nombre !== undefined) {
+        inputs.localidad.value = details.localidad_nombre || '';
+        selectedIds.localidad.value = details.localidad_id || '';
+    } else {
+        inputs.localidad.value = '';
+        selectedIds.localidad.value = '';
+    }
+
+    // --- NUEVO: Código Postal ---
+    if (details.codigo_postal !== undefined && details.codigo_postal !== null) {
+        document.getElementById('cp').value = details.codigo_postal;
+    } else {
+        document.getElementById('cp').value = '';
+    }
+
+    // Mostrar detalles
+    if (details.localidad_id !== null && details.localidad_id !== undefined) {
+        document.getElementById('res_localidad').textContent = details.localidad_nombre || 'N/A';
+        document.getElementById('res_municipio').textContent = details.municipio_nombre || 'N/A';
+        document.getElementById('res_distrito').textContent = details.distrito_nombre || 'N/A';
+        document.getElementById('res_region').textContent = details.region_nombre || 'N/A';
+        // Añadir info extra si existe
+        let detallesExtra = '';
+        if (details.tipo_asentamiento) detallesExtra += ` (${details.tipo_asentamiento})`;
+        if (details.codigo_postal) detallesExtra += ` - CP: ${details.codigo_postal}`;
+        document.getElementById('res_localidad').textContent += detallesExtra;
+
+        document.getElementById('detalles').style.display = 'block';
+    } else {
+        document.getElementById('detalles').style.display = 'none';
+    }
+}
+
+
+        // --- FUNCIÓN para resetear campos hijos ---
+        function resetChildren(typeChanged) {
+             console.log(`Reseteando hijos de ${typeChanged}`); // <-- DEBUG
+             document.getElementById('detalles').style.display = 'none'; // Oculta detalles siempre
+             // Define la jerarquía para saber qué limpiar
+             const hierarchy = ['region', 'distrito', 'municipio', 'localidad'];
+             const startIndex = hierarchy.indexOf(typeChanged);
+
+             // Si se encontró el tipo y no es el último nivel
+             if (startIndex > -1 && startIndex < hierarchy.length - 1) {
+                // Itera sobre los niveles inferiores
+                for (let i = startIndex + 1; i < hierarchy.length; i++) {
+                    const childType = hierarchy[i];
+                    if (inputs[childType]) {
+                        inputs[childType].value = ''; // Limpia input visible
+                        inputs[childType].placeholder = `Escribe para buscar ${childType}...`; // Restaura placeholder si es necesario
+                    }
+                    if (selectedIds[childType]) {
+                        selectedIds[childType].value = ''; // Limpia ID oculto
+                    }
+                     if (suggestions[childType]) {
+                        suggestions[childType].innerHTML = ''; // Limpia sugerencias hijas
+                    }
+                }
+             }
+             // Si se borra la localidad, solo ocultamos detalles (ya hecho arriba)
+        }
+
+
+
+
+
+
+
+
+       // --- ¡NUEVA! Función para limpiar todos los campos (se puede llamar si necesitas un botón "Limpiar todo") ---
+         function resetFields() {
+             Object.values(inputs).forEach(input => input.value = '');
+             Object.values(selectedIds).forEach(hidden => hidden.value = '');
+             Object.values(suggestions).forEach(sug => sug.innerHTML = ''); // Limpia todas las sugerencias
+             document.getElementById('detalles').style.display = 'none';
+             console.log("Todos los campos reseteados."); // <-- DEBUG
+        }
+
+    </script>
+   
+
+
+  
+
+ <div class="col-sm-6">
+    <label for="clave_municipio" class="form-label">Clave Municipio</label>
+    <input type="text" class="form-control" id="clave_municipio" name="ClaveMunicipio" placeholder="" value="<?= htmlspecialchars($fem['ClaveMunicipio']) ?>" readonly>
+    <div class="invalid-feedback">Se requiere un municipio válido.</div>
+</div>
+
+
+
+<script>
+// Supongamos que `datos` ya contiene el objeto completo de la localidad
+// Por ejemplo: datos = { municipio_id: 107, municipio_nombre: "San Antonio de la Cal", ... }
+
+function rellenarClaveMunicipio(datos) {
+    const inputClave = document.getElementById('clave_municipio');
+    if (datos && datos.municipio_id) {
+        inputClave.value = datos.municipio_id; // ¡Asignamos directamente el value!
+        console.log(`Clave de municipio asignada: ${datos.municipio_id} → ${datos.municipio_nombre}`);
+    } else {
+        inputClave.value = '';
+        console.warn('No hay municipio asociado a esta localidad');
+    }
+}
+
+// Ejemplo: cuando se selecciona una localidad y ya tienes los datos
+// datosLocalidad es el objeto que recibiste de tu API
+rellenarClaveMunicipio(datosLocalidad);
+</script>
+
+
+
+
+
+
+
+
+
 
                 <div class="col-md-3">
                     <label class="form-label">Alerta de Género</label>

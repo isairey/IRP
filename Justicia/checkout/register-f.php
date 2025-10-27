@@ -207,7 +207,7 @@ require_once __DIR__ . '/../pages/header.php';
         
     <div class="col-sm-12">
         <label for="fecha_hecho" class="form-label">Fecha del Hecho</label>
-        <input type="date" class="form-control" id="fecha_hecho" name="fecha_hecho" placeholder="" required>
+        <input type="date" class="form-control" id="fecha_hecho" name="fecha_hecho" placeholder="" >
         <div class="invalid-feedback">Se requiere una Fecha de Inicio válida.</div>
     </div>
 
@@ -219,31 +219,161 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="apellido_paterno" class="form-label">Apellido Paterno:</label>
-        <input type="text" class="form-control" id="apellido_paterno" name="apellido_paterno" placeholder="" required>
+        <input type="text" class="form-control" id="apellido_paterno" name="apellido_paterno" placeholder="" >
         <div class="invalid-feedback">Se requiere un apellido paterno válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="apellido_materno" class="form-label">Apellido Materno:</label>
-        <input type="text" class="form-control" id="apellido_materno" name="apellido_materno" placeholder="" required>
+        <input type="text" class="form-control" id="apellido_materno" name="apellido_materno" placeholder="" >
         <div class="invalid-feedback">Se requiere un apellido materno válido.</div>
     </div>
 
-    <div class="col-sm-6">
-        <label for="lugar_origen" class="form-label">Lugar de Origen</label>
-        <input type="text" class="form-control" id="lugar_origen" name="lugar_origen" placeholder="" required>
-        <div class="invalid-feedback">Se requiere un apellido materno válido.</div>
+    <div class="col-sm-6 position-relative">
+    <label for="lugar_origen" class="form-label">Lugar de Origen</label>
+    <input type="text" class="form-control" id="lugar_origen" name="lugar_origen" 
+           placeholder="Escribe o selecciona un municipio..." autocomplete="off" >
+    <div class="sugerencias" id="sug_lugar_origen" 
+         style="border:1px solid #ccc; max-height:150px; overflow-y:auto; position:absolute; background:#fff; width:95%; z-index:1000;">
     </div>
+    <input type="hidden" id="selected_origen_id" name="selected_origen_id">
+    <div class="invalid-feedback">Se requiere un municipio válido.</div>
+</div>
+
+
+<?php
+$host = 'localhost';
+$db   = 'oaxacaa';
+$user = 'root';
+$pass = '';
+$charset = 'utf8mb4';
+
+$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+
+try {
+    $pdo = new PDO($dsn, $user, $pass, [
+        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
+    ]);
+
+    $stmt = $pdo->query("SELECT id_municipio_inegi, nombre FROM municipios ORDER BY nombre ASC");
+    $municipios = $stmt->fetchAll();
+
+    $municipios_json = json_encode($municipios, JSON_UNESCAPED_UNICODE);
+} catch (PDOException $e) {
+    $municipios_json = json_encode([]);
+    echo "<script>console.error('Error al cargar municipios: " . $e->getMessage() . "');</script>";
+}
+?>
+
+
+<script>
+const inputOrigen = document.getElementById('lugar_origen');
+const sugOrigen = document.getElementById('sug_lugar_origen');
+const hiddenOrigenId = document.getElementById('selected_origen_id');
+
+// Municipios cargados desde PHP
+const municipios = <?php echo $municipios_json; ?>;
+
+// Mostrar sugerencias mientras se escribe
+inputOrigen.addEventListener('input', function() {
+    const val = this.value.toLowerCase().trim();
+    sugOrigen.innerHTML = '';
+
+    if (!val) {
+        hiddenOrigenId.value = '';
+        return;
+    }
+
+    const filtered = municipios.filter(m => m.nombre.toLowerCase().includes(val));
+
+    if (filtered.length === 0) {
+        sugOrigen.innerHTML = '<div style="padding:5px;">No hay coincidencias</div>';
+        hiddenOrigenId.value = '';
+        return;
+    }
+
+    filtered.forEach(m => {
+        const div = document.createElement('div');
+        div.textContent = m.nombre;
+        div.style.padding = '5px';
+        div.style.cursor = 'pointer';
+        div.addEventListener('click', () => {
+            inputOrigen.value = m.nombre;
+            hiddenOrigenId.value = m.id_municipio_inegi;
+            sugOrigen.innerHTML = '';
+        });
+        div.addEventListener('mouseover', () => div.style.background = '#f1f1f1');
+        div.addEventListener('mouseout', () => div.style.background = '#fff');
+        sugOrigen.appendChild(div);
+    });
+});
+
+// Ocultar sugerencias al perder el foco
+inputOrigen.addEventListener('blur', () => {
+    setTimeout(() => { sugOrigen.innerHTML = ''; }, 150);
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     <div class="col-sm-6">
-        <label for="ocupacion" class="form-label">Ocupación</label>
-        <input type="text" class="form-control" id="ocupacion" name="ocupacion" placeholder="" required>
-        <div class="invalid-feedback">Se requiere un apellido materno válido.</div>
-    </div>
+    <label for="ocupacion" class="form-label">Ocupación</label>
+    <select class="form-select" id="lugar_origen" name="ocupacion" >
+        <option value="">--</option>
+        <option value="Estudiante">Estudiante</option>
+        <option value="Ama de casa">Ama de casa</option>
+        <option value="Empleado/a privado/a">Empleado/a privado/a</option>
+        <option value="Empleado/a público/a">Empleado/a público/a</option>
+        <option value="Docente / Maestro(a)">Docente / Maestro(a)</option>
+        <option value="Profesional independiente">Profesional independiente</option>
+        <option value="Comerciante">Comerciante</option>
+        <option value="Artesano/a">Artesano/a</option>
+        <option value="Campesino/a">Campesino/a</option>
+        <option value="Ganadero/a">Ganadero/a</option>
+        <option value="Jornalero/a">Jornalero/a</option>
+        <option value="Chofer / Transportista">Chofer / Transportista</option>
+        <option value="Albañil / Constructor">Albañil / Constructor</option>
+        <option value="Carpintero/a">Carpintero/a</option>
+        <option value="Sastre / Modista">Sastre / Modista</option>
+        <option value="Mecánico/a">Mecánico/a</option>
+        <option value="Electricista / Técnico/a">Electricista / Técnico/a</option>
+        <option value="Estilista / Peluquero/a">Estilista / Peluquero/a</option>
+        <option value="Enfermero/a">Enfermero/a</option>
+        <option value="Médico/a">Médico/a</option>
+        <option value="Abogado/a">Abogado/a</option>
+        <option value="Contador/a">Contador/a</option>
+        <option value="Ingeniero/a">Ingeniero/a</option>
+        <option value="Servidor/a doméstico/a">Servidor/a doméstico/a</option>
+        <option value="Empleado/a de limpieza">Empleado/a de limpieza</option>
+        <option value="Vendedor/a ambulante">Vendedor/a ambulante</option>
+        <option value="Repartidor/a">Repartidor/a</option>
+        <option value="Policía / Guardia de seguridad">Policía / Guardia de seguridad</option>
+        <option value="Militar / Marina">Militar / Marina</option>
+        <option value="Religioso/a / Ministro/a de culto">Religioso/a / Ministro/a de culto</option>
+        <option value="Jubilado/a o Pensionado/a">Jubilado/a o Pensionado/a</option>
+        <option value="Desempleado/a">Desempleado/a</option>
+        <option value="Otro">Otro</option>
+    </select>
+    <div class="invalid-feedback">Se requiere seleccionar una ocupación válida.</div>
+</div>
+
 
     <div class="col-sm-6">
         <label for="edad" class="form-label">Edad</label>
-        <input type="number" min="0" class="form-control" id="edad" name="edad" placeholder="" required>
+        <input type="number" min="0" class="form-control" id="edad" name="edad" placeholder="" >
         <div class="invalid-feedback">Se requiere un apellido materno válido.</div>
     </div>
 
@@ -251,63 +381,443 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="calle" class="form-label">(Lugar de los hechos) Calle</label>
-        <input type="text" class="form-control" id="calle" name="calle" placeholder="" required>
+        <input type="text" class="form-control" id="calle" name="calle" placeholder="" >
         <div class="invalid-feedback">Se requiere una calle válida.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="numero" class="form-label">(Lugar de los hechos) Número</label>
-        <input type="number" class="form-control" id="numero" name="numero" placeholder="" required>
+        <input type="number" class="form-control" id="numero" name="numero" placeholder="" >
         <div class="invalid-feedback">Se requiere un número interior válido.</div>
     </div>
 
 
-    <div class="col-sm-6">
-        <label for="municipio" class="form-label">(Lugar de los hechos) Municipio</label>
-        <input type="text" class="form-control" id="municipio" name="municipio" placeholder="" required>
-        <div class="invalid-feedback">Se requiere un municipio válido.</div>
-    </div>
 
-    <div class="col-sm-6">
-        <label for="region" class="form-label">(Lugar de los hechos) Región</label>
-        <input type="text" class="form-control" id="region" name="region" placeholder="" required>
-        <div class="invalid-feedback">Se requiere una región válida.</div>
-    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+     <input type="hidden" id="selected_region_id">
+        <input type="hidden" id="selected_distrito_id">
+        <input type="hidden" id="selected_municipio_id">
+        <input type="hidden" id="selected_localidad_id"> 
+
+
+        <div class="col-sm-6">
+  <label for="cp" class="form-label">Código Postal (CP)</label>
+  <input type="number" max="100000" min="1" class="form-control" id="cp"  placeholder="">
+  <div class="invalid-feedback">Se requiere un código postal válido.</div>
+</div>
+
+        <div class="col-sm-6">
+
+            <label for="input_region" class="form-label">Región:</label>
+            <input type="text" class="form-control" id="input_region" name="region" placeholder="Escribe para buscar región..." autocomplete="off">
+            <div class="sugerencias" id="sug_region"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_distrito" class="form-label">Distrito:</label>
+            <input type="text" id="input_distrito" class="form-control" placeholder="Escribe para buscar distrito..." autocomplete="off">
+            <div class="sugerencias" id="sug_distrito"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_municipio" class="form-label">Municipio:</label>
+            <input type="text" id="input_municipio" class="form-control" name="municipio" placeholder="Escribe para buscar municipio..." autocomplete="off">
+            <div class="sugerencias" id="sug_municipio"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_localidad" class="form-label">Localidad:</label>
+            <input type="text" id="input_localidad" class="form-control"  placeholder="Escribe el nombre de la localidad..." autocomplete="off">
+            <div class="sugerencias" id="sug_localidad"></div>
+        </div>
+
+       
+
+
+
+
+
+
+
+
+
+
+
+  <script>
+        // --- Referencias a los elementos ---
+        const inputs = {
+            region: document.getElementById('input_region'),
+            distrito: document.getElementById('input_distrito'),
+            municipio: document.getElementById('input_municipio'),
+            localidad: document.getElementById('input_localidad')
+        };
+        const suggestions = {
+            region: document.getElementById('sug_region'),
+            distrito: document.getElementById('sug_distrito'),
+            municipio: document.getElementById('sug_municipio'),
+            localidad: document.getElementById('sug_localidad')
+        };
+        const selectedIds = {
+            region: document.getElementById('selected_region_id'),
+            distrito: document.getElementById('selected_distrito_id'),
+            municipio: document.getElementById('selected_municipio_id'),
+            localidad: document.getElementById('selected_localidad_id') // Añadido
+        };
+
+        // --- LÓGICA DE BÚSQUEDA (keyup) ---
+
+        inputs.region.addEventListener('keyup', e => handleSearch('region', e.target.value));
+        inputs.distrito.addEventListener('keyup', e => handleSearch('distrito', e.target.value));
+        inputs.municipio.addEventListener('keyup', e => handleSearch('municipio', e.target.value));
+        inputs.localidad.addEventListener('keyup', e => handleSearch('localidad', e.target.value));
+
+        async function handleSearch(type, query) {
+            // Limpia sugerencias si la búsqueda es muy corta o vacía
+            if (query.length < 2) {
+                suggestions[type].innerHTML = '';
+                // Si el campo se vació manualmente, también resetea su ID oculto y los hijos
+                if (query.length === 0) {
+                     if(selectedIds[type]) {
+                        selectedIds[type].value = '';
+                    }
+                    resetChildren(type);
+                }
+                return;
+            }
+
+            // Construye parámetros base
+            const params = new URLSearchParams({ type: type, q: query });
+
+            // --- Lógica de filtrado en cascada ---
+            // Añade IDs de niveles superiores a los parámetros si existen
+            if (type === 'distrito' && selectedIds.region.value) {
+                params.append('region_id', selectedIds.region.value);
+            }
+            if (type === 'municipio') {
+                 if (selectedIds.distrito.value) params.append('distrito_id', selectedIds.distrito.value);
+                 else if (selectedIds.region.value) params.append('region_id', selectedIds.region.value); // Filtro por región si no hay distrito
+            }
+            if (type === 'localidad') {
+                if (selectedIds.municipio.value) params.append('municipio_id', selectedIds.municipio.value);
+                else if (selectedIds.distrito.value) params.append('distrito_id', selectedIds.distrito.value);
+                else if (selectedIds.region.value) params.append('region_id', selectedIds.region.value);
+            }
+
+            try {
+                // Llama a la API
+                const response = await fetch(`./api.php?${params.toString()}`);
+                 if (!response.ok) { // Verifica si la respuesta HTTP fue exitosa
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                 }
+                const data = await response.json();
+                 // Verifica si la respuesta JSON contiene un error del backend
+                 if (data.error) {
+                    console.error("Error del backend:", data.error);
+                    suggestions[type].innerHTML = `<div>Error: ${data.error}</div>`; // Muestra error en sugerencias
+                 } else {
+                    mostrarSugerencias(type, data); // Muestra sugerencias si todo ok
+                 }
+            } catch (error) {
+                // Captura errores de red o de parseo JSON
+                console.error("Error en fetch o procesando JSON:", error);
+                suggestions[type].innerHTML = `<div>Error al buscar: ${error.message}</div>`; // Muestra error
+            }
+        }
+
+        // --- FUNCIÓN genérica para mostrar sugerencias (ACTUALIZADA) ---
+        function mostrarSugerencias(type, data) {
+            const sugBox = suggestions[type];
+            sugBox.innerHTML = ''; // Limpia sugerencias anteriores
+
+            // Verifica si data es un array; si no, muestra mensaje o error
+            if (!Array.isArray(data)) {
+                 console.warn("La respuesta de la API no es un array:", data);
+                 sugBox.innerHTML = '<div>No se recibieron sugerencias válidas.</div>';
+                 return;
+            }
+            if (data.length === 0) {
+                 sugBox.innerHTML = '<div>No hay coincidencias.</div>';
+                 return;
+            }
+
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                // Determina el ID correcto a usar según el tipo y los nombres de columna de tu API
+                let id_value = item.id_region || item.id_distrito || item.id_municipio_inegi || item.id_asentamiento;
+
+                // Asegura que item.nombre exista antes de usarlo
+                div.innerHTML = `<strong>${item.nombre || 'Nombre no disponible'}</strong>`;
+
+                // Añadir info extra si es localidad (asentamiento)
+                if (type === 'localidad' && item.tipo_asentamiento) {
+                     div.innerHTML += `<small>${item.tipo_asentamiento} - CP: ${item.codigo_postal || 'N/A'}</small>`;
+                }
+
+                // Añade el listener SOLO si id_value es válido
+                if (id_value !== undefined && id_value !== null) {
+                    // Pasamos type, el objeto item completo y el id_value extraído
+                    div.addEventListener('click', () => handleSuggestionClick(type, item, id_value));
+                } else {
+                    console.warn("Item sin ID válido encontrado:", item); // Advertencia si un item no tiene ID
+                }
+                sugBox.appendChild(div);
+            });
+        }
+
+        // --- FUNCIÓN genérica para manejar clic en sugerencia (ACTUALIZADA) ---
+        async function handleSuggestionClick(type, itemData, id) { // Recibe el ID extraído también
+            console.log(`Clic en sugerencia - Tipo: ${type}, ID: ${id}, Nombre: ${itemData.nombre}`); // <-- DEBUG
+
+            // 1. Limpiar todas las cajas de sugerencias
+            Object.values(suggestions).forEach(sug => sug.innerHTML = '');
+
+            // 2. Ocultar el panel de detalles (se mostrará después si aplica)
+            document.getElementById('detalles').style.display = 'none';
+
+            // *** 3. Rellenar el campo clickeado INMEDIATAMENTE ***
+            inputs[type].value = itemData.nombre; // Usa el nombre del item clickeado
+            // Guardar ID seleccionado en el campo oculto correspondiente
+            if (selectedIds[type]) {
+                selectedIds[type].value = id;
+            }
+             // Si se hizo clic en un nivel superior, limpiar los hijos AHORA para evitar búsquedas con filtros incorrectos
+             resetChildren(type);
+
+
+            // 4. Llamar a la API para obtener TODOS los detalles y rellenar campos
+            console.log(`Fetching details for ${type} with ID: ${id}`); // <-- DEBUG
+            await fetchFullDetails(type, id); // Llama siempre para asegurar consistencia y rellenar todo
+        }
+
+        // --- FUNCIÓN para obtener detalles y rellenar todo (SIN CAMBIOS RESPECTO A LA ANTERIOR) ---
+        async function fetchFullDetails(type, id) {
+            // Construye el nombre del parámetro esperado por api.php (ej: 'municipio_id')
+            const paramName = (type === 'localidad') ? 'localidad_id' : `${type}_id`;
+
+            try {
+                const response = await fetch(`./api.php?type=get_full_details&${paramName}=${id}`);
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                const details = await response.json();
+                if (details.error) {
+                     console.error("Error del backend en get_full_details:", details.error);
+                     // Podrías mostrar un mensaje al usuario aquí
+                } else {
+                    // 4. Rellenar todos los campos con la información obtenida
+                    populateFields(details);
+                }
+            } catch (error) {
+                 console.error("Error en fetchFullDetails:", error);
+                 // Podrías mostrar un mensaje al usuario aquí
+            }
+        }
+
+
+       // --- FUNCIÓN para rellenar los campos (ACTUALIZADA CON DEBUG) ---
+       // --- FUNCIÓN para rellenar los campos (ACTUALIZADA CON CP) ---
+function populateFields(details) {
+    console.log("Datos recibidos para rellenar:", details); // DEBUG
+
+    // Región
+    if (details.region_id !== undefined && details.region_nombre !== undefined) {
+        inputs.region.value = details.region_nombre || '';
+        selectedIds.region.value = details.region_id || '';
+    } else {
+        inputs.region.value = '';
+        selectedIds.region.value = '';
+    }
+
+    // Distrito
+    if (details.distrito_id !== undefined && details.distrito_nombre !== undefined) {
+        inputs.distrito.value = details.distrito_nombre || '';
+        selectedIds.distrito.value = details.distrito_id || '';
+    } else {
+        inputs.distrito.value = '';
+        selectedIds.distrito.value = '';
+    }
+
+    // Municipio
+  // Municipio
+if (details.municipio_id !== undefined && details.municipio_nombre !== undefined) {
+    inputs.municipio.value = details.municipio_nombre || '';
+    selectedIds.municipio.value = details.municipio_id || '';
+
+    // ¡AQUI! Llenar el input de clave_municipio
+    document.getElementById('clave_municipio').value = details.municipio_id || '';
+} else {
+    inputs.municipio.value = '';
+    selectedIds.municipio.value = '';
+    document.getElementById('clave_municipio').value = '';
+}
+
+
+    // Localidad
+    if (details.localidad_id !== undefined && details.localidad_nombre !== undefined) {
+        inputs.localidad.value = details.localidad_nombre || '';
+        selectedIds.localidad.value = details.localidad_id || '';
+    } else {
+        inputs.localidad.value = '';
+        selectedIds.localidad.value = '';
+    }
+
+    // --- NUEVO: Código Postal ---
+    if (details.codigo_postal !== undefined && details.codigo_postal !== null) {
+        document.getElementById('cp').value = details.codigo_postal;
+    } else {
+        document.getElementById('cp').value = '';
+    }
+
+    // Mostrar detalles
+    if (details.localidad_id !== null && details.localidad_id !== undefined) {
+        document.getElementById('res_localidad').textContent = details.localidad_nombre || 'N/A';
+        document.getElementById('res_municipio').textContent = details.municipio_nombre || 'N/A';
+        document.getElementById('res_distrito').textContent = details.distrito_nombre || 'N/A';
+        document.getElementById('res_region').textContent = details.region_nombre || 'N/A';
+        // Añadir info extra si existe
+        let detallesExtra = '';
+        if (details.tipo_asentamiento) detallesExtra += ` (${details.tipo_asentamiento})`;
+        if (details.codigo_postal) detallesExtra += ` - CP: ${details.codigo_postal}`;
+        document.getElementById('res_localidad').textContent += detallesExtra;
+
+        document.getElementById('detalles').style.display = 'block';
+    } else {
+        document.getElementById('detalles').style.display = 'none';
+    }
+}
+
+
+        // --- FUNCIÓN para resetear campos hijos ---
+        function resetChildren(typeChanged) {
+             console.log(`Reseteando hijos de ${typeChanged}`); // <-- DEBUG
+             document.getElementById('detalles').style.display = 'none'; // Oculta detalles siempre
+             // Define la jerarquía para saber qué limpiar
+             const hierarchy = ['region', 'distrito', 'municipio', 'localidad'];
+             const startIndex = hierarchy.indexOf(typeChanged);
+
+             // Si se encontró el tipo y no es el último nivel
+             if (startIndex > -1 && startIndex < hierarchy.length - 1) {
+                // Itera sobre los niveles inferiores
+                for (let i = startIndex + 1; i < hierarchy.length; i++) {
+                    const childType = hierarchy[i];
+                    if (inputs[childType]) {
+                        inputs[childType].value = ''; // Limpia input visible
+                        inputs[childType].placeholder = `Escribe para buscar ${childType}...`; // Restaura placeholder si es necesario
+                    }
+                    if (selectedIds[childType]) {
+                        selectedIds[childType].value = ''; // Limpia ID oculto
+                    }
+                     if (suggestions[childType]) {
+                        suggestions[childType].innerHTML = ''; // Limpia sugerencias hijas
+                    }
+                }
+             }
+             // Si se borra la localidad, solo ocultamos detalles (ya hecho arriba)
+        }
+
+
+
+
+
+
+
+
+       // --- ¡NUEVA! Función para limpiar todos los campos (se puede llamar si necesitas un botón "Limpiar todo") ---
+         function resetFields() {
+             Object.values(inputs).forEach(input => input.value = '');
+             Object.values(selectedIds).forEach(hidden => hidden.value = '');
+             Object.values(suggestions).forEach(sug => sug.innerHTML = ''); // Limpia todas las sugerencias
+             document.getElementById('detalles').style.display = 'none';
+             console.log("Todos los campos reseteados."); // <-- DEBUG
+        }
+
+    </script>
+   
+
 
     <div class="col-sm-6">
         <label for="estado" class="form-label">(Lugar de los hechos) Estado</label>
-        <input type="text" class="form-control" id="estado" name="estado" placeholder="" required>
+        <input type="text" class="form-control" id="estado" name="estado" placeholder=""  value="OAXACA">
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
-    <div class="col-sm-6">
-        <label for="clave_municipio" class="form-label">Clave Municipio</label>
-        <input type="text" class="form-control" id="clave_municipio" name="clave_municipio" placeholder="" required>
-        <div class="invalid-feedback">Se requiere un apellido materno válido.</div>
-    </div>
+ <div class="col-sm-6">
+    <label for="clave_municipio" class="form-label">Clave Municipio</label>
+    <input type="text" class="form-control" id="clave_municipio" name="clave_municipio" placeholder=""  readonly>
+    <div class="invalid-feedback">Se requiere un municipio válido.</div>
+</div>
+
+
+
+<script>
+// Supongamos que `datos` ya contiene el objeto completo de la localidad
+// Por ejemplo: datos = { municipio_id: 107, municipio_nombre: "San Antonio de la Cal", ... }
+
+function rellenarClaveMunicipio(datos) {
+    const inputClave = document.getElementById('clave_municipio');
+    if (datos && datos.municipio_id) {
+        inputClave.value = datos.municipio_id; // ¡Asignamos directamente el value!
+        console.log(`Clave de municipio asignada: ${datos.municipio_id} → ${datos.municipio_nombre}`);
+    } else {
+        inputClave.value = '';
+        console.warn('No hay municipio asociado a esta localidad');
+    }
+}
+
+// Ejemplo: cuando se selecciona una localidad y ya tienes los datos
+// datosLocalidad es el objeto que recibiste de tu API
+rellenarClaveMunicipio(datosLocalidad);
+</script>
+
+
+
 
     <div class="col-sm-6">
         <label for="alerta_genero" class="form-label">Alerta de Género</label>
-        <input type="text" class="form-control" id="alerta_genero" name="alerta_genero" placeholder="" required>
+        <input type="text" class="form-control" id="alerta_genero" name="alerta_genero" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
+
+ <div id="detalles" style="display: none;">
+           
+            <p><strong>Localidad:</strong> <span id="res_localidad"></span></p>
+            <p><strong>Municipio:</strong> <span id="res_municipio"></span></p>
+            <p><strong>Distrito:</strong> <span id="res_distrito"></span></p>
+            <p><strong>Región:</strong> <span id="res_region"></span></p>
+        </div>
+
+
+
     <hr class="my-4">
 
     <div class="col-sm-6">
         <label for="id_caso_anual" class="form-label">ID Caso Anual</label>
-        <input type="text" class="form-control" id="id_caso_anual" name="id_caso_anual" placeholder="" required>
+        <input type="text" class="form-control" id="id_caso_anual" name="id_caso_anual" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="num_averiguacion" class="form-label">Número de Averiguación</label>
-        <input type="text" class="form-control" id="num_averiguacion" name="num_averiguacion" placeholder="" required>
+        <input type="text" class="form-control" id="num_averiguacion" name="num_averiguacion" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="num_averiguacion" class="form-label">Num de Año</label>
-        <input type="text" class="form-control" id="num_averiguacion" name="numa" placeholder="" required>
+        <input type="text" class="form-control" id="num_averiguacion" name="numa" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
  
@@ -315,14 +825,14 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="situacion_juridica" class="form-label">Situación Jurídica</label>
-        <input type="text" class="form-control" id="situacion_juridica" name="situacion_juridica" placeholder="" required>
+        <input type="text" class="form-control" id="situacion_juridica" name="situacion_juridica" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label class="form-label">¿Desaparecida?</label>
         <div class="form-check">
-            <input class="form-check-input" type="radio" name="desaparecida" id="desaparecidaSI" value="SI" required onclick="showDesaparecidaInput()">
+            <input class="form-check-input" type="radio" name="desaparecida" id="desaparecidaSI" value="SI"  onclick="showDesaparecidaInput()">
             <label class="form-check-label" for="desaparecidaSI">SI</label>
         </div>
         <div class="form-check">
@@ -339,25 +849,25 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="lugar_cuerpo" class="form-label">Lugar donde se Encontró el Cuerpo</label>
-        <input type="text" class="form-control" id="lugar_cuerpo" name="lugar_cuerpo" placeholder="" required>
+        <input type="text" class="form-control" id="lugar_cuerpo" name="lugar_cuerpo" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="descripcion_cuerpo" class="form-label">Descripción del Cuerpo</label>
-        <input type="text" class="form-control" id="descripcion_cuerpo" name="descripcion_cuerpo" placeholder="" required>
+        <input type="text" class="form-control" id="descripcion_cuerpo" name="descripcion_cuerpo" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="forma_muerte" class="form-label">Forma de Muerte</label>
-        <input type="text" class="form-control" id="forma_muerte" name="forma_muerte" placeholder="" required>
+        <input type="text" class="form-control" id="forma_muerte" name="forma_muerte" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="tipo_arma" class="form-label">Tipo de Arma</label>
-        <select class="form-select" id="tipo_arma" name="tipo_arma" placeholde="Selecciona una opción" required>
+        <select class="form-select" id="tipo_arma" name="tipo_arma" placeholde="Selecciona una opción" >
         <option selected disabled value="">Selecciona una opción...</option>
             <option value="ARMA DE FUEGO ">ARMA DE FUEGO </option>
             <option value="FUERZA FÍSICA">FUERZA FÍSICA</option>
@@ -370,14 +880,14 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="causas" class="form-label">Causas</label>
-        <input type="text" class="form-control" id="causas" name="causas" placeholder="" required>
+        <input type="text" class="form-control" id="causas" name="causas" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label class="form-label">¿Tiene Hijos e Hijas?</label>
     <div class="form-check">
-        <input class="form-check-input" type="radio" name="descendencia" id="hijos2" value="SI" required onclick="showHijosInput()">
+        <input class="form-check-input" type="radio" name="descendencia" id="hijos2" value="SI"  onclick="showHijosInput()">
         <label class="form-check-label" for="exampleRadios1">SI</label>
     </div>
     <div class="form-check">
@@ -396,49 +906,49 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="nombre_agresor" class="form-label">Nombre del Agresor</label>
-        <input type="text" class="form-control" id="nombre_agresor" name="nombre_agresor" placeholder="" required>
+        <input type="text" class="form-control" id="nombre_agresor" name="nombre_agresor" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="parentesco_agresor" class="form-label">Parentesco con el Agresor</label>
-        <input type="text" class="form-control" id="parentesco_agresor" name="parentesco_agresor" placeholder="" required>
+        <input type="text" class="form-control" id="parentesco_agresor" name="parentesco_agresor" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="fuente_periodistica" class="form-label">Fuente Periodística</label>
-        <input type="text" class="form-control" id="fuente_periodistica" name="fuente_periodistica" placeholder="" required>
+        <input type="text" class="form-control" id="fuente_periodistica" name="fuente_periodistica" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="autor_nota" class="form-label">Autor de la Nota</label>
-        <input type="text" class="form-control" id="autor_nota" name="autor_nota" placeholder="" required>
+        <input type="text" class="form-control" id="autor_nota" name="autor_nota" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="link_nota" class="form-label">Enlace de la Nota</label>
-        <input type="text" maxlength="100" class="form-control" id="link_nota" name="link_nota" placeholder="" required>
+        <input type="text" maxlength="100" class="form-control" id="link_nota" name="link_nota" placeholder="" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="latitud" class="form-label">Latitud</label>
-        <input type="number" class="form-control" id="latitud" name="latitud" step="0.000001" required>
+        <input type="number" class="form-control" id="latitud" name="latitud" step="0.000001" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="longitud" class="form-label">Longitud</label>
-        <input type="number" class="form-control" id="longitud" name="longitud" step="0.000001" required>
+        <input type="number" class="form-control" id="longitud" name="longitud" step="0.000001" >
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="sexenio" class="form-label">Sexenio</label>
-        <select class="form-select" id="sexenio" name="sexenio" placeholde="Selecciona una opción" required>
+        <select class="form-select" id="sexenio" name="sexenio" placeholde="Selecciona una opción" >
         <option selected disabled value="">Selecciona una opción...</option>
             <option value="SALOMÓN JARA CRUZ">Ing.Salomón Jara Cruz</option>
             <option value="ALEJANDRO ISMAEL MURAT HINOJOSA">Mtro.Alejandro Ismael Murat Hinojosa</option>
