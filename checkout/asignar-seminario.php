@@ -156,49 +156,60 @@ require_once __DIR__ . '/../pages/header.php';
         </div>
       <form class="needs-validation" action="asignar-seminario.php" method="POST" enctype="multipart/form-data" novalidate>
             
-<div class="col-sm-12">
-    <label for="buscar_usuario" class="form-label">Buscar Participante</label>
-    <div class="input-group mb-3">
-        <input type="text" id="buscar_usuario" class="form-control" placeholder="Ingresa el nombre">
-        <button class="btn btn-outline-secondary" type="button" id="btnBuscarUsuario">Buscar</button>
-        <button class="btn btn-outline-secondary" type="button" id="btnRefreshUsuario">Refresh</button>
-    </div>
-
-    <label for="id_usuario" class="form-label">Participante</label>
-    <select name="id_usuario" class="form-select" id="id_usuario" onchange="mostrarModalSiOtro(this.value)">
-        <option value="">-- Selecciona una Participante --</option>
-        <?php
-        require_once __DIR__ . '/../db/config.php';
-        $conn = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        $conn->exec("SET NAMES utf8");
-
-        try {
-            $sqls = [
-                ['tabla' => 'Participante', 'campo' => 'ID_Participante', 'tipo' => 'participante'],
-                ['tabla' => 'Personal', 'campo' => 'ID_Personal', 'tipo' => 'personal'],
-                ['tabla' => 'Usuario', 'campo' => 'id', 'tipo' => 'usuario']
-            ];
-
-            foreach ($sqls as $s) {
-                $stmt = $conn->query("
-                    SELECT '{$s['tipo']}' AS tipo, {$s['campo']} AS id,
-                    CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
-                    FROM {$s['tabla']}
-                ");
-                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<option value='{$s['tipo']}_{$row['id']}'>" . htmlspecialchars($row['NombreCompleto']) . "</option>";
-                }
-            }
-        } catch(PDOException $e) {
-            echo "<option value=''>Error al obtener los usuarios</option>";
-        }
-        ?>
-        <option value="_otro_">Otro...</option>
-    </select>
-    <input type="hidden" name="tipo" id="tipo">
+<div class="col-sm-12 position-relative">
+    <label for="input_participante" class="form-label">Buscar Participante</label>
+    <input type="text" id="input_participante" class="form-control" placeholder="Ingresa el nombre">
+    <div id="sug_participante" class="list-group mt-1"></div>
+    <input type="hidden" id="id_participante" name="id_usuario">
+    <input type="hidden" id="tipo_usuario" name="tipo">
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("input_participante");
+    const sugerencias = document.getElementById("sug_participante");
+    const idHidden = document.getElementById("id_participante");
+    const tipoHidden = document.getElementById("tipo_usuario");
+
+    input.addEventListener("input", async () => {
+        const q = input.value.trim();
+        sugerencias.innerHTML = "";
+
+        if (q.length < 2) return;
+
+        try {
+            const response = await fetch("./ajax/buscar_participante.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
+            }
+
+            data.forEach(item => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.classList.add("list-group-item", "list-group-item-action");
+                button.textContent = `${item.NombreCompleto} (${item.tipo})`;
+                button.addEventListener("click", () => {
+                    input.value = item.NombreCompleto;
+                    idHidden.value = item.id;
+                    tipoHidden.value = item.tipo;
+                    sugerencias.innerHTML = "";
+                });
+                sugerencias.appendChild(button);
+            });
+
+        } catch (error) {
+            console.error("Error al obtener participantes:", error);
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input_participante")) sugerencias.innerHTML = "";
+    });
+});
+</script>
 <script>
 // Detectar tipo automáticamente según el prefijo del valor
 document.getElementById('id_usuario').addEventListener('change', function() {
@@ -231,26 +242,67 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
     }
 });
 </script>
-                        <!-- Seleccionar Diplomado -->
-                       <div class="col-sm-12">
-    <label for="id_seminario" class="form-label">Seminario</label>
-   <select name="id_seminario" class="form-select" id="id_seminario">
-    <option value="">-- Selecciona un seminario --</option>
-    <?php
-    try {
-        $sql = "SELECT ID_Seminario, Nombre FROM seminarios";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            echo "<option value='{$row['ID_Seminario']}'>{$row['Nombre']}</option>";
-        }
-    } catch(PDOException $e) {
-        echo "<option value=''>Error al obtener seminarios</option>";
-    }
-    ?>
-</select>
-
+                       <div class="col-sm-12 position-relative">
+    <label for="input_seminario" class="form-label">Seminario</label>
+    <input type="text" id="input_seminario" class="form-control" placeholder="Buscar seminario...">
+    <div id="sug_seminario" class="list-group mt-1" style="position:absolute; z-index:1000; width:100%;"></div>
+    <input type="hidden" id="id_seminario" name="id_seminario">
 </div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("input_seminario");
+    const sugerencias = document.getElementById("sug_seminario");
+    const idSeminario = document.getElementById("id_seminario");
+
+    input.addEventListener("input", async () => {
+        const q = input.value.trim();
+        sugerencias.innerHTML = "";
+
+        if (q.length < 2) return;
+
+        try {
+            const response = await fetch("./ajax/buscar_seminario.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
+            }
+
+            if (data.length === 0) {
+                sugerencias.innerHTML = "<div class='list-group-item disabled'>Sin coincidencias</div>";
+                return;
+            }
+
+            data.forEach(s => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.classList.add("list-group-item", "list-group-item-action");
+                item.textContent = s.Nombre;
+                item.addEventListener("click", () => {
+                    input.value = s.Nombre;
+                    idSeminario.value = s.ID_Seminario;
+                    sugerencias.innerHTML = "";
+                    cargarPonente(s.ID_Seminario);
+                });
+                sugerencias.appendChild(item);
+            });
+        } catch (err) {
+            console.error("Error al buscar seminarios:", err);
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input_seminario")) {
+            sugerencias.innerHTML = "";
+        }
+    });
+});
+
+
+</script>
 
                       <!-- Seleccionar Ponente -->
 <div class="col-sm-12">
@@ -258,6 +310,8 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
     <input type="text" id="nombre_ponente" class="form-control" value="Seleccione un seminario primero" readonly>
     <input type="hidden" name="id_ponente" id="id_ponente_hidden">
 </div>
+
+
   <hr class="my-4">
                     <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar Asignación</button>
 
@@ -329,35 +383,37 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
 
         </style>
    <script>
-
-const btnSubmit = document.querySelector('button[type="submit"]');
-
-document.getElementById('id_seminario').addEventListener('change', function() {
-    const idSeminario = this.value;
+function cargarPonente(idSeminario) {
     const nombrePonenteInput = document.getElementById('nombre_ponente');
     const idPonenteHidden = document.getElementById('id_ponente_hidden');
 
     if (!idSeminario) {
-        nombrePonenteInput.value = "Seleccione un seminario primero";
-        idPonenteHidden.value = "";
-        btnSubmit.disabled = true;
+        nombrePonenteInput.value = 'Seleccione un seminario primero';
+        idPonenteHidden.value = '';
         return;
     }
 
-    fetch('obtener_ponente.php?id_seminario=' + idSeminario)
+    nombrePonenteInput.value = 'Cargando ponente...';
+    idPonenteHidden.value = '';
+
+    fetch('./obtener_ponentese.php?id_seminario=' + idSeminario)
         .then(res => res.json())
         .then(data => {
-            nombrePonenteInput.value = data.nombre;
-            idPonenteHidden.value = data.id;
-            btnSubmit.disabled = !data.id; // Solo habilita si hay id
+            if (data && data.id) {
+                nombrePonenteInput.value = data.nombre;
+                idPonenteHidden.value = data.id;
+            } else {
+                nombrePonenteInput.value = 'No hay ponente asignado';
+                idPonenteHidden.value = '';
+            }
         })
         .catch(err => {
             console.error(err);
-            nombrePonenteInput.value = "Error al cargar ponente";
-            idPonenteHidden.value = "";
-            btnSubmit.disabled = true;
+            nombrePonenteInput.value = 'Error al cargar ponente';
+            idPonenteHidden.value = '';
         });
-});
+}
+
 
 let valorAnterior = null; // Guardará el valor previo del select
 

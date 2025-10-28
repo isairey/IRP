@@ -263,13 +263,13 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="lastName" class="form-label">Apellido Paterno:</label>
-        <input type="text" class="form-control" id="lastName" name="apellidoPaterno" placeholder="">
+        <input type="text" class="form-control" id="lastNames" name="apellidoPaterno" placeholder="">
         <div class="invalid-feedback">Se requiere un apellido paterno válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="secondLastName" class="form-label">Apellido Materno:</label>
-        <input type="text" class="form-control" id="secondLastName" name="apellidoMaterno" placeholder="">
+        <input type="text" class="form-control" id="secondLastNames" name="apellidoMaterno" placeholder="">
         <div class="invalid-feedback">Se requiere un apellido materno válido.</div>
     </div>
 
@@ -303,10 +303,10 @@ require_once __DIR__ . '/../pages/header.php';
     
 <div class="col-sm-12">
     <label for="lugarNacimiento" class="form-label">Lugar de Nacimiento</label>
-    <input type="text" class="form-control" id="lugarNacimiento" name="lugarNacimiento" placeholder="Escribe o selecciona un distrito..." autocomplete="off">
+    <input type="text" class="form-control" id="lugarNacimiento" name="lugarNacimiento" placeholder="Escribe o selecciona un Municipio ..." autocomplete="off">
     <div class="sugerencias" id="sug_lugarNacimiento" style="border:1px solid #ccc; max-height:150px; overflow-y:auto;"></div>
     <input type="hidden" id="selected_lugar_id" name="selected_lugar_id">
-    <div class="invalid-feedback">Se requiere un distrito válido.</div>
+    <div class="invalid-feedback">Se requiere un Municipio Valido.</div>
 </div>
 
 <?php

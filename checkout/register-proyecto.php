@@ -147,38 +147,58 @@ require_once __DIR__ . '/../pages/header.php';
     <div class="row g-3">
 
 
-    <div class="col-sm-12">
-    <label for="id_personal">Encargada de proyecto</label>
-        <select name="id_personal" class="form-select" id="id_personal" required>
-    <?php
-        // Incluir el archivo de configuración de la base de datos
-        require_once __DIR__ . '/../db/config.php';
-        try {
-            // Crear conexión a la base de datos
-            $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-            // Establecer el modo de error para lanzar excepciones en caso de errores
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
-            // Consultar la base de datos para obtener los IDs de personal
-            $sql = "SELECT ID_Personal, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS nombre_completo FROM Personal";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
+   <div class="col-sm-12 position-relative">
+    <label for="id_encargada" class="form-label">Encargada de proyecto</label>
+    <input type="text" id="encargada_input" name="encargada_input" class="form-control" placeholder="Escribe el nombre de la encargada...">
+    <input type="hidden" id="id_encargada" name="id_personal">
+    <div id="sugerencias_encargada" class="list-group" style="position:absolute; z-index:1000; width:100%;"></div>
+</div>
 
-            // Si hay resultados, mostrar opciones en el select
-            if ($stmt->rowCount() > 0) {
-                while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<option value='" . $row['ID_Personal'] . "'>" . $row['nombre_completo'] . "</option>";
-                }
-            } else {
-                echo "<option value=''>No hay personal disponible</option>";
-            }
-        } catch(PDOException $e) {
-            // Manejar errores de manera adecuada
-            echo "<option value=''>Error al obtener los IDs de personal</option>";
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("encargada_input");
+    const sugerencias = document.getElementById("sugerencias_encargada");
+    const idEncargada = document.getElementById("id_encargada");
+
+    input.addEventListener("keyup", () => {
+        const texto = input.value.trim();
+
+        if (texto.length < 2) {
+            sugerencias.innerHTML = "";
+            return;
         }
-    ?>
-    </select>
-    </div>
+
+        // 🔹 Ajusta esta ruta según tu estructura real
+        fetch("./ajax/buscar_encargada.php?q=" + encodeURIComponent(texto))
+            .then(res => res.json())
+            .then(data => {
+                sugerencias.innerHTML = "";
+                if (data.length > 0) {
+                    data.forEach(item => {
+                        const div = document.createElement("div");
+                        div.classList.add("list-group-item", "list-group-item-action");
+                        div.textContent = item.nombre_completo;
+                        div.dataset.id = item.ID_Personal;
+
+                        div.addEventListener("click", () => {
+                            input.value = item.nombre_completo;
+                            idEncargada.value = item.ID_Personal;
+                            sugerencias.innerHTML = "";
+                        });
+
+                        sugerencias.appendChild(div);
+                    });
+                } else {
+                    sugerencias.innerHTML = "<div class='list-group-item disabled'>Sin coincidencias</div>";
+                }
+            })
+            .catch(() => {
+                sugerencias.innerHTML = "<div class='list-group-item disabled'>Error de conexión</div>";
+            });
+    });
+});
+</script>
+
 
 
             

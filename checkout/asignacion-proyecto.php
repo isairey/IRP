@@ -132,68 +132,111 @@ require_once __DIR__ . '/../pages/header.php';
     <div class="row g-3">
 
     <div class="col-sm-12">
-    <label for="id_usuario" class="form-label">Usuaria</label>
-<select name="id_usuario" class="form-select"  id="id_usuario">
-<?php
-    // Incluir el archivo de configuración de la base de datos
-    require_once __DIR__ . '/../db/config.php';
-    try {
-        // Crear conexión a la base de datos
-        $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-        // Establecer el modo de error para lanzar excepciones en caso de errores
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-        // Consulta para obtener los IDs de usuario con el nombre completo
-        $sql = "SELECT id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto FROM Usuario";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
+    <label for="input_usuario" class="form-label">Usuaria</label>
+    <input type="text" id="input_usuario" class="form-control" placeholder="Buscar usuaria...">
+    <div id="sug_usuario" class="list-group mt-1"></div>
+    <input type="hidden" id="id_usuario" name="id_usuario">
+</div>
 
-        // Si hay resultados, mostrar opciones en el select
-        if ($stmt->rowCount() > 0) {
-            while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                echo "<option value='" . $row['id'] . "'>" . $row['NombreCompleto'] . "</option>";
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const inputUsuario = document.getElementById("input_usuario");
+    const sugerencias = document.getElementById("sug_usuario");
+    const inputHidden = document.getElementById("id_usuario");
+
+    inputUsuario.addEventListener("input", async () => {
+        const q = inputUsuario.value.trim();
+        sugerencias.innerHTML = "";
+
+        if (q.length < 2) return; // Solo buscar si hay al menos 2 caracteres
+
+        try {
+            const response = await fetch("./ajax/buscar_usuario.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
             }
-        } else {
-            echo "<option value=''>No hay usuarios disponibles</option>";
+
+            data.forEach(usuario => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.classList.add("list-group-item", "list-group-item-action");
+                item.textContent = usuario.NombreCompleto;
+                item.addEventListener("click", () => {
+                    inputUsuario.value = usuario.NombreCompleto;
+                    inputHidden.value = usuario.id;
+                    sugerencias.innerHTML = "";
+                });
+                sugerencias.appendChild(item);
+            });
+        } catch (error) {
+            console.error("Error al obtener usuarios:", error);
         }
-    } catch(PDOException $e) {
-        // Manejar errores de manera adecuada
-        echo "<option value=''>Error al obtener los usuarios</option>";
-        // Puedes mostrar el mensaje de error si necesitas depurar el problema
-        // echo "Error: " . $e->getMessage();
-    }
-?>
-</select>
+    });
 
+    // Ocultar sugerencias al hacer clic fuera
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input_usuario")) sugerencias.innerHTML = "";
+    });
+});
+</script>
+
+
+
+
+
+<div class="col-sm-12 position-relative">
+    <label for="input_proyecto" class="form-label">Nombre del Proyecto</label>
+    <input type="text" id="input_proyecto" class="form-control" placeholder="Buscar proyecto...">
+    <div id="sug_proyecto" class="list-group mt-1"></div>
+    <input type="hidden" id="id_proyecto" name="id_proyecto">
 </div>
 
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const inputProyecto = document.getElementById("input_proyecto");
+    const sugerencias = document.getElementById("sug_proyecto");
+    const inputHidden = document.getElementById("id_proyecto");
 
+    inputProyecto.addEventListener("input", async () => {
+        const q = inputProyecto.value.trim();
+        sugerencias.innerHTML = "";
 
+        if (q.length < 2) return;
 
-<div class="col-sm-12">
-    <label for="id_proyecto" class="form-label">Nombre del Proyecto</label>
-        <select name="id_proyecto" class="form-select"  id="id_proyecto">
-        <?php
-                try {
-                    $sql = "SELECT ID_Proyecto, NombreProyecto FROM Proyectos";
-                    $stmt = $conn->prepare($sql);
-                    $stmt->execute();
+        try {
+            const response = await fetch("./ajax/buscar_proyecto.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
 
-                    if ($stmt->rowCount() > 0) {
-                        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                            echo "<option value='" . $row['ID_Proyecto'] . "'>" . $row['NombreProyecto'] . "</option>";
-                        }
-                    } else {
-                        echo "<option value=''>No hay proyectos disponibles</option>";
-                    }
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
+            }
 
-                    $conn = null; // Cerrar la conexión
-                } catch(PDOException $e) {
-                    echo "<option value=''>Error al obtener los proyectos</option>";
-                }
-            ?>
-</select>
-</div>
+            data.forEach(proyecto => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.classList.add("list-group-item", "list-group-item-action");
+                item.textContent = proyecto.NombreProyecto;
+                item.addEventListener("click", () => {
+                    inputProyecto.value = proyecto.NombreProyecto;
+                    inputHidden.value = proyecto.ID_Proyecto;
+                    sugerencias.innerHTML = "";
+                });
+                sugerencias.appendChild(item);
+            });
+        } catch (error) {
+            console.error("Error al obtener proyectos:", error);
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input_proyecto")) sugerencias.innerHTML = "";
+    });
+});
+</script>
 
 
 
