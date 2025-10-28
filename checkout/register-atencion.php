@@ -176,75 +176,108 @@ require_once __DIR__ . '/../pages/header.php';
         <form class="needs-validation" action="register-atencion.php" method="POST" enctype="multipart/form-data"  novalidate>
     <div class="row g-3">
 
-    <div class="col-sm-12">
-    <label for="id_usuario" class="form-label">Usuaria Atendida</label>
-<select name="id_usuario" class="form-select"  id="id_usuario">
-<?php
-    // Incluir el archivo de configuración de la base de datos
-    require_once __DIR__ . '/../db/config.php';
-
-    try {
-        // Crear conexión a la base de datos
-        $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-        // Establecer el modo de error para lanzar excepciones en caso de errores
-        $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-        
-        // Consulta para obtener los IDs de usuario con el nombre completo
-        $sql = "SELECT id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto FROM Usuario";
-        $stmt = $conn->prepare($sql);
-        $stmt->execute();
-
-        // Si hay resultados, mostrar opciones en el select
-        if ($stmt->rowCount() > 0) {
-            while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                echo "<option value='" . $row['id'] . "'>" . $row['NombreCompleto'] . "</option>";
-            }
-        } else {
-            echo "<option value=''>No hay usuarios disponibles</option>";
-        }
-    } catch(PDOException $e) {
-        // Manejar errores de manera adecuada
-        echo "<option value=''>Error al obtener los usuarios</option>";
-        // Puedes mostrar el mensaje de error si necesitas depurar el problema
-        // echo "Error: " . $e->getMessage();
-    }
-?>
-</select>
+   <div class="col-sm-12 position-relative">
+    <label for="input_usuario_atendida" class="form-label">Usuaria Atendida</label>
+    <input type="text" id="input_usuario_atendida" class="form-control" placeholder="Buscar usuaria...">
+    <div id="sug_usuario_atendida" class="list-group mt-1"></div>
+    <input type="hidden" id="id_usuario_atendida" name="id_usuario">
 </div>
 
-<div class="col-sm-12">
-    <label for="id_personal">Especialista</label>
-        <select name="id_personal" class="form-select" id="id_personal" required>
-    <?php
-        // Incluir el archivo de configuración de la base de datos
-        require_once __DIR__ . '/../db/config.php';
-        
-        try {
-            // Crear conexión a la base de datos
-            $conn = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-            // Establecer el modo de error para lanzar excepciones en caso de errores
-            $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
-            // Consultar la base de datos para obtener los IDs de personal
-            $sql = "SELECT ID_Personal, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS nombre_completo FROM Personal";
-            $stmt = $conn->prepare($sql);
-            $stmt->execute();
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("input_usuario_atendida");
+    const sugerencias = document.getElementById("sug_usuario_atendida");
+    const inputHidden = document.getElementById("id_usuario_atendida");
 
-            // Si hay resultados, mostrar opciones en el select
-            if ($stmt->rowCount() > 0) {
-                while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<option value='" . $row['ID_Personal'] . "'>" . $row['nombre_completo'] . "</option>";
-                }
-            } else {
-                echo "<option value=''>No hay personal disponible</option>";
+    input.addEventListener("input", async () => {
+        const q = input.value.trim();
+        sugerencias.innerHTML = "";
+
+        if (q.length < 2) return;
+
+        try {
+            const response = await fetch("./ajax/buscar_usuario.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
             }
-        } catch(PDOException $e) {
-            // Manejar errores de manera adecuada
-            echo "<option value=''>Error al obtener los IDs de personal</option>";
+
+            data.forEach(usuario => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.classList.add("list-group-item", "list-group-item-action");
+                item.textContent = usuario.NombreCompleto;
+                item.addEventListener("click", () => {
+                    input.value = usuario.NombreCompleto;
+                    inputHidden.value = usuario.id;
+                    sugerencias.innerHTML = "";
+                });
+                sugerencias.appendChild(item);
+            });
+        } catch (error) {
+            console.error("Error al obtener usuarios:", error);
         }
-    ?>
-    </select>
-    </div>
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input_usuario_atendida")) sugerencias.innerHTML = "";
+    });
+});
+</script>
+
+
+<div class="col-sm-12 position-relative">
+    <label for="input_especialista" class="form-label">Especialista</label>
+    <input type="text" id="input_especialista" class="form-control" placeholder="Buscar especialista...">
+    <div id="sug_especialista" class="list-group mt-1"></div>
+    <input type="hidden" id="id_especialista" name="id_personal">
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("input_especialista");
+    const sugerencias = document.getElementById("sug_especialista");
+    const inputHidden = document.getElementById("id_especialista");
+
+    input.addEventListener("input", async () => {
+        const q = input.value.trim();
+        sugerencias.innerHTML = "";
+
+        if (q.length < 2) return;
+
+        try {
+            const response = await fetch("./ajax/buscar_especialista.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
+            }
+
+            data.forEach(personal => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.classList.add("list-group-item", "list-group-item-action");
+                item.textContent = personal.nombre_completo;
+                item.addEventListener("click", () => {
+                    input.value = personal.nombre_completo;
+                    inputHidden.value = personal.ID_Personal;
+                    sugerencias.innerHTML = "";
+                });
+                sugerencias.appendChild(item);
+            });
+        } catch (error) {
+            console.error("Error al obtener especialistas:", error);
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input_especialista")) sugerencias.innerHTML = "";
+    });
+});
+</script>
 
     <div class="col-sm-12">
     <label for="tipo_atencion" class="form-label">Tipo de Atencion</label>

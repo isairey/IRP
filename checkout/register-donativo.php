@@ -140,33 +140,56 @@ require_once __DIR__ . '/../pages/header.php';
         <form class="needs-validation" action="register-donativo.php" method="POST" enctype="multipart/form-data"  novalidate>
     <div class="row g-3">
 
-    <div class="col-sm-12">
-    <label for="id_donante" class="form-label">Nombre del Donate</label>
-        <select name="id_donante" class="form-select"  id="id_donante">
-        <?php
-                require_once __DIR__ . '/../db/config.php';
-
-                try {
-                    // Consultar la base de datos para obtener los donantes disponibles
-                    $sql = "SELECT ID_Donante, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto FROM Donantes";
-                    $stmt = $conn->query($sql);
-
-                    if ($stmt->rowCount() > 0) {
-                        while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                            echo "<option value='" . $row['ID_Donante'] . "'>" . $row['NombreCompleto'] . "</option>";
-                        }
-                    } else {
-                        echo "<option value=''>No hay donantes disponibles</option>";
-                    }
-                } catch(PDOException $e) {
-                    // Manejar errores de manera adecuada
-                    echo "<option value=''>Error al obtener los donantes</option>";
-                    // Puedes mostrar el mensaje de error si necesitas depurar el problema
-                    // echo "Error: " . $e->getMessage();
-                }
-            ?>
-</select>
+    <div class="col-sm-12 position-relative">
+    <label for="input_donante" class="form-label">Nombre del Donante</label>
+    <input type="text" id="input_donante" class="form-control" placeholder="Buscar donante...">
+    <div id="sug_donante" class="list-group mt-1"></div>
+    <input type="hidden" id="id_donante" name="id_donante">
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("input_donante");
+    const sugerencias = document.getElementById("sug_donante");
+    const inputHidden = document.getElementById("id_donante");
+
+    input.addEventListener("input", async () => {
+        const q = input.value.trim();
+        sugerencias.innerHTML = "";
+
+        if (q.length < 2) return;
+
+        try {
+            const response = await fetch("./ajax/buscar_donante.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
+            }
+
+            data.forEach(donante => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.classList.add("list-group-item", "list-group-item-action");
+                item.textContent = donante.NombreCompleto;
+                item.addEventListener("click", () => {
+                    input.value = donante.NombreCompleto;
+                    inputHidden.value = donante.ID_Donante;
+                    sugerencias.innerHTML = "";
+                });
+                sugerencias.appendChild(item);
+            });
+        } catch (error) {
+            console.error("Error al obtener donantes:", error);
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input_donante")) sugerencias.innerHTML = "";
+    });
+});
+</script>
 
     <div class="col-sm-6">
         <label for="monto_donacion" class="form-label">Monto de Donación</label>

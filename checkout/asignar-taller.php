@@ -144,44 +144,60 @@ require_once __DIR__ . '/../pages/header.php';
         <form class="needs-validation" action="asignar-taller.php" method="POST" enctype="multipart/form-data" novalidate>
 
         <!-- Buscar asistente -->
-<div class="col-sm-12">
-    <label for="buscar_asistente" class="form-label">Buscar Asistente</label>
-    <div class="input-group mb-3">
-        <input type="text" id="buscar_asistente" class="form-control" placeholder="Ingresa el nombre">
-        <button class="btn btn-outline-secondary" type="button" id="btnBuscarAsistente">Buscar</button>
-        <button class="btn btn-outline-secondary" type="button" id="btnRefreshAsistente">Refresh</button>
-    </div>
-
-    <label for="id_asistente" class="form-label">Asistente</label>
-    <select name="id_asistente" class="form-select" id="id_asistente">
-        <option value="">-- Selecciona un asistente --</option>
-        <?php
-        try {
-            $sqls = [
-                ['tabla' => 'Participante', 'campo' => 'ID_Participante', 'tipo' => 'participante'],
-                ['tabla' => 'Personal', 'campo' => 'ID_Personal', 'tipo' => 'personal'],
-                ['tabla' => 'Usuario', 'campo' => 'id', 'tipo' => 'usuario']
-            ];
-
-            foreach ($sqls as $s) {
-                $stmt = $conn->query("
-                    SELECT '{$s['tipo']}' AS tipo, {$s['campo']} AS id,
-                    CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto
-                    FROM {$s['tabla']}
-                ");
-                while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                    echo "<option value='{$s['tipo']}_{$row['id']}'>" . htmlspecialchars($row['NombreCompleto']) . "</option>";
-                }
-            }
-        } catch(PDOException $e) {
-            echo "<option value=''>Error al obtener asistentes</option>";
-        }
-        ?>
-        <option value="_otro_">Otro...</option>
-    </select>
-
-    <input type="hidden" name="tipo" id="tipo">
+<div class="col-sm-12 position-relative">
+    <label for="input_participante" class="form-label">Buscar Participante</label>
+    <input type="text" id="input_participante" class="form-control" placeholder="Ingresa el nombre">
+    <div id="sug_participante" class="list-group mt-1"></div>
+    <input type="hidden" id="id_participante" name="id_asistente">
+    <input type="hidden" id="tipo_usuario" name="tipo">
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("input_participante");
+    const sugerencias = document.getElementById("sug_participante");
+    const idHidden = document.getElementById("id_participante");
+    const tipoHidden = document.getElementById("tipo_usuario");
+
+    input.addEventListener("input", async () => {
+        const q = input.value.trim();
+        sugerencias.innerHTML = "";
+
+        if (q.length < 2) return;
+
+        try {
+            const response = await fetch("./ajax/buscar_participante.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
+            }
+
+            data.forEach(item => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.classList.add("list-group-item", "list-group-item-action");
+                button.textContent = `${item.NombreCompleto} (${item.tipo})`;
+                button.addEventListener("click", () => {
+                    input.value = item.NombreCompleto;
+                    idHidden.value = item.id;
+                    tipoHidden.value = item.tipo;
+                    sugerencias.innerHTML = "";
+                });
+                sugerencias.appendChild(button);
+            });
+
+        } catch (error) {
+            console.error("Error al obtener participantes:", error);
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input_participante")) sugerencias.innerHTML = "";
+    });
+});
+</script>
 
 <script>
 // Detectar tipo automáticamente según el prefijo del valor
@@ -203,24 +219,51 @@ document.getElementById('id_asistente').addEventListener('change', function() {
 
 
             <!-- Seleccionar Taller -->
-            <div class="col-sm-12 mt-3">
-                <label for="id_taller" class="form-label">Taller</label>
-                <select name="id_taller" class="form-select" id="id_taller">
-                    <option value="">-- Selecciona un taller --</option>
-                    <?php
-                    try {
-                        $sql = "SELECT ID_Taller, Nombre FROM talleres";
-                        $stmt = $conn->prepare($sql);
-                        $stmt->execute();
-                        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                            echo "<option value='{$row['ID_Taller']}'>{$row['Nombre']}</option>";
-                        }
-                    } catch(PDOException $e) {
-                        echo "<option value=''>Error al obtener talleres</option>";
-                    }
-                    ?>
-                </select>
-            </div>
+            <div class="col-sm-12 mt-3 position-relative">
+    <label for="input_taller" class="form-label">Taller</label>
+    <input type="text" id="input_taller" class="form-control" placeholder="Buscar taller...">
+    <div id="sug_taller" class="list-group mt-1" style="position: absolute; z-index: 1000; width: 100%;"></div>
+    <input type="hidden" id="id_taller" name="id_taller">
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("input_taller");
+    const sugerencias = document.getElementById("sug_taller");
+    const inputHidden = document.getElementById("id_taller");
+
+    input.addEventListener("input", async () => {
+        const q = input.value.trim();
+        sugerencias.innerHTML = "";
+
+        if (q.length < 2) return;
+
+        try {
+            const response = await fetch("./ajax/buscar_taller.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
+
+            data.forEach(t => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.classList.add("list-group-item", "list-group-item-action");
+                item.textContent = t.Nombre;
+                item.addEventListener("click", () => {
+                    input.value = t.Nombre;
+                    inputHidden.value = t.ID_Taller;
+                    sugerencias.innerHTML = "";
+                });
+                sugerencias.appendChild(item);
+            });
+        } catch (err) {
+            console.error("Error al obtener talleres:", err);
+        }
+    });
+
+    document.addEventListener("click", e => {
+        if (!e.target.closest("#input_taller")) sugerencias.innerHTML = "";
+    });
+});
+</script>
 
        
 

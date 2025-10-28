@@ -136,41 +136,61 @@ require_once __DIR__ . '/../pages/header.php';
         </div>
       <form class="needs-validation" action="asignar-diplomado.php" method="POST" enctype="multipart/form-data" novalidate>
             
-
-<div class="col-sm-12">
-    <label for="buscar_usuario" class="form-label">Buscar Participante</label>
-    <div class="input-group mb-3">
-        <input type="text" id="buscar_usuario" class="form-control" placeholder="Ingresa el nombre">
-        <button class="btn btn-outline-secondary" type="button" id="btnBuscarUsuario">Buscar</button>
-        <button class="btn btn-outline-secondary" type="button" id="btnRefreshUsuario">Refresh</button>
-    </div>
-
-    <label for="id_usuario" class="form-label">Participante</label>
-    <select name="id_usuario" class="form-select" id="id_usuario">
-    <option value="">-- Selecciona un participante --</option>
-    <?php
-    $sql = "
-        SELECT ID_Participante AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto, 'participante' AS tipo
-        FROM Participante
-        UNION
-        SELECT ID_Personal AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto, 'personal' AS tipo
-        FROM Personal
-        UNION
-        SELECT id AS id, CONCAT(Nombre, ' ', ApellidoPaterno, ' ', ApellidoMaterno) AS NombreCompleto, 'usuario' AS tipo
-        FROM Usuario
-    ";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute();
-    while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        echo "<option value='{$row['id']}' data-tipo='{$row['tipo']}'>{$row['NombreCompleto']}</option>";
-    }
-    ?>
-    <option value="_otro_">Otro...</option>
-</select>
-<!-- Aquí va el input hidden -->
-    <input type="hidden" name="tipo_usuario" id="tipo_usuario">
-
+<div class="col-sm-12 position-relative">
+    <label for="input_participante" class="form-label">Buscar Participante</label>
+    <input type="text" id="input_participante" class="form-control" placeholder="Ingresa el nombre">
+    <div id="sug_participante" class="list-group mt-1"></div>
+    <input type="hidden" id="id_participante" name="id_usuario">
+    <input type="hidden" id="tipo_usuario" name="tipo_usuario">
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("input_participante");
+    const sugerencias = document.getElementById("sug_participante");
+    const idHidden = document.getElementById("id_participante");
+    const tipoHidden = document.getElementById("tipo_usuario");
+
+    input.addEventListener("input", async () => {
+        const q = input.value.trim();
+        sugerencias.innerHTML = "";
+
+        if (q.length < 2) return;
+
+        try {
+            const response = await fetch("./ajax/buscar_participante.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
+            }
+
+            data.forEach(item => {
+                const button = document.createElement("button");
+                button.type = "button";
+                button.classList.add("list-group-item", "list-group-item-action");
+                button.textContent = `${item.NombreCompleto} (${item.tipo})`;
+                button.addEventListener("click", () => {
+                    input.value = item.NombreCompleto;
+                    idHidden.value = item.id;
+                    tipoHidden.value = item.tipo;
+                    sugerencias.innerHTML = "";
+                });
+                sugerencias.appendChild(button);
+            });
+
+        } catch (error) {
+            console.error("Error al obtener participantes:", error);
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input_participante")) sugerencias.innerHTML = "";
+    });
+});
+</script>
+
 
 <script>
 document.getElementById('id_usuario').addEventListener('change', function() {
@@ -206,23 +226,60 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
 
 
                         <!-- Seleccionar Diplomado -->
-                        <div class="col-sm-12">
-                            <label for="id_diplomado" class="form-label">Diplomado</label>
-                            <select name="id_diplomado" class="form-select" id="id_diplomado">
-                                <?php
-                                try {
-                                    $sql = "SELECT ID_Diplomado, NombreDiplomado FROM Diplomados";
-                                    $stmt = $conn->prepare($sql);
-                                    $stmt->execute();
-                                    while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-                                        echo "<option value='{$row['ID_Diplomado']}'>{$row['NombreDiplomado']}</option>";
-                                    }
-                                } catch(PDOException $e) {
-                                    echo "<option value=''>Error al obtener diplomados</option>";
-                                }
-                                ?>
-                            </select>
-                        </div>
+                      <div class="col-sm-12 position-relative">
+    <label for="input_diplomado" class="form-label">Diplomado</label>
+    <input type="text" id="input_diplomado" class="form-control" placeholder="Buscar diplomado...">
+    <div id="sug_diplomado" class="list-group mt-1"></div>
+    <input type="hidden" id="id_diplomado" name="id_diplomado">
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("input_diplomado");
+    const sugerencias = document.getElementById("sug_diplomado");
+    const inputHidden = document.getElementById("id_diplomado");
+
+    input.addEventListener("input", async () => {
+        const q = input.value.trim();
+        sugerencias.innerHTML = "";
+
+        if (q.length < 2) return;
+
+        try {
+            const response = await fetch("./ajax/buscar_diplomado.php?q=" + encodeURIComponent(q));
+            const data = await response.json();
+
+            if (data.error) {
+                console.error("Error:", data.error);
+                return;
+            }
+
+            data.forEach(diplomado => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.classList.add("list-group-item", "list-group-item-action");
+                item.textContent = diplomado.NombreDiplomado;
+                item.addEventListener("click", () => {
+                    input.value = diplomado.NombreDiplomado;
+                    inputHidden.value = diplomado.ID_Diplomado;
+                    sugerencias.innerHTML = "";
+                    cargarPonentes(diplomado.ID_Diplomado);
+                });
+                sugerencias.appendChild(item);
+            });
+        } catch (error) {
+            console.error("Error al obtener diplomados:", error);
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        if (!e.target.closest("#input_diplomado")) sugerencias.innerHTML = "";
+         // 🚀 Aquí llamamos a la función que carga los ponentes
+    
+    });
+});
+</script>
+
 
                       <!-- Seleccionar Ponente -->
 <div class="col-sm-12">
@@ -306,38 +363,38 @@ document.getElementById('btnRefreshUsuario').addEventListener('click', function(
     <script src="checkout.js"></script>
 
 <script>
-document.getElementById('id_diplomado').addEventListener('change', function() {
-    const idDiplomado = this.value;
+function cargarPonentes(idDiplomado) {
     const contenedor = document.getElementById('lista-ponentes');
+    if (!idDiplomado) {
+        contenedor.innerHTML = 'Seleccione un diplomado primero';
+        return;
+    }
     contenedor.innerHTML = 'Cargando ponentes...';
 
-    if (idDiplomado) {
-        fetch('../checkout/obtener-ponentes.php?id_diplomado=' + idDiplomado)
-            .then(response => response.json())
-            .then(data => {
-                if (data.length > 0) {
-                    contenedor.innerHTML = '';
-                    const ul = document.createElement('ul');
-                    ul.classList.add('list-group');
-                    data.forEach(p => {
-                        const li = document.createElement('li');
-                        li.classList.add('list-group-item', 'py-1');
-                        li.textContent = p.NombrePonente;
-                        ul.appendChild(li);
-                    });
-                    contenedor.appendChild(ul);
-                } else {
-                    contenedor.innerHTML = 'No hay ponentes asignados';
-                }
-            })
-            .catch(error => {
-                contenedor.innerHTML = 'Error al cargar';
-                console.error(error);
-            });
-    } else {
-        contenedor.innerHTML = 'Seleccione un diplomado primero';
-    }
-});
+    fetch('../checkout/obtener-ponentes.php?id_diplomado=' + idDiplomado)
+        .then(res => res.json())
+        .then(data => {
+            contenedor.innerHTML = '';
+            if (data.length > 0) {
+                const ul = document.createElement('ul');
+                ul.classList.add('list-group', 'mb-0');
+                data.forEach(p => {
+                    const li = document.createElement('li');
+                    li.classList.add('list-group-item', 'py-1');
+                    li.textContent = p.NombrePonente;
+                    ul.appendChild(li);
+                });
+                contenedor.appendChild(ul);
+            } else {
+                contenedor.innerHTML = 'No hay ponentes asignados';
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            contenedor.innerHTML = 'Error al cargar ponentes';
+        });
+}
+
 
 </script>
 
