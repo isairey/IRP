@@ -125,11 +125,11 @@ if(isset($_POST['hijos']) && is_array($_POST['hijos'])) {
     foreach($_POST['hijos'] as $hijo) {
         $stmtHijo->execute([
             $userId,
-            $hijo['nombre'],
-            $hijo['apellido_paterno'],
+            $hijo['nombre']?? '-',
+            $hijo['apellido_paterno']?? '-',
             $hijo['apellido_materno'] ?? '-',
             $hijo['fecha_nacimiento'],
-            $hijo['sexo'],
+            $hijo['sexo']?? '-',
             $hijo['escolaridad'] ?? '-',
             $hijo['condicion'] ?? '-'
         ]);
@@ -251,7 +251,7 @@ require_once __DIR__ . '/../pages/header.php';
     <div class="row g-5">
     <div class="col-xxl-12 col-xxl-12">
         <h4 class="mb-3">Datos Generales</h4>
-        <form class="needs-validation" action="register-usuaria.php" method="POST" enctype="multipart/form-data"  novalidate onsubmit="closePopup();">
+        <form id="miFormulario" class="needs-validation" action="register-usuaria.php" method="POST" enctype="multipart/form-data"  novalidate onsubmit="closePopup();">
     <div class="row g-3">
             
     <div class="col-sm-12">
@@ -286,7 +286,7 @@ require_once __DIR__ . '/../pages/header.php';
     
     <div class="col-sm-6">
         <label for="fecharegistro" class="form-label">Fecha de registro</label>
-        <input type="date" class="form-control" id="fecharegistro" name="fecharegistro" placeholder="" required>
+        <input type="date" class="form-control" id="fecharegistro" name="fecharegistro" placeholder="" value="<?php echo date('Y-m-d'); ?>">
         <div class="invalid-feedback">Se requiere una Fecha de Inicio válida.</div>
     </div>
 
@@ -398,45 +398,77 @@ input.addEventListener('blur', () => {
     </div>
 
     <div class="col-sm-6">
-    <label for="lenguaMaterna" class="form-label">Lengua Materna</label>
-    <select class="form-select" id="lenguaMaterna" name="lenguaMaterna" >
-        <option value="">Selecciona una lengua materna</option>
-        <option value="Zapoteco">Zapoteco</option>
-        <option value="Mixteco">Mixteco</option>
-        <option value="Mazateco">Mazateco</option>
-        <option value="Triqui">Triqui</option>
-        <option value="Cuicateco">Cuicateco</option>
-        <option value="Chontal de Oaxaca">Chontal de Oaxaca</option>
-        <option value="Chinanteco">Chinanteco</option>
-        <option value="Ixcateco">Ixcateco</option>
-        <option value="Huave">Huave</option>
-        <option value="Mixe">Mixe</option>
-        <option value="Trique">Trique</option>
-        <option value="Zoque de Oaxaca">Zoque de Oaxaca</option>
-        <option value="Amuzgo">Amuzgo</option>
-        <option value="Otros">Otros</option>
-    </select>
-    <div class="invalid-feedback">Se requiere una lengua materna válida.</div>
+  <label for="lenguaMaterna" class="form-label">Lengua Materna</label>
+  <select class="form-select" id="firstName" name="lenguaMaterna" required>
+    <option value="">Selecciona una lengua materna</option>
+    <option value="Español" selected>Español</option>
+    <option value="Zapoteco">Zapoteco</option>
+    <option value="Mixteco">Mixteco</option>
+    <option value="Mazateco">Mazateco</option>
+    <option value="Triqui">Triqui</option>
+    <option value="Cuicateco">Cuicateco</option>
+    <option value="Chontal de Oaxaca">Chontal de Oaxaca</option>
+    <option value="Chinanteco">Chinanteco</option>
+    <option value="Ixcateco">Ixcateco</option>
+    <option value="Huave">Huave</option>
+    <option value="Mixe">Mixe</option>
+    <option value="Trique">Trique</option>
+    <option value="Zoque de Oaxaca">Zoque de Oaxaca</option>
+    <option value="Amuzgo">Amuzgo</option>
+    <option value="Otros">Otros</option>
+  </select>
+  <div class="invalid-feedback">Se requiere una lengua materna válida.</div>
 </div>
 
 
 
+
     <div class="col-sm-6">
-        <label class="form-label">¿Habla alguna lengua Indígena?</label>
-    <div class="form-check">
-        <input class="form-check-input" type="radio" name="hablaLenguaIndigena" id="exampleRadios1" value="SI" onclick="showLanguageInput()">
-        <label class="form-check-label" for="exampleRadios1">SI</label>
-    </div>
-    <div class="form-check">
-        <input class="form-check-input" type="radio" name="hablaLenguaIndigena" id="exampleRadios2" value="NO" onclick="hideLanguageInput()">
-        <label class="form-check-label" for="exampleRadios2">NO</label>
-    </div>
-    </div>
-    
-    <div class="col-sm-6" id="languageInput" style="display: none;">
-        <label for="lenguaIndigena" class="form-label">¿Cuál?</label>
-        <input type="text" class="form-control" id="lenguaIndigena" name="lenguaIndigena" placeholder="">
-    </div>
+  <label class="form-label">¿Habla alguna lengua indígena?</label>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="hablaLenguaIndigena" id="exampleRadios1" value="SI" onclick="showLanguageSelect()">
+    <label class="form-check-label" for="exampleRadios1">Sí</label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="hablaLenguaIndigena" id="exampleRadios2" value="NO" onclick="hideLanguageSelect()">
+    <label class="form-check-label" for="exampleRadios2">No</label>
+  </div>
+</div>
+
+<div class="col-sm-6" id="languageSelectContainer" style="display: none;">
+  <label for="lenguaIndigena" class="form-label">¿Cuál?</label>
+  <select class="form-select" id="lenguaIndigena" name="lenguaIndigena">
+    <option selected disabled value="">Seleccionar lengua...</option>
+    <option value="Zapoteco">Zapoteco</option>
+    <option value="Mixteco">Mixteco</option>
+    <option value="Mazateco">Mazateco</option>
+    <option value="Chinanteco">Chinanteco</option>
+    <option value="Mixe">Mixe</option>
+    <option value="Triqui">Triqui</option>
+    <option value="Chatino">Chatino</option>
+    <option value="Amuzgo">Amuzgo</option>
+    <option value="Cuicateco">Cuicateco</option>
+    <option value="Trique">Trique</option>
+    <option value="Huave">Huave</option>
+    <option value="Chontal">Chontal</option>
+    <option value="Ixcateco">Ixcateco</option>
+    <option value="Zoque">Zoque</option>
+    <option value="Náhuatl">Náhuatl</option>
+    <option value="Otros">Otros</option>
+  </select>
+</div>
+
+<script>
+  function showLanguageSelect() {
+    document.getElementById('languageSelectContainer').style.display = 'block';
+  }
+
+  function hideLanguageSelect() {
+    document.getElementById('languageSelectContainer').style.display = 'none';
+    document.getElementById('lenguaIndigena').value = ''; // Limpia selección
+  }
+</script>
+
  
     <div class="col-sm-6">
         <label for="escolaridad" class="form-label">Escolaridad</label>
@@ -552,7 +584,7 @@ function generarCamposHijos() {
                     </div>
                 <div class="col-sm-6">
                     <label class="form-label">Apellido Paterno:</label>
-                    <input type="text" name="hijos[${i}][apellido_paterno]" class="form-control" required>
+                    <input type="text" name="hijos[${i}][apellido_paterno]" class="form-control" >
                 </div>
             </div>
             <div class="row mt-2">
@@ -562,13 +594,13 @@ function generarCamposHijos() {
                 </div>
                 <div class="col-sm-6">
                     <label class="form-label">Fecha de Nacimiento:</label>
-                    <input type="date" name="hijos[${i}][fecha_nacimiento]" class="form-control" required>
+                    <input type="date" name="hijos[${i}][fecha_nacimiento]" class="form-control" >
                 </div>
             </div>
             <div class="row mt-2">
                 <div class="col-sm-6">
                     <label class="form-label">Sexo:</label>
-                    <select name="hijos[${i}][sexo]" class="form-select" required>
+                    <select name="hijos[${i}][sexo]" class="form-select" >
                         <option value="">Selecciona</option>
                         <option value="Masculino">Masculino</option>
                         <option value="Femenino">Femenino</option>
@@ -658,7 +690,7 @@ function generarCamposHijos() {
         <div class="col-sm-6">
 
             <label for="input_region" class="form-label">Región:</label>
-            <input type="text" class="form-control" id="input_region" placeholder="Escribe para buscar región..." autocomplete="off">
+            <input type="text" class="form-control" id="input_region" name="region" placeholder="Escribe para buscar región..." autocomplete="off">
             <div class="sugerencias" id="sug_region"></div>
         </div>
 
@@ -680,8 +712,8 @@ function generarCamposHijos() {
             <div class="sugerencias" id="sug_localidad"></div>
         </div>
 
-        <div id="detalles" style="display: none;">
-            <h3>Detalles de la Selección</h3>
+       <div id="detalles" style="display: none;">
+            
             <p><strong>Localidad:</strong> <span id="res_localidad"></span></p>
             <p><strong>Municipio:</strong> <span id="res_municipio"></span></p>
             <p><strong>Distrito:</strong> <span id="res_distrito"></span></p>
@@ -1034,7 +1066,7 @@ function populateFields(details) {
 
 <div class="col-sm-6">
   <label for="input_regionPC" class="form-label">Región:</label>
-  <input type="text" class="form-control" name="municipioPC" id="input_regionPC" placeholder="Escribe para buscar región..." autocomplete="off">
+  <input type="text" class="form-control" name="regionPC" id="input_regionPC" placeholder="Escribe para buscar región..." autocomplete="off">
   <div class="sugerencias" id="sug_regionPC"></div>
 </div>
 
@@ -1055,14 +1087,15 @@ function populateFields(details) {
   <input type="text" id="input_localidadPC" class="form-control" name="coloniaPC" placeholder="Escribe el nombre de la localidad..." autocomplete="off">
   <div class="sugerencias" id="sug_localidadPC"></div>
 </div>
-
-<div id="detallesPC" style="display: none;">
-  <h3>Detalles de la Selección (Persona de Confianza)</h3>
+ <div id="detallesPC" style="display: none;">
+ 
   <p><strong>Localidad:</strong> <span id="res_localidadPC"></span></p>
   <p><strong>Municipio:</strong> <span id="res_municipioPC"></span></p>
   <p><strong>Distrito:</strong> <span id="res_distritoPC"></span></p>
   <p><strong>Región:</strong> <span id="res_regionPC"></span></p>
 </div>
+
+    
 
 <script>
     // --- Referencias a los elementos (PC) ---
@@ -1339,7 +1372,7 @@ function populateFields(details) {
 
     <div class="col-sm-6">
         <label for="curp" class="form-label">CURP</label>
-        <input type="text" class="form-control" id="curp" name="curp" placeholder="">
+        <input type="text" class="form-control" id="ine" name="curp" placeholder="">
         <div class="invalid-feedback">Se requiere una CURP válida.</div>
     </div>
 
@@ -1863,7 +1896,7 @@ function populateFields(details) {
             <option value="JURÍDICA">JURÍDICA</option>
             <option value="PSICOLÓGICA">PSICOLÓGICA</option>
             <option value="MÉDICA">MÉDICA</option>
-            <option value="NUTRICIONAL">NUTRICIONA</option>
+            <option value="NUTRICIONAL">NUTRICIONAL</option>
             <option value="ACOMPAÑAMIENTO A LA INTERRUPCIÓN DEL EMBARAZO">ACOMPAÑAMIENTO A LA INTERRUPCIÓN DEL EMBARAZO</option>
         </select> 
     </div>
@@ -1921,14 +1954,39 @@ function closePopup() {
     window.close();
 }
 
-function openPopupp() {
-    var popup = window.open('venta-violencia.php', '_blank', 'width=700,height=700');
-}
 
-// Esta función se llama desde la ventana emergente para cerrarla después de enviar el formulario
-function closePopupp() {
+  // --- Popup Functions ---
+  function openPopupp() {
+    var popup = window.open('venta-violencia.php', '_blank', 'width=700,height=700');
+  }
+
+  function closePopupp() {
     window.close();
-}
+  }
+
+  // --- Validación del formulario antes de abrir popup ---
+  document.addEventListener('DOMContentLoaded', function () {
+    const form = document.getElementById('miFormulario');
+
+    form.addEventListener('submit', function (event) {
+      // Evita el envío automático
+      event.preventDefault();
+      event.stopPropagation();
+
+      // Valida el formulario con las reglas HTML5 (required, pattern, etc.)
+      if (form.checkValidity()) {
+        // Si es válido, mostrar popup
+        openPopupp();
+
+        // Opcional: enviar el formulario si lo deseas
+        form.submit();
+      } else {
+        // Si no es válido, muestra los errores de Bootstrap
+        form.classList.add('was-validated');
+      }
+    });
+  });
+
 </script>
 
 <script>
@@ -1949,4 +2007,8 @@ function closePopupp() {
         
         
         
+
+
+
+
 

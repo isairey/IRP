@@ -1,6 +1,8 @@
 <?php
 require_once __DIR__ . '/../pages/seccion.php';
 
+?>
+<?php
 require_once __DIR__ . '/../db/config.php';
 
 // Verificar si se recibió un ID de personal válido
@@ -45,7 +47,7 @@ $tipoMensaje = "";
 }
 
 // Carpeta donde guardar la foto
-$uploadDirFoto = __DIR__ . '/../../uploads/personal/';
+$uploadDirFoto = __DIR__ . '/../uploads/personal/';
 
 // Inicializar variable de foto
 $foto = $personal['foto'] ?? "SIN DATOS";
@@ -57,7 +59,7 @@ function subirArchivo($inputName, $uploadDir, $rutaActual) {
         $rutaDestino = $uploadDir . $nombreArchivo;
 
         if (move_uploaded_file($_FILES[$inputName]['tmp_name'], $rutaDestino)) {
-            return "../uploads/personal/" . $nombreArchivo; // Ruta relativa
+            return "" . $nombreArchivo; // Ruta relativa
         }
     }
     // Si no se sube archivo, retorna la ruta actual (mantiene el archivo existente)
@@ -191,7 +193,7 @@ if (!empty($password)) {
             $stmt_update->bindParam(34, $personal_id);
     
             // Ejecutamos la consulta de actualización
-            if ($stmt_update->execute()) {
+            if ($stmt->execute()) {
             $mensaje = "Personal actualizado correctamente";
             $tipoMensaje = "success";
         } else {
@@ -297,9 +299,9 @@ require_once __DIR__ . '/../pages/header.php';
 $foto = "default.png"; // Imagen por defecto
 if ($personal && !empty($personal['foto']) && strtoupper($personal['foto']) !== "SIN DATOS") {
     if (strpos($personal['foto'], "uploads/") !== false) {
-        $foto = "../../" . $personal['foto'];
+        $foto = "../" . $personal['foto'];
     } else {
-        $foto = "../../uploads/personal/" . $personal['foto'];
+        $foto = "../uploads/personal/" . $personal['foto'];
     }
 }
 ?>
@@ -328,7 +330,7 @@ if ($personal && !empty($personal['foto']) && strtoupper($personal['foto']) !== 
          width="150" height="150"
          style="object-fit: cover;">
 
-    <h2 class="mt-3">Editar de Personal</h2>
+    <h2 class="mt-3">Editar Personal</h2>
     <?php if ($personal): ?>
         <h5><?= htmlspecialchars($personal['Nombre'] . " " . $personal['ApellidoPaterno'] . " " . $personal['ApellidoMaterno']) ?></h5>
     <?php endif; ?>
@@ -343,9 +345,9 @@ if ($personal && !empty($personal['foto']) && strtoupper($personal['foto']) !== 
   <?php if (!empty($personal['foto']) && strtoupper($personal['foto']) !== "SIN DATOS"): ?>
      <?php
 if (!empty($personal['foto']) && strpos($personal['foto'], "uploads/") !== false) {
-    $foto = "../../" . htmlspecialchars($personal['foto']);
+    $foto = "../" . htmlspecialchars($personal['foto']);
 } elseif (!empty($personal['foto'])) {
-    $foto = "../../uploads/personal/" . htmlspecialchars($personal['foto']);
+    $foto = "../uploads/personal/" . htmlspecialchars($personal['foto']);
 } else {
     $foto = "../uploads/personal/default.png";
 }
@@ -427,604 +429,23 @@ if (!empty($personal['foto']) && strpos($personal['foto'], "uploads/") !== false
     <div class="invalid-feedback">Se requiere un número exterior válido.</div>
     </div>
 
-    <div class="col-sm-6">
-        <label for="cp" class="form-label">Código Postal (CP)</label>
-        <input type="number" max="100000" min="0"  class="form-control" id="cp" name="cp" value="<?php echo $personal['CP']; ?>"><br>
-    <div class="invalid-feedback">Se requiere un código postal válido.</div>
-    </div>
-
-    <div class="col-sm-6">
-        <label for="estado" class="form-label">Estado</label>
-        <input type="text" class="form-control" id="estado" name="estado" value="<?php echo $personal['Estado']; ?>"><br>
-        <div class="invalid-feedback">Se requiere un estado válido.</div>
-    </div>
-
-    <div class="col-sm-6">
-        <label for="municipio" class="form-label">Municipio</label>
-        <select class="form-select" id="municipioss" name="municipio" aria-label="Selecciona una opción" onchange="mostrarRegionn()">
-        <option selected disabled value="">Seleccionar municipio...</option>
-        <option <?php if ($personal['Municipio'] == 'SIN DATOS') echo 'selected'; ?> value="SIN DATOS">SIN DATOS</option>
-        <option <?php if ($personal['Municipio'] == 'CUILAPAM DE GUERRERO') echo 'selected'; ?> value="CUILAPAM DE GUERRERO">CUILAPAM DE GUERRERO</option>
-        <option <?php if ($personal['Municipio'] == 'OAXACA DE JUÁREZ') echo 'selected'; ?> value="OAXACA DE JUÁREZ">OAXACA DE JUÁREZ</option>
-        <option <?php if ($personal['Municipio'] == 'SAN AGUSTIN DE LAS JUNTAS') echo 'selected'; ?> value="SAN AGUSTIN DE LAS JUNTAS">SAN AGUSTIN DE LAS JUNTAS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN AGUSTIN YATARENI') echo 'selected'; ?> value="SAN AGUSTIN YATARENI">SAN AGUSTIN YATARENI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS HUAYAPAM') echo 'selected'; ?> value="SAN ANDRÉS HUAYAPAM">SAN ANDRÉS HUAYAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS IXTLAHUACA') echo 'selected'; ?> value="SAN ANDRÉS IXTLAHUACA">SAN ANDRÉS IXTLAHUACA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANTONIO DE LA CAL') echo 'selected'; ?> value="SAN ANTONIO DE LA CAL">SAN ANTONIO DE LA CAL</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BARTOLO COYOTEPEC') echo 'selected'; ?> value="SAN BARTOLO COYOTEPEC">SAN BARTOLO COYOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JACINTO AMILPAS') echo 'selected'; ?> value="SAN JACINTO AMILPAS">SAN JACINTO AMILPAS</option>
-        <option <?php if ($personal['Municipio'] == 'ANIMAS TRUJANO') echo 'selected'; ?> value="ANIMAS TRUJANO">ANIMAS TRUJANO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO IXTLAHUACA') echo 'selected'; ?> value="SAN PEDRO IXTLAHUACA">SAN PEDRO IXTLAHUACA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN RAYMUNDO JALPAN') echo 'selected'; ?> value="SAN RAYMUNDO JALPAN">SAN RAYMUNDO JALPAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN SEBASTIÁN TUTLA') echo 'selected'; ?> value="SAN SEBASTIÁN TUTLA">SAN SEBASTIÁN TUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ AMILPAS') echo 'selected'; ?> value="SANTA CRUZ AMILPAS">SANTA CRUZ AMILPAS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ XOXOCOTLAN') echo 'selected'; ?> value="SANTA CRUZ XOXOCOTLAN">SANTA CRUZ XOXOCOTLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA LUCIA DEL CAMINO') echo 'selected'; ?> value="SANTA LUCIA DEL CAMINO">SANTA LUCIA DEL CAMINO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA ATZOMPA') echo 'selected'; ?> value="SANTA MARÍA ATZOMPA">SANTA MARÍA ATZOMPA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA COYOTEPEC') echo 'selected'; ?> value="SANTA MARÍA COYOTEPEC">SANTA MARÍA COYOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA EL TULE') echo 'selected'; ?> value="SANTA MARÍA EL TULE">SANTA MARÍA EL TULE</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO TOMALTEPEC') echo 'selected'; ?> value="SANTO DOMINGO TOMALTEPEC">SANTO DOMINGO TOMALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'TLALIXTAC DE CABRERA') echo 'selected'; ?> value="TLALIXTAC DE CABRERA">TLALIXTAC DE CABRERA</option>
-        <option <?php if ($personal['Municipio'] == 'COATECAS ALTAS') echo 'selected'; ?> value="COATECAS ALTAS">COATECAS ALTAS</option>
-        <option <?php if ($personal['Municipio'] == 'LA COMPAÑÍA') echo 'selected'; ?> value="LA COMPAÑÍA">LA COMPAÑÍA</option>
-        <option <?php if ($personal['Municipio'] == 'HEROICA CD. DE EJUTLA DE CRESPO') echo 'selected'; ?> value="HEROICA CD. DE EJUTLA DE CRESPO">HEROICA CD. DE EJUTLA DE CRESPO</option>
-        <option <?php if ($personal['Municipio'] == 'LA PE') echo 'selected'; ?> value="LA PE">LA PE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN AGUSTIN AMATENGO') echo 'selected'; ?> value="SAN AGUSTIN AMATENGO">SAN AGUSTIN AMATENGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS ZABACHE') echo 'selected'; ?> value="SAN ANDRÉS ZABACHE">SAN ANDRÉS ZABACHE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN LACHIGALLA') echo 'selected'; ?> value="SAN JUAN LACHIGALLA">SAN JUAN LACHIGALLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MARTIN DE LOS CANSECOS') echo 'selected'; ?> value="SAN MARTIN DE LOS CANSECOS">SAN MARTIN DE LOS CANSECOS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MARTIN LACHILA') echo 'selected'; ?> value="SAN MARTIN LACHILA">SAN MARTIN LACHILA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL EJUTLA') echo 'selected'; ?> value="SAN MIGUEL EJUTLA">SAN MIGUEL EJUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN VICENTE COATLAN') echo 'selected'; ?> value="SAN VICENTE COATLAN">SAN VICENTE COATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'TANICHE') echo 'selected'; ?> value="TANICHE">TANICHE</option>
-        <option <?php if ($personal['Municipio'] == 'YOGANA') echo 'selected'; ?> value="YOGANA">YOGANA</option>
-        <option <?php if ($personal['Municipio'] == 'GUADALUPE ETLA') echo 'selected'; ?> value="GUADALUPE ETLA">GUADALUPE ETLA</option>
-        <option <?php if ($personal['Municipio'] == 'MAGDALENA APASCO') echo 'selected'; ?> value="MAGDALENA APASCO">MAGDALENA APASCO</option>
-        <option <?php if ($personal['Municipio'] == 'NAZARENO ETLA') echo 'selected'; ?> value="NAZARENO ETLA">NAZARENO ETLA</option>
-        <option <?php if ($personal['Municipio'] == 'REYES ETLA') echo 'selected'; ?> value="REYES ETLA">REYES ETLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN AGUSTÍN ETLA') echo 'selected'; ?> value="SAN AGUSTÍN ETLA">SAN AGUSTÍN ETLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS ZAUTLA') echo 'selected'; ?> value="SAN ANDRÉS ZAUTLA">SAN ANDRÉS ZAUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FELIPE TEJALAPAM') echo 'selected'; ?> value="SAN FELIPE TEJALAPAM">SAN FELIPE TEJALAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO TELIXTLAHUACA') echo 'selected'; ?> value="SAN FRANCISCO TELIXTLAHUACA">SAN FRANCISCO TELIXTLAHUACA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JERÓNIMO SOSOLA') echo 'selected'; ?> value="SAN JERÓNIMO SOSOLA">SAN JERÓNIMO SOSOLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA ATATLAUCA') echo 'selected'; ?> value="SAN JUAN BAUTISTA ATATLAUCA">SAN JUAN BAUTISTA ATATLAUCA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA GUELACHE') echo 'selected'; ?> value="SAN JUAN BAUTISTA GUELACHE">SAN JUAN BAUTISTA GUELACHE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA JAYACATLAN') echo 'selected'; ?> value="SAN JUAN BAUTISTA JAYACATLAN">SAN JUAN BAUTISTA JAYACATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN DEL ESTADO') echo 'selected'; ?> value="SAN JUAN DEL ESTADO">SAN JUAN DEL ESTADO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LORENZO CACAOTEPEC') echo 'selected'; ?> value="SAN LORENZO CACAOTEPEC">SAN LORENZO CACAOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PABLO ETLA') echo 'selected'; ?> value="SAN PABLO ETLA">SAN PABLO ETLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PABLO HUITZO') echo 'selected'; ?> value="SAN PABLO HUITZO">SAN PABLO HUITZO</option>
-        <option <?php if ($personal['Municipio'] == 'VILLA DE ETLA') echo 'selected'; ?> value="VILLA DE ETLA">VILLA DE ETLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA PEÑOLES') echo 'selected'; ?> value="SANTA MARÍA PEÑOLES">SANTA MARÍA PEÑOLES</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO SUCHILQUITONGO') echo 'selected'; ?> value="SANTIAGO SUCHILQUITONGO">SANTIAGO SUCHILQUITONGO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TENANGO') echo 'selected'; ?> value="SANTIAGO TENANGO">SANTIAGO TENANGO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TLASOYALTEPEC') echo 'selected'; ?> value="SANTIAGO TLASOYALTEPEC">SANTIAGO TLASOYALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO TOMÁS MAZALTEPEC') echo 'selected'; ?> value="SANTO TOMÁS MAZALTEPEC">SANTO TOMÁS MAZALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SOLEDAD ETLA') echo 'selected'; ?> value="SOLEDAD ETLA">SOLEDAD ETLA</option>
-        <option <?php if ($personal['Municipio'] == 'ASUNCIÓN OCOTLÁN') echo 'selected'; ?> value="ASUNCIÓN OCOTLÁN">ASUNCIÓN OCOTLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'MAGDALENA OCOTLAN') echo 'selected'; ?> value="MAGDALENA OCOTLAN">MAGDALENA OCOTLAN</option>
-        <option <?php if ($personal['Municipio'] == 'OCOTLAN DE MORELOS') echo 'selected'; ?> value="OCOTLAN DE MORELOS">OCOTLAN DE MORELOS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JOSÉ DEL PROGRESO') echo 'selected'; ?> value="SAN JOSÉ DEL PROGRESO">SAN JOSÉ DEL PROGRESO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANTONINO CASTILLO VELASCO') echo 'selected'; ?> value="SAN ANTONINO CASTILLO VELASCO">SAN ANTONINO CASTILLO VELASCO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BALTAZAR CHICHICAPAM') echo 'selected'; ?> value="SAN BALTAZAR CHICHICAPAM">SAN BALTAZAR CHICHICAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN DIONISIO OCOTLAN') echo 'selected'; ?> value="SAN DIONISIO OCOTLAN">SAN DIONISIO OCOTLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JERÓNIMO TAVICHE') echo 'selected'; ?> value="SAN JERÓNIMO TAVICHE">SAN JERÓNIMO TAVICHE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN CHILATECA') echo 'selected'; ?> value="SAN JUAN CHILATECA">SAN JUAN CHILATECA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MARTÍN TILCAJETE') echo 'selected'; ?> value="SAN MARTÍN TILCAJETE">SAN MARTÍN TILCAJETE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL TILQUIAPAM') echo 'selected'; ?> value="SAN MIGUEL TILQUIAPAM">SAN MIGUEL TILQUIAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO APÓSTOL') echo 'selected'; ?> value="SAN PEDRO APÓSTOL">SAN PEDRO APÓSTOL</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO MARTIR') echo 'selected'; ?> value="SAN PEDRO MARTIR">SAN PEDRO MARTIR</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO TAVICHE') echo 'selected'; ?> value="SAN PEDRO TAVICHE">SAN PEDRO TAVICHE</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA ANA ZEGACHE') echo 'selected'; ?> value="SANTA ANA ZEGACHE">SANTA ANA ZEGACHE</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA MINAS') echo 'selected'; ?> value="SANTA CATARINA MINAS">SANTA CATARINA MINAS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA LUCIA OCOTLAN') echo 'selected'; ?> value="SANTA LUCIA OCOTLAN">SANTA LUCIA OCOTLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO APÓSTOL') echo 'selected'; ?> value="SANTIAGO APÓSTOL">SANTIAGO APÓSTOL</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO TOMÁS JALIEZA') echo 'selected'; ?> value="SANTO TOMÁS JALIEZA">SANTO TOMÁS JALIEZA</option>
-        <option <?php if ($personal['Municipio'] == 'YAXE') echo 'selected'; ?> value="YAXE">YAXE</option>
-        <option <?php if ($personal['Municipio'] == 'MAGDALENA TEITIPAC') echo 'selected'; ?> value="MAGDALENA TEITIPAC">MAGDALENA TEITIPAC</option>
-        <option <?php if ($personal['Municipio'] == 'ROJAS DE CUAHUTEMOC') echo 'selected'; ?> value="ROJAS DE CUAHUTEMOC">ROJAS DE CUAHUTEMOC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BARTOLOMÉ QUIALANA') echo 'selected'; ?> value="SAN BARTOLOMÉ QUIALANA">SAN BARTOLOMÉ QUIALANA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN DIONISIO OCOTEPEC') echo 'selected'; ?> value="SAN DIONISIO OCOTEPEC">SAN DIONISIO OCOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO LACHIGOLO') echo 'selected'; ?> value="SAN FRANCISCO LACHIGOLO">SAN FRANCISCO LACHIGOLO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN DEL RIO') echo 'selected'; ?> value="SAN JUAN DEL RIO">SAN JUAN DEL RIO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN GUELAVIA') echo 'selected'; ?> value="SAN JUAN GUELAVIA">SAN JUAN GUELAVIA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN TEITIPAC') echo 'selected'; ?> value="SAN JUAN TEITIPAC">SAN JUAN TEITIPAC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LORENZO ALBARRADAS') echo 'selected'; ?> value="SAN LORENZO ALBARRADAS">SAN LORENZO ALBARRADAS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LUCAS QUIAVINI') echo 'selected'; ?> value="SAN LUCAS QUIAVINI">SAN LUCAS QUIAVINI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PABLO VILLA DE MITLA') echo 'selected'; ?> value="SAN PABLO VILLA DE MITLA">SAN PABLO VILLA DE MITLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO QUIATONI') echo 'selected'; ?> value="SAN PEDRO QUIATONI">SAN PEDRO QUIATONI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO TOTOLAPAN') echo 'selected'; ?> value="SAN PEDRO TOTOLAPAN">SAN PEDRO TOTOLAPAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN SEBASTIÁN ABASOLO') echo 'selected'; ?> value="SAN SEBASTIÁN ABASOLO">SAN SEBASTIÁN ABASOLO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN SEBASTIÁN TEITIPAC') echo 'selected'; ?> value="SAN SEBASTIÁN TEITIPAC">SAN SEBASTIÁN TEITIPAC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA ANA DEL VALLE') echo 'selected'; ?> value="SANTA ANA DEL VALLE">SANTA ANA DEL VALLE</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ PAPALUTLA') echo 'selected'; ?> value="SANTA CRUZ PAPALUTLA">SANTA CRUZ PAPALUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA GUELACE') echo 'selected'; ?> value="SANTA MARÍA GUELACE">SANTA MARÍA GUELACE</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA ZOQUITLAN') echo 'selected'; ?> value="SANTA MARÍA ZOQUITLAN">SANTA MARÍA ZOQUITLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO MATATLAN') echo 'selected'; ?> value="SANTIAGO MATATLAN">SANTIAGO MATATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO ALBARRADAS') echo 'selected'; ?> value="SANTO DOMINGO ALBARRADAS">SANTO DOMINGO ALBARRADAS</option>
-        <option <?php if ($personal['Municipio'] == 'TEOTITLAN DEL VALLE') echo 'selected'; ?> value="TEOTITLAN DEL VALLE">TEOTITLAN DEL VALLE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JERONIMO TLACOCHAHUAYA') echo 'selected'; ?> value="SAN JERONIMO TLACOCHAHUAYA">SAN JERONIMO TLACOCHAHUAYA</option>
-        <option <?php if ($personal['Municipio'] == 'TLACOLULA DE MATAMOROS') echo 'selected'; ?> value="TLACOLULA DE MATAMOROS">TLACOLULA DE MATAMOROS</option>
-        <option <?php if ($personal['Municipio'] == 'VILLA DE DIAZ ORDAZ') echo 'selected'; ?> value="VILLA DE DIAZ ORDAZ">VILLA DE DIAZ ORDAZ</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANTONIO HUITEPEC') echo 'selected'; ?> value="SAN ANTONIO HUITEPEC">SAN ANTONIO HUITEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL PERAS') echo 'selected'; ?> value="SAN MIGUEL PERAS">SAN MIGUEL PERAS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PABLO CUATRO VENADOS') echo 'selected'; ?> value="SAN PABLO CUATRO VENADOS">SAN PABLO CUATRO VENADOS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA INES DEL MONTE') echo 'selected'; ?> value="SANTA INES DEL MONTE">SANTA INES DEL MONTE</option>
-        <option <?php if ($personal['Municipio'] == 'TRINIDAD ZAACHILA') echo 'selected'; ?> value="TRINIDAD ZAACHILA">TRINIDAD ZAACHILA</option>
-        <option <?php if ($personal['Municipio'] == 'VILLA DE ZAACHILA') echo 'selected'; ?> value="VILLA DE ZAACHILA">VILLA DE ZAACHILA</option>
-        <option <?php if ($personal['Municipio'] == 'CIÉNEGA DE ZIMATLAN') echo 'selected'; ?> value="CIÉNEGA DE ZIMATLAN">CIÉNEGA DE ZIMATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'MAGDALENA MIXTEPEC') echo 'selected'; ?> value="MAGDALENA MIXTEPEC">MAGDALENA MIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANTONIO EL ALTO') echo 'selected'; ?> value="SAN ANTONIO EL ALTO">SAN ANTONIO EL ALTO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BERNARDO MIXTEPEC') echo 'selected'; ?> value="SAN BERNARDO MIXTEPEC">SAN BERNARDO MIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL MIXTEPEC') echo 'selected'; ?> value="SAN MIGUEL MIXTEPEC">SAN MIGUEL MIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PABLO HUIXTEPEC') echo 'selected'; ?> value="SAN PABLO HUIXTEPEC">SAN PABLO HUIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA ANA TLAPACOYAN') echo 'selected'; ?> value="SANTA ANA TLAPACOYAN">SANTA ANA TLAPACOYAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA QUIANE') echo 'selected'; ?> value="SANTA CATARINA QUIANE">SANTA CATARINA QUIANE</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ MIXTEPEC') echo 'selected'; ?> value="SANTA CRUZ MIXTEPEC">SANTA CRUZ MIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA GERTRUDIS') echo 'selected'; ?> value="SANTA GERTRUDIS">SANTA GERTRUDIS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA INES YATZECHE') echo 'selected'; ?> value="SANTA INES YATZECHE">SANTA INES YATZECHE</option>
-        <option <?php if ($personal['Municipio'] == 'AYOQUEZCO DE ALDAMA') echo 'selected'; ?> value="AYOQUEZCO DE ALDAMA">AYOQUEZCO DE ALDAMA</option>
-        <option <?php if ($personal['Municipio'] == 'ZIMATLÁN DE ALVAREZ') echo 'selected'; ?> value="ZIMATLÁN DE ALVAREZ">ZIMATLÁN DE ALVAREZ</option>
-        <option <?php if ($personal['Municipio'] == 'MARTIRES DE TACUBAYA') echo 'selected'; ?> value="MARTIRES DE TACUBAYA">MARTIRES DE TACUBAYA</option>
-        <option <?php if ($personal['Municipio'] == 'PINOTEPA DE DON LUIS') echo 'selected'; ?> value="PINOTEPA DE DON LUIS">PINOTEPA DE DON LUIS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN AGUSTIN CHAYUCO') echo 'selected'; ?> value="SAN AGUSTIN CHAYUCO">SAN AGUSTIN CHAYUCO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS HUAXPALTEPEC') echo 'selected'; ?> value="SAN ANDRÉS HUAXPALTEPEC">SAN ANDRÉS HUAXPALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANTONIO TEPETLAPA') echo 'selected'; ?> value="SAN ANTONIO TEPETLAPA">SAN ANTONIO TEPETLAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JOSE ESTANCIA GRANDE') echo 'selected'; ?> value="SAN JOSE ESTANCIA GRANDE">SAN JOSE ESTANCIA GRANDE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA LO DE SOTO') echo 'selected'; ?> value="SAN JUAN BAUTISTA LO DE SOTO">SAN JUAN BAUTISTA LO DE SOTO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN CACAHUATEPEC') echo 'selected'; ?> value="SAN JUAN CACAHUATEPEC">SAN JUAN CACAHUATEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN COLORADO') echo 'selected'; ?> value="SAN JUAN COLORADO">SAN JUAN COLORADO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LORENZO') echo 'selected'; ?> value="SAN LORENZO">SAN LORENZO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL TLACAMAMA') echo 'selected'; ?> value="SAN MIGUEL TLACAMAMA">SAN MIGUEL TLACAMAMA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO ATOYAC') echo 'selected'; ?> value="SAN PEDRO ATOYAC">SAN PEDRO ATOYAC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO JICAYAN') echo 'selected'; ?> value="SAN PEDRO JICAYAN">SAN PEDRO JICAYAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN SEBASTIÁN IXCAPAC') echo 'selected'; ?> value="SAN SEBASTIÁN IXCAPAC">SAN SEBASTIÁN IXCAPAC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA MECHOACAN') echo 'selected'; ?> value="SANTA CATARINA MECHOACAN">SANTA CATARINA MECHOACAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA CORTIJO') echo 'selected'; ?> value="SANTA MARÍA CORTIJO">SANTA MARÍA CORTIJO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA HUAZOLOTITLAN') echo 'selected'; ?> value="SANTA MARÍA HUAZOLOTITLAN">SANTA MARÍA HUAZOLOTITLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO IXTAYUTLA') echo 'selected'; ?> value="SANTIAGO IXTAYUTLA">SANTIAGO IXTAYUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO JAMILTEPEC') echo 'selected'; ?> value="SANTIAGO JAMILTEPEC">SANTIAGO JAMILTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO LLANO GRANDE') echo 'selected'; ?> value="SANTIAGO LLANO GRANDE">SANTIAGO LLANO GRANDE</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO PINOTEPA NACIONAL') echo 'selected'; ?> value="SANTIAGO PINOTEPA NACIONAL">SANTIAGO PINOTEPA NACIONAL</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TEPEXTLA') echo 'selected'; ?> value="SANTIAGO TEPEXTLA">SANTIAGO TEPEXTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TETEPEC') echo 'selected'; ?> value="SANTIAGO TETEPEC">SANTIAGO TETEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO ARMENTA') echo 'selected'; ?> value="SANTO DOMINGO ARMENTA">SANTO DOMINGO ARMENTA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN GABRIEL MIXTEPEC') echo 'selected'; ?> value="SAN GABRIEL MIXTEPEC">SAN GABRIEL MIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN LACHAO') echo 'selected'; ?> value="SAN JUAN LACHAO">SAN JUAN LACHAO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN QUIAHIJE') echo 'selected'; ?> value="SAN JUAN QUIAHIJE">SAN JUAN QUIAHIJE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL PANIXTLAHUACA') echo 'selected'; ?> value="SAN MIGUEL PANIXTLAHUACA">SAN MIGUEL PANIXTLAHUACA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO JUCHATENGO') echo 'selected'; ?> value="SAN PEDRO JUCHATENGO">SAN PEDRO JUCHATENGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO MIXTEPEC') echo 'selected'; ?> value="SAN PEDRO MIXTEPEC">SAN PEDRO MIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'VILLA DE TUTUTEPEC DE MELCHOR OCAMPO') echo 'selected'; ?> value="VILLA DE TUTUTEPEC DE MELCHOR OCAMPO">VILLA DE TUTUTEPEC DE MELCHOR OCAMPO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA JUQUILA') echo 'selected'; ?> value="SANTA CATARINA JUQUILA">SANTA CATARINA JUQUILA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TEMAXCALTEPEC') echo 'selected'; ?> value="SANTA MARÍA TEMAXCALTEPEC">SANTA MARÍA TEMAXCALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO YAITEPEC') echo 'selected'; ?> value="SANTIAGO YAITEPEC">SANTIAGO YAITEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTOS REYES NOPALA') echo 'selected'; ?> value="SANTOS REYES NOPALA">SANTOS REYES NOPALA</option>
-        <option <?php if ($personal['Municipio'] == 'TATALTEPEC DE VALDES') echo 'selected'; ?> value="TATALTEPEC DE VALDES">TATALTEPEC DE VALDES</option>
-        <option <?php if ($personal['Municipio'] == 'CANDELARIA LOXICHA') echo 'selected'; ?> value="CANDELARIA LOXICHA">CANDELARIA LOXICHA</option>
-        <option <?php if ($personal['Municipio'] == 'PLUMA HIDALGO') echo 'selected'; ?> value="PLUMA HIDALGO">PLUMA HIDALGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN AGUSTIN LOXICHA') echo 'selected'; ?> value="SAN AGUSTIN LOXICHA">SAN AGUSTIN LOXICHA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BALTAZAR LOXICHA') echo 'selected'; ?> value="SAN BALTAZAR LOXICHA">SAN BALTAZAR LOXICHA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BARTOLOMÉ LOXICHA') echo 'selected'; ?> value="SAN BARTOLOMÉ LOXICHA">SAN BARTOLOMÉ LOXICHA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MATEO PIÑAS') echo 'selected'; ?> value="SAN MATEO PIÑAS">SAN MATEO PIÑAS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL DEL PUERO') echo 'selected'; ?> value="SAN MIGUEL DEL PUERO">SAN MIGUEL DEL PUERO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO EL ALTO') echo 'selected'; ?> value="SAN PEDRO EL ALTO">SAN PEDRO EL ALTO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO POCHUTLA') echo 'selected'; ?> value="SAN PEDRO POCHUTLA">SAN PEDRO POCHUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA LOXICHA') echo 'selected'; ?> value="SANTA CATARINA LOXICHA">SANTA CATARINA LOXICHA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA COLOTEPEC') echo 'selected'; ?> value="SANTA MARÍA COLOTEPEC">SANTA MARÍA COLOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA HUATULCO') echo 'selected'; ?> value="SANTA MARÍA HUATULCO">SANTA MARÍA HUATULCO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TONAMECA') echo 'selected'; ?> value="SANTA MARÍA TONAMECA">SANTA MARÍA TONAMECA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO DE MORELOS') echo 'selected'; ?> value="SANTO DOMINGO DE MORELOS">SANTO DOMINGO DE MORELOS</option>
-        <option <?php if ($personal['Municipio'] == 'CONCEPCIÓN PÁPALO') echo 'selected'; ?> value="CONCEPCIÓN PÁPALO">CONCEPCIÓN PÁPALO</option>
-        <option <?php if ($personal['Municipio'] == 'CUYAMECALCO VILLA DE ZARAGOZA') echo 'selected'; ?> value="CUYAMECALCO VILLA DE ZARAGOZA">CUYAMECALCO VILLA DE ZARAGOZA</option>
-        <option <?php if ($personal['Municipio'] == 'CHIQUIHUITLAN DE BENITO JUÁREZ') echo 'selected'; ?> value="CHIQUIHUITLAN DE BENITO JUÁREZ">CHIQUIHUITLAN DE BENITO JUÁREZ</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS TEOTILÁPAM') echo 'selected'; ?> value="SAN ANDRÉS TEOTILÁPAM">SAN ANDRÉS TEOTILÁPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO CHAPULAPA') echo 'selected'; ?> value="SAN FRANCISCO CHAPULAPA">SAN FRANCISCO CHAPULAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA CUICATLÁN') echo 'selected'; ?> value="SAN JUAN BAUTISTA CUICATLÁN">SAN JUAN BAUTISTA CUICATLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA TLACOATZINTEPEC') echo 'selected'; ?> value="SAN JUAN BAUTISTA TLACOATZINTEPEC">SAN JUAN BAUTISTA TLACOATZINTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN TEPEUXILA') echo 'selected'; ?> value="SAN JUAN TEPEUXILA">SAN JUAN TEPEUXILA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL SANTA FLOR') echo 'selected'; ?> value="SAN MIGUEL SANTA FLOR">SAN MIGUEL SANTA FLOR</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO JALTEPETONGO') echo 'selected'; ?> value="SAN PEDRO JALTEPETONGO">SAN PEDRO JALTEPETONGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO JOCOTIPAC') echo 'selected'; ?> value="SAN PEDRO JOCOTIPAC">SAN PEDRO JOCOTIPAC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO SOCHIAPAM') echo 'selected'; ?> value="SAN PEDRO SOCHIAPAM">SAN PEDRO SOCHIAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO TEUTILA') echo 'selected'; ?> value="SAN PEDRO TEUTILA">SAN PEDRO TEUTILA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA ANA CUAUHTÉMOC') echo 'selected'; ?> value="SANTA ANA CUAUHTÉMOC">SANTA ANA CUAUHTÉMOC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA PÁPALO') echo 'selected'; ?> value="SANTA MARÍA PÁPALO">SANTA MARÍA PÁPALO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TEXCATITLÁN') echo 'selected'; ?> value="SANTA MARÍA TEXCATITLÁN">SANTA MARÍA TEXCATITLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TLALIXTAC') echo 'selected'; ?> value="SANTA MARÍA TLALIXTAC">SANTA MARÍA TLALIXTAC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO NACALTEPEC') echo 'selected'; ?> value="SANTIAGO NACALTEPEC">SANTIAGO NACALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTOS REYES PÁPALO') echo 'selected'; ?> value="SANTOS REYES PÁPALO">SANTOS REYES PÁPALO</option>
-        <option <?php if ($personal['Municipio'] == 'VALERIO TRUJANO') echo 'selected'; ?> value="VALERIO TRUJANO">VALERIO TRUJANO</option>
-        <option <?php if ($personal['Municipio'] == 'ELOXOCHITLÁN DE FLORES MAGÓN') echo 'selected'; ?> value="ELOXOCHITLÁN DE FLORES MAGÓN">ELOXOCHITLÁN DE FLORES MAGÓN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL HUAUTEPEC') echo 'selected'; ?> value="SAN MIGUEL HUAUTEPEC">SAN MIGUEL HUAUTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'HUAUTLA DE JIMÉNEZ') echo 'selected'; ?> value="HUAUTLA DE JIMÉNEZ">HUAUTLA DE JIMÉNEZ</option>
-        <option <?php if ($personal['Municipio'] == 'MAZATLÁN VILLA DE FLORES') echo 'selected'; ?> value="MAZATLÁN VILLA DE FLORES">MAZATLÁN VILLA DE FLORES</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANTONIO NANAHUATIPAM') echo 'selected'; ?> value="SAN ANTONIO NANAHUATIPAM">SAN ANTONIO NANAHUATIPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BARTOLOMÉ AYAUTLA') echo 'selected'; ?> value="SAN BARTOLOMÉ AYAUTLA">SAN BARTOLOMÉ AYAUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO HUEHUETLÁN') echo 'selected'; ?> value="SAN FRANCISCO HUEHUETLÁN">SAN FRANCISCO HUEHUETLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JERÓNIMO TECOATL') echo 'selected'; ?> value="SAN JERÓNIMO TECOATL">SAN JERÓNIMO TECOATL</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JOSÉ TENANGO') echo 'selected'; ?> value="SAN JOSÉ TENANGO">SAN JOSÉ TENANGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN COATZOSPAM') echo 'selected'; ?> value="SAN JUAN COATZOSPAM">SAN JUAN COATZOSPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN DE LOS CUES') echo 'selected'; ?> value="SAN JUAN DE LOS CUES">SAN JUAN DE LOS CUES</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LORENZO CUANECUILTITLA') echo 'selected'; ?> value="SAN LORENZO CUANECUILTITLA">SAN LORENZO CUANECUILTITLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LUCAS ZOQUIAPAM') echo 'selected'; ?> value="SAN LUCAS ZOQUIAPAM">SAN LUCAS ZOQUIAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MARTÍN TOXPALAN') echo 'selected'; ?> value="SAN MARTÍN TOXPALAN">SAN MARTÍN TOXPALAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MATEO YOLOXCHITLAN') echo 'selected'; ?> value="SAN MATEO YOLOXCHITLAN">SAN MATEO YOLOXCHITLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO OCOPETATILLO') echo 'selected'; ?> value="SAN PEDRO OCOPETATILLO">SAN PEDRO OCOPETATILLO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA ANA ATEIXTLAHUACA') echo 'selected'; ?> value="SANTA ANA ATEIXTLAHUACA">SANTA ANA ATEIXTLAHUACA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ ACATEPEC') echo 'selected'; ?> value="SANTA CRUZ ACATEPEC">SANTA CRUZ ACATEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA LA ASUNCIÓN') echo 'selected'; ?> value="SANTA MARÍA LA ASUNCIÓN">SANTA MARÍA LA ASUNCIÓN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA CHILCHOTLA') echo 'selected'; ?> value="SANTA MARÍA CHILCHOTLA">SANTA MARÍA CHILCHOTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA IXCATLÁN') echo 'selected'; ?> value="SANTA MARÍA IXCATLÁN">SANTA MARÍA IXCATLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TECOMAVACA') echo 'selected'; ?> value="SANTA MARÍA TECOMAVACA">SANTA MARÍA TECOMAVACA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TEOPOXCO') echo 'selected'; ?> value="SANTA MARÍA TEOPOXCO">SANTA MARÍA TEOPOXCO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TEXCALCINGO') echo 'selected'; ?> value="SANTIAGO TEXCALCINGO">SANTIAGO TEXCALCINGO</option>
-        <option <?php if ($personal['Municipio'] == 'TEOTITLAN DE FLORES MAGÓN') echo 'selected'; ?> value="TEOTITLAN DE FLORES MAGÓN">TEOTITLAN DE FLORES MAGÓN</option>
-        <option <?php if ($personal['Municipio'] == 'ASUNCIÓN IXTALTEPEC') echo 'selected'; ?> value="ASUNCIÓN IXTALTEPEC">ASUNCIÓN IXTALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'BARRIO DE LA SOLEDAD') echo 'selected'; ?> value="BARRIO DE LA SOLEDAD">BARRIO DE LA SOLEDAD</option>
-        <option <?php if ($personal['Municipio'] == 'CIUDAD IXTEPEC') echo 'selected'; ?> value="CIUDAD IXTEPEC">CIUDAD IXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'CHAHUITES') echo 'selected'; ?> value="CHAHUITES">CHAHUITES</option>
-        <option <?php if ($personal['Municipio'] == 'EL ESPINAL') echo 'selected'; ?> value="EL ESPINAL">EL ESPINAL</option>
-        <option <?php if ($personal['Municipio'] == 'JUCHITAN DE ZARAGOZA') echo 'selected'; ?> value="JUCHITAN DE ZARAGOZA">JUCHITAN DE ZARAGOZA</option>
-        <option <?php if ($personal['Municipio'] == 'MATIAS ROMERO') echo 'selected'; ?> value="MATIAS ROMERO">MATIAS ROMERO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO NILTEPEC') echo 'selected'; ?> value="SANTIAGO NILTEPEC">SANTIAGO NILTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'REFORMA DE PINEDA') echo 'selected'; ?> value="REFORMA DE PINEDA">REFORMA DE PINEDA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN DIONISIO DEL MAR') echo 'selected'; ?> value="SAN DIONISIO DEL MAR">SAN DIONISIO DEL MAR</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO DEL MAR') echo 'selected'; ?> value="SAN FRANCISCO DEL MAR">SAN FRANCISCO DEL MAR</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO IXHUATAN') echo 'selected'; ?> value="SAN FRANCISCO IXHUATAN">SAN FRANCISCO IXHUATAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN GUICHICOVI') echo 'selected'; ?> value="SAN JUAN GUICHICOVI">SAN JUAN GUICHICOVI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL CHIMALAPA') echo 'selected'; ?> value="SAN MIGUEL CHIMALAPA">SAN MIGUEL CHIMALAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO TAPANATEPEC') echo 'selected'; ?> value="SAN PEDRO TAPANATEPEC">SAN PEDRO TAPANATEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA CHIMALAPA') echo 'selected'; ?> value="SANTA MARÍA CHIMALAPA">SANTA MARÍA CHIMALAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA PETAPA') echo 'selected'; ?> value="SANTA MARÍA PETAPA">SANTA MARÍA PETAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA XADANI') echo 'selected'; ?> value="SANTA MARÍA XADANI">SANTA MARÍA XADANI</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO INGENIO') echo 'selected'; ?> value="SANTO DOMINGO INGENIO">SANTO DOMINGO INGENIO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO PETAPA') echo 'selected'; ?> value="SANTO DOMINGO PETAPA">SANTO DOMINGO PETAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO ZANATEPEC') echo 'selected'; ?> value="SANTO DOMINGO ZANATEPEC">SANTO DOMINGO ZANATEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'UNIÓN HIDALGO') echo 'selected'; ?> value="UNIÓN HIDALGO">UNIÓN HIDALGO</option>
-        <option <?php if ($personal['Municipio'] == 'GUEVEA DE HUMBOLT') echo 'selected'; ?> value="GUEVEA DE HUMBOLT">GUEVEA DE HUMBOLT</option>
-        <option <?php if ($personal['Municipio'] == 'MAGDALENA TEQUISISTLAN') echo 'selected'; ?> value="MAGDALENA TEQUISISTLAN">MAGDALENA TEQUISISTLAN</option>
-        <option <?php if ($personal['Municipio'] == 'MAGDALENA TLACOTEPEC') echo 'selected'; ?> value="MAGDALENA TLACOTEPEC">MAGDALENA TLACOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SALINA CRUZ') echo 'selected'; ?> value="SALINA CRUZ">SALINA CRUZ</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BLAS ATEMPA') echo 'selected'; ?> value="SAN BLAS ATEMPA">SAN BLAS ATEMPA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MATEO DEL MAR') echo 'selected'; ?> value="SAN MATEO DEL MAR">SAN MATEO DEL MAR</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL TENANGO') echo 'selected'; ?> value="SAN MIGUEL TENANGO">SAN MIGUEL TENANGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO COMITANCILLO') echo 'selected'; ?> value="SAN PEDRO COMITANCILLO">SAN PEDRO COMITANCILLO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO HUAMELULA') echo 'selected'; ?> value="SAN PEDRO HUAMELULA">SAN PEDRO HUAMELULA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO HUILOTEPEC') echo 'selected'; ?> value="SAN PEDRO HUILOTEPEC">SAN PEDRO HUILOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA GUIENAGATI') echo 'selected'; ?> value="SANTA MARÍA GUIENAGATI">SANTA MARÍA GUIENAGATI</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA JALAPA DEL MARQUEZ') echo 'selected'; ?> value="SANTA MARÍA JALAPA DEL MARQUEZ">SANTA MARÍA JALAPA DEL MARQUEZ</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA MIXTEQUILLA') echo 'selected'; ?> value="SANTA MARÍA MIXTEQUILLA">SANTA MARÍA MIXTEQUILLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TOTOLAPILLA') echo 'selected'; ?> value="SANTA MARÍA TOTOLAPILLA">SANTA MARÍA TOTOLAPILLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO ASTATA') echo 'selected'; ?> value="SANTIAGO ASTATA">SANTIAGO ASTATA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO LACHIGUIRI') echo 'selected'; ?> value="SANTIAGO LACHIGUIRI">SANTIAGO LACHIGUIRI</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO LAOLLAGA') echo 'selected'; ?> value="SANTIAGO LAOLLAGA">SANTIAGO LAOLLAGA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO CHIHUITAN') echo 'selected'; ?> value="SANTO DOMINGO CHIHUITAN">SANTO DOMINGO CHIHUITAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO TEHUANTEPEC') echo 'selected'; ?> value="SANTO DOMINGO TEHUANTEPEC">SANTO DOMINGO TEHUANTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'CONCEPCIÓN BUENAVISTA') echo 'selected'; ?> value="CONCEPCIÓN BUENAVISTA">CONCEPCIÓN BUENAVISTA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MAGDALENA JICOTLÁN') echo 'selected'; ?> value="SANTA MAGDALENA JICOTLÁN">SANTA MAGDALENA JICOTLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN CRISTÓBAL SUCHIXTLAHUACA') echo 'selected'; ?> value="SAN CRISTÓBAL SUCHIXTLAHUACA">SAN CRISTÓBAL SUCHIXTLAHUACA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO TEOPAN') echo 'selected'; ?> value="SAN FRANCISCO TEOPAN">SAN FRANCISCO TEOPAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA COIXTLAHUACA') echo 'selected'; ?> value="SAN JUAN BAUTISTA COIXTLAHUACA">SAN JUAN BAUTISTA COIXTLAHUACA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MATEO TLAPILTEPEC') echo 'selected'; ?> value="SAN MATEO TLAPILTEPEC">SAN MATEO TLAPILTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL TEQUIXTEPEC') echo 'selected'; ?> value="SAN MIGUEL TEQUIXTEPEC">SAN MIGUEL TEQUIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL TULANCINGO') echo 'selected'; ?> value="SAN MIGUEL TULANCINGO">SAN MIGUEL TULANCINGO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA NATIVITAS') echo 'selected'; ?> value="SANTA MARÍA NATIVITAS">SANTA MARÍA NATIVITAS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO IHUITLÁN PLUMAS') echo 'selected'; ?> value="SANTIAGO IHUITLÁN PLUMAS">SANTIAGO IHUITLÁN PLUMAS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TEPETLAPA') echo 'selected'; ?> value="SANTIAGO TEPETLAPA">SANTIAGO TEPETLAPA</option>
-        <option <?php if ($personal['Municipio'] == 'TEPELMEME VILLA DE MORELOS') echo 'selected'; ?> value="TEPELMEME VILLA DE MORELOS">TEPELMEME VILLA DE MORELOS</option>
-        <option <?php if ($personal['Municipio'] == 'TLACOTEPEC PLUMAS') echo 'selected'; ?> value="TLACOTEPEC PLUMAS">TLACOTEPEC PLUMAS</option>
-        <option <?php if ($personal['Municipio'] == 'ASUNCIÓN CUYOTEPEJI') echo 'selected'; ?> value="ASUNCIÓN CUYOTEPEJI">ASUNCIÓN CUYOTEPEJI</option>
-        <option <?php if ($personal['Municipio'] == 'COSOLTEPEC') echo 'selected'; ?> value="COSOLTEPEC">COSOLTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'FRESNILLO DE TRUJANO') echo 'selected'; ?> value="FRESNILLO DE TRUJANO">FRESNILLO DE TRUJANO</option>
-        <option <?php if ($personal['Municipio'] == 'HUAJUAPAM DE LEÓN') echo 'selected'; ?> value="HUAJUAPAM DE LEÓN">HUAJUAPAM DE LEÓN</option>
-        <option <?php if ($personal['Municipio'] == 'MARISCALA DE JUÁREZ') echo 'selected'; ?> value="MARISCALA DE JUÁREZ">MARISCALA DE JUÁREZ</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS DINICUITI') echo 'selected'; ?> value="SAN ANDRÉS DINICUITI">SAN ANDRÉS DINICUITI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JERÓNIMO SILACOYOAPILLA') echo 'selected'; ?> value="SAN JERÓNIMO SILACOYOAPILLA">SAN JERÓNIMO SILACOYOAPILLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JORGE NUCHITA') echo 'selected'; ?> value="SAN JORGE NUCHITA">SAN JORGE NUCHITA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JOSÉ AYUQUILILLA') echo 'selected'; ?> value="SAN JOSÉ AYUQUILILLA">SAN JOSÉ AYUQUILILLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA SUCHIXTEPEC') echo 'selected'; ?> value="SAN JUAN BAUTISTA SUCHIXTEPEC">SAN JUAN BAUTISTA SUCHIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MARCOS ARTEAGA') echo 'selected'; ?> value="SAN MARCOS ARTEAGA">SAN MARCOS ARTEAGA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MARTÍN ZACATEPEC') echo 'selected'; ?> value="SAN MARTÍN ZACATEPEC">SAN MARTÍN ZACATEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL AMATITLÁN') echo 'selected'; ?> value="SAN MIGUEL AMATITLÁN">SAN MIGUEL AMATITLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO Y SAN PABLO TEQUIXTEPEC') echo 'selected'; ?> value="SAN PEDRO Y SAN PABLO TEQUIXTEPEC">SAN PEDRO Y SAN PABLO TEQUIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN SIMÓN ZAHUATLÁN') echo 'selected'; ?> value="SAN SIMÓN ZAHUATLÁN">SAN SIMÓN ZAHUATLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA ZAPOQUILLA') echo 'selected'; ?> value="SANTA CATARINA ZAPOQUILLA">SANTA CATARINA ZAPOQUILLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ TACACHE DE MINA') echo 'selected'; ?> value="SANTA CRUZ TACACHE DE MINA">SANTA CRUZ TACACHE DE MINA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA CAMOTLÁN') echo 'selected'; ?> value="SANTA MARÍA CAMOTLÁN">SANTA MARÍA CAMOTLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO AYUQUILLA') echo 'selected'; ?> value="SANTIAGO AYUQUILLA">SANTIAGO AYUQUILLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO CACALOXTEPEC') echo 'selected'; ?> value="SANTIAGO CACALOXTEPEC">SANTIAGO CACALOXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO CHAZUMBA') echo 'selected'; ?> value="SANTIAGO CHAZUMBA">SANTIAGO CHAZUMBA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO HUAJOLOTITLÁN') echo 'selected'; ?> value="SANTIAGO HUAJOLOTITLÁN">SANTIAGO HUAJOLOTITLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO MILTEPEC') echo 'selected'; ?> value="SANTIAGO MILTEPEC">SANTIAGO MILTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO TONALÁ') echo 'selected'; ?> value="SANTO DOMINGO TONALÁ">SANTO DOMINGO TONALÁ</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO YODOHINO') echo 'selected'; ?> value="SANTO DOMINGO YODOHINO">SANTO DOMINGO YODOHINO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTOS REYES YUCUNA') echo 'selected'; ?> value="SANTOS REYES YUCUNA">SANTOS REYES YUCUNA</option>
-        <option <?php if ($personal['Municipio'] == 'TEZOATLÁN DE SEGURA Y LUNA') echo 'selected'; ?> value="TEZOATLÁN DE SEGURA Y LUNA">TEZOATLÁN DE SEGURA Y LUNA</option>
-        <option <?php if ($personal['Municipio'] == 'ZAPOTITLÁN PALMAS') echo 'selected'; ?> value="ZAPOTITLÁN PALMAS">ZAPOTITLÁN PALMAS</option>
-        <option <?php if ($personal['Municipio'] == 'COICOYÁN DE LAS FLORES') echo 'selected'; ?> value="COICOYÁN DE LAS FLORES">COICOYÁN DE LAS FLORES</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN MIXTEPEC') echo 'selected'; ?> value="SAN JUAN MIXTEPEC">SAN JUAN MIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MARTÍN PERAS') echo 'selected'; ?> value="SAN MARTÍN PERAS">SAN MARTÍN PERAS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL TLACOTEPEC') echo 'selected'; ?> value="SAN MIGUEL TLACOTEPEC">SAN MIGUEL TLACOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN SEBASTIÁN TECOMAXTLAHUACA') echo 'selected'; ?> value="SAN SEBASTIÁN TECOMAXTLAHUACA">SAN SEBASTIÁN TECOMAXTLAHUACA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO JUXTLAHUACA') echo 'selected'; ?> value="SANTIAGO JUXTLAHUACA">SANTIAGO JUXTLAHUACA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTOS REYES TEPEJILLO') echo 'selected'; ?> value="SANTOS REYES TEPEJILLO">SANTOS REYES TEPEJILLO</option>
-        <option <?php if ($personal['Municipio'] == 'ASUNCIÓN NOCHIXTLÁN') echo 'selected'; ?> value="ASUNCIÓN NOCHIXTLÁN">ASUNCIÓN NOCHIXTLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'MAGDALENA JALTEPEC') echo 'selected'; ?> value="MAGDALENA JALTEPEC">MAGDALENA JALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'MAGDALENA ZAHUATLÁN') echo 'selected'; ?> value="MAGDALENA ZAHUATLÁN">MAGDALENA ZAHUATLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS NUXIÑO') echo 'selected'; ?> value="SAN ANDRÉS NUXIÑO">SAN ANDRÉS NUXIÑO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS SINAXTLA') echo 'selected'; ?> value="SAN ANDRÉS SINAXTLA">SAN ANDRÉS SINAXTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO CHINDÚA') echo 'selected'; ?> value="SAN FRANCISCO CHINDÚA">SAN FRANCISCO CHINDÚA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO JALTEPETONGO') echo 'selected'; ?> value="SAN FRANCISCO JALTEPETONGO">SAN FRANCISCO JALTEPETONGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO NUXAÑO') echo 'selected'; ?> value="SAN FRANCISCO NUXAÑO">SAN FRANCISCO NUXAÑO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN DIUXI') echo 'selected'; ?> value="SAN JUAN DIUXI">SAN JUAN DIUXI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN SAYULTEPEC') echo 'selected'; ?> value="SAN JUAN SAYULTEPEC">SAN JUAN SAYULTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN TAMAZOLA') echo 'selected'; ?> value="SAN JUAN TAMAZOLA">SAN JUAN TAMAZOLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN YUCUITA') echo 'selected'; ?> value="SAN JUAN YUCUITA">SAN JUAN YUCUITA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MATEO ETLATONGO') echo 'selected'; ?> value="SAN MATEO ETLATONGO">SAN MATEO ETLATONGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MATEO SINDIHUI') echo 'selected'; ?> value="SAN MATEO SINDIHUI">SAN MATEO SINDIHUI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL CHICAHUA') echo 'selected'; ?> value="SAN MIGUEL CHICAHUA">SAN MIGUEL CHICAHUA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL HUATLA') echo 'selected'; ?> value="SAN MIGUEL HUATLA">SAN MIGUEL HUATLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL PIEDRAS') echo 'selected'; ?> value="SAN MIGUEL PIEDRAS">SAN MIGUEL PIEDRAS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL TECOMATLÁN') echo 'selected'; ?> value="SAN MIGUEL TECOMATLÁN">SAN MIGUEL TECOMATLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO COXCALTEPEC CÁNTAROS') echo 'selected'; ?> value="SAN PEDRO COXCALTEPEC CÁNTAROS">SAN PEDRO COXCALTEPEC CÁNTAROS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO TEOZACOALCO') echo 'selected'; ?> value="SAN PEDRO TEOZACOALCO">SAN PEDRO TEOZACOALCO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO TIDAÁ') echo 'selected'; ?> value="SAN PEDRO TIDAÁ">SAN PEDRO TIDAÁ</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA APAZCO') echo 'selected'; ?> value="SANTA MARÍA APAZCO">SANTA MARÍA APAZCO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA CHACHOAPAM') echo 'selected'; ?> value="SANTA MARÍA CHACHOAPAM">SANTA MARÍA CHACHOAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO APOALA') echo 'selected'; ?> value="SANTIAGO APOALA">SANTIAGO APOALA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO HUAUCLILLA') echo 'selected'; ?> value="SANTIAGO HUAUCLILLA">SANTIAGO HUAUCLILLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TILALTONGO') echo 'selected'; ?> value="SANTIAGO TILALTONGO">SANTIAGO TILALTONGO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TILLO') echo 'selected'; ?> value="SANTIAGO TILLO">SANTIAGO TILLO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO NUXAÁ') echo 'selected'; ?> value="SANTO DOMINGO NUXAÁ">SANTO DOMINGO NUXAÁ</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO YANHUITLÁN') echo 'selected'; ?> value="SANTO DOMINGO YANHUITLÁN">SANTO DOMINGO YANHUITLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'MAGDALENA YODOCONO DE PORFIRIO DÍAZ') echo 'selected'; ?> value="MAGDALENA YODOCONO DE PORFIRIO DÍAZ">MAGDALENA YODOCONO DE PORFIRIO DÍAZ</option>
-        <option <?php if ($personal['Municipio'] == 'YUTANDUCHI DE GUERRERO') echo 'selected'; ?> value="YUTANDUCHI DE GUERRERO">YUTANDUCHI DE GUERRERO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA INÉS DE ZARAGOZA') echo 'selected'; ?> value="SANTA INÉS DE ZARAGOZA">SANTA INÉS DE ZARAGOZA</option>
-        <option <?php if ($personal['Municipio'] == 'CALIHUALA') echo 'selected'; ?> value="CALIHUALA">CALIHUALA</option>
-        <option <?php if ($personal['Municipio'] == 'GUADALUPE DE RAMÍREZ') echo 'selected'; ?> value="GUADALUPE DE RAMÍREZ">GUADALUPE DE RAMÍREZ</option>
-        <option <?php if ($personal['Municipio'] == 'IXPANTEPEC NIEVES') echo 'selected'; ?> value="IXPANTEPEC NIEVES">IXPANTEPEC NIEVES</option>
-        <option <?php if ($personal['Municipio'] == 'SAN AGUSTÍN ATENANGO') echo 'selected'; ?> value="SAN AGUSTÍN ATENANGO">SAN AGUSTÍN ATENANGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS TEPETLAPA') echo 'selected'; ?> value="SAN ANDRÉS TEPETLAPA">SAN ANDRÉS TEPETLAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO TLAPANCINGO') echo 'selected'; ?> value="SAN FRANCISCO TLAPANCINGO">SAN FRANCISCO TLAPANCINGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA TLACHICHILCO') echo 'selected'; ?> value="SAN JUAN BAUTISTA TLACHICHILCO">SAN JUAN BAUTISTA TLACHICHILCO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN CIENEGUILLA') echo 'selected'; ?> value="SAN JUAN CIENEGUILLA">SAN JUAN CIENEGUILLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN IHUALTEPEC') echo 'selected'; ?> value="SAN JUAN IHUALTEPEC">SAN JUAN IHUALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LORENZO VICTORIA') echo 'selected'; ?> value="SAN LORENZO VICTORIA">SAN LORENZO VICTORIA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MATEO NEJAPAM') echo 'selected'; ?> value="SAN MATEO NEJAPAM">SAN MATEO NEJAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL AHUEHUETITLAN') echo 'selected'; ?> value="SAN MIGUEL AHUEHUETITLAN">SAN MIGUEL AHUEHUETITLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN NICOLÁS HIDALGO') echo 'selected'; ?> value="SAN NICOLÁS HIDALGO">SAN NICOLÁS HIDALGO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ DE BRAVO') echo 'selected'; ?> value="SANTA CRUZ DE BRAVO">SANTA CRUZ DE BRAVO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO DEL RÍO') echo 'selected'; ?> value="SANTIAGO DEL RÍO">SANTIAGO DEL RÍO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TAMAZOLA') echo 'selected'; ?> value="SANTIAGO TAMAZOLA">SANTIAGO TAMAZOLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO YUCUYACHI') echo 'selected'; ?> value="SANTIAGO YUCUYACHI">SANTIAGO YUCUYACHI</option>
-        <option <?php if ($personal['Municipio'] == 'SILACAYOAPAM') echo 'selected'; ?> value="SILACAYOAPAM">SILACAYOAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'ZAPOTITLAN LAGUNAS') echo 'selected'; ?> value="ZAPOTITLAN LAGUNAS">ZAPOTITLAN LAGUNAS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS LAGUNAS') echo 'selected'; ?> value="SAN ANDRÉS LAGUNAS">SAN ANDRÉS LAGUNAS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANTONIO MONTE VERDE') echo 'selected'; ?> value="SAN ANTONIO MONTE VERDE">SAN ANTONIO MONTE VERDE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANTONIO ACUTLA') echo 'selected'; ?> value="SAN ANTONIO ACUTLA">SAN ANTONIO ACUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BARTOLO SOYALTEPEC') echo 'selected'; ?> value="SAN BARTOLO SOYALTEPEC">SAN BARTOLO SOYALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN TEPOSCOLULA') echo 'selected'; ?> value="SAN JUAN TEPOSCOLULA">SAN JUAN TEPOSCOLULA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO NOPALA') echo 'selected'; ?> value="SAN PEDRO NOPALA">SAN PEDRO NOPALA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO TOPILTEPEC') echo 'selected'; ?> value="SAN PEDRO TOPILTEPEC">SAN PEDRO TOPILTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO Y SAN PABLO TEPOSCOLULA') echo 'selected'; ?> value="SAN PEDRO Y SAN PABLO TEPOSCOLULA">SAN PEDRO Y SAN PABLO TEPOSCOLULA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO YUCUNAMA') echo 'selected'; ?> value="SAN PEDRO YUCUNAMA">SAN PEDRO YUCUNAMA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN SEBASTIÁN NICANANDUTA') echo 'selected'; ?> value="SAN SEBASTIÁN NICANANDUTA">SAN SEBASTIÁN NICANANDUTA</option>
-        <option <?php if ($personal['Municipio'] == 'VILLA CHILAPA DE DÍAZ') echo 'selected'; ?> value="VILLA CHILAPA DE DÍAZ">VILLA CHILAPA DE DÍAZ</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA NDUAYACO') echo 'selected'; ?> value="SANTA MARÍA NDUAYACO">SANTA MARÍA NDUAYACO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO NEJAPILLA') echo 'selected'; ?> value="SANTIAGO NEJAPILLA">SANTIAGO NEJAPILLA</option>
-        <option <?php if ($personal['Municipio'] == 'VILLA TEJUPAM DE LA UNIÓN') echo 'selected'; ?> value="VILLA TEJUPAM DE LA UNIÓN">VILLA TEJUPAM DE LA UNIÓN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO YOLOMÉCATL') echo 'selected'; ?> value="SANTIAGO YOLOMÉCATL">SANTIAGO YOLOMÉCATL</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO TLATAYAPAM') echo 'selected'; ?> value="SANTO DOMINGO TLATAYAPAM">SANTO DOMINGO TLATAYAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO TONALTEPEC') echo 'selected'; ?> value="SANTO DOMINGO TONALTEPEC">SANTO DOMINGO TONALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN VICENTE NUYU') echo 'selected'; ?> value="SAN VICENTE NUYU">SAN VICENTE NUYU</option>
-        <option <?php if ($personal['Municipio'] == 'VILLA DE TAMAZULAPAM DEL PROGRESO') echo 'selected'; ?> value="VILLA DE TAMAZULAPAM DEL PROGRESO">VILLA DE TAMAZULAPAM DEL PROGRESO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TEOTONGO') echo 'selected'; ?> value="SANTIAGO TEOTONGO">SANTIAGO TEOTONGO</option>
-        <option <?php if ($personal['Municipio'] == 'LA TRINIDAD VISTA HERMOSA') echo 'selected'; ?> value="LA TRINIDAD VISTA HERMOSA">LA TRINIDAD VISTA HERMOSA</option>
-        <option <?php if ($personal['Municipio'] == 'CHALCATONGO DE HIDALGO') echo 'selected'; ?> value="CHALCATONGO DE HIDALGO">CHALCATONGO DE HIDALGO</option>
-        <option <?php if ($personal['Municipio'] == 'MAGDALENA PEÑASCO') echo 'selected'; ?> value="MAGDALENA PEÑASCO">MAGDALENA PEÑASCO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN AGUSTÍN TLACOTEPEC') echo 'selected'; ?> value="SAN AGUSTÍN TLACOTEPEC">SAN AGUSTÍN TLACOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANTONIO SINACAHUA') echo 'selected'; ?> value="SAN ANTONIO SINACAHUA">SAN ANTONIO SINACAHUA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BARTOLOMÉ YUCUAÑE') echo 'selected'; ?> value="SAN BARTOLOMÉ YUCUAÑE">SAN BARTOLOMÉ YUCUAÑE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN CRISTÓBAL AMOLTEPEC') echo 'selected'; ?> value="SAN CRISTÓBAL AMOLTEPEC">SAN CRISTÓBAL AMOLTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ESTEBAN ATATLAHUACA') echo 'selected'; ?> value="SAN ESTEBAN ATATLAHUACA">SAN ESTEBAN ATATLAHUACA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN ACHIUTLA') echo 'selected'; ?> value="SAN JUAN ACHIUTLA">SAN JUAN ACHIUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN ÑUMI') echo 'selected'; ?> value="SAN JUAN ÑUMI">SAN JUAN ÑUMI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN TEITA') echo 'selected'; ?> value="SAN JUAN TEITA">SAN JUAN TEITA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MARTÍN HUAMELULPAM') echo 'selected'; ?> value="SAN MARTÍN HUAMELULPAM">SAN MARTÍN HUAMELULPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MARTÍN ITUNYOSO') echo 'selected'; ?> value="SAN MARTÍN ITUNYOSO">SAN MARTÍN ITUNYOSO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MATEO PEÑASCO') echo 'selected'; ?> value="SAN MATEO PEÑASCO">SAN MATEO PEÑASCO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL ACHIUTLA') echo 'selected'; ?> value="SAN MIGUEL ACHIUTLA">SAN MIGUEL ACHIUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL EL GRANDE') echo 'selected'; ?> value="SAN MIGUEL EL GRANDE">SAN MIGUEL EL GRANDE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PABLO TIJALTEPEC') echo 'selected'; ?> value="SAN PABLO TIJALTEPEC">SAN PABLO TIJALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO MARTIR YUCOXACO') echo 'selected'; ?> value="SAN PEDRO MARTIR YUCOXACO">SAN PEDRO MARTIR YUCOXACO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO MOLINOS') echo 'selected'; ?> value="SAN PEDRO MOLINOS">SAN PEDRO MOLINOS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA TAYATA') echo 'selected'; ?> value="SANTA CATARINA TAYATA">SANTA CATARINA TAYATA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA TICUA') echo 'selected'; ?> value="SANTA CATARINA TICUA">SANTA CATARINA TICUA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA YOSONOTU') echo 'selected'; ?> value="SANTA CATARINA YOSONOTU">SANTA CATARINA YOSONOTU</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ NUNDACO') echo 'selected'; ?> value="SANTA CRUZ NUNDACO">SANTA CRUZ NUNDACO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ TACAHUA') echo 'selected'; ?> value="SANTA CRUZ TACAHUA">SANTA CRUZ TACAHUA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ TAYATA') echo 'selected'; ?> value="SANTA CRUZ TAYATA">SANTA CRUZ TAYATA</option>
-        <option <?php if ($personal['Municipio'] == 'HEROICA CIUDAD DE TLAXIACO') echo 'selected'; ?> value="HEROICA CIUDAD DE TLAXIACO">HEROICA CIUDAD DE TLAXIACO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA DEL ROSARIO') echo 'selected'; ?> value="SANTA MARÍA DEL ROSARIO">SANTA MARÍA DEL ROSARIO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TATALTEPEC') echo 'selected'; ?> value="SANTA MARÍA TATALTEPEC">SANTA MARÍA TATALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA YOLOTEPEC') echo 'selected'; ?> value="SANTA MARÍA YOLOTEPEC">SANTA MARÍA YOLOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA YOSOYUA') echo 'selected'; ?> value="SANTA MARÍA YOSOYUA">SANTA MARÍA YOSOYUA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA YUCUITI') echo 'selected'; ?> value="SANTA MARÍA YUCUITI">SANTA MARÍA YUCUITI</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO NUNDICHI') echo 'selected'; ?> value="SANTIAGO NUNDICHI">SANTIAGO NUNDICHI</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO NOYOO') echo 'selected'; ?> value="SANTIAGO NOYOO">SANTIAGO NOYOO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO YOSONDUA') echo 'selected'; ?> value="SANTIAGO YOSONDUA">SANTIAGO YOSONDUA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO IXCATLAN') echo 'selected'; ?> value="SANTO DOMINGO IXCATLAN">SANTO DOMINGO IXCATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO TOMÁS OCOTEPEC') echo 'selected'; ?> value="SANTO TOMÁS OCOTEPEC">SANTO TOMÁS OCOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN COMALTEPEC') echo 'selected'; ?> value="SAN JUAN COMALTEPEC">SAN JUAN COMALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN LALANA') echo 'selected'; ?> value="SAN JUAN LALANA">SAN JUAN LALANA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN PETLAPA') echo 'selected'; ?> value="SAN JUAN PETLAPA">SAN JUAN PETLAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO CHOAPAM') echo 'selected'; ?> value="SANTIAGO CHOAPAM">SANTIAGO CHOAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO JOCOTEPEC') echo 'selected'; ?> value="SANTIAGO JOCOTEPEC">SANTIAGO JOCOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO YAVEO') echo 'selected'; ?> value="SANTIAGO YAVEO">SANTIAGO YAVEO</option>
-        <option <?php if ($personal['Municipio'] == 'ACATLÁN DE PÉREZ FIGUEROA') echo 'selected'; ?> value="ACATLÁN DE PÉREZ FIGUEROA">ACATLÁN DE PÉREZ FIGUEROA</option>
-        <option <?php if ($personal['Municipio'] == 'AYOTZINTEPEC') echo 'selected'; ?> value="AYOTZINTEPEC">AYOTZINTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'COSOAPA') echo 'selected'; ?> value="COSOAPA">COSOAPA</option>
-        <option <?php if ($personal['Municipio'] == 'LOMA BONITA') echo 'selected'; ?> value="LOMA BONITA">LOMA BONITA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FELIPE JALAPA DE DÍAZ') echo 'selected'; ?> value="SAN FELIPE JALAPA DE DÍAZ">SAN FELIPE JALAPA DE DÍAZ</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FELIPE USILA') echo 'selected'; ?> value="SAN FELIPE USILA">SAN FELIPE USILA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JOSÉ CHILTEPEC') echo 'selected'; ?> value="SAN JOSÉ CHILTEPEC">SAN JOSÉ CHILTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JOSÉ INDEPENDENCIA') echo 'selected'; ?> value="SAN JOSÉ INDEPENDENCIA">SAN JOSÉ INDEPENDENCIA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA TUXTEPEC') echo 'selected'; ?> value="SAN JUAN BAUTISTA TUXTEPEC">SAN JUAN BAUTISTA TUXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LUCAS OJITLÁN') echo 'selected'; ?> value="SAN LUCAS OJITLÁN">SAN LUCAS OJITLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL SOYALTEPEC') echo 'selected'; ?> value="SAN MIGUEL SOYALTEPEC">SAN MIGUEL SOYALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO IXCATLÁN') echo 'selected'; ?> value="SAN PEDRO IXCATLÁN">SAN PEDRO IXCATLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MRÍA JACATEPEC') echo 'selected'; ?> value="SANTA MRÍA JACATEPEC">SANTA MRÍA JACATEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN BAUTISTA VALLE NACIONAL') echo 'selected'; ?> value="SAN JUAN BAUTISTA VALLE NACIONAL">SAN JUAN BAUTISTA VALLE NACIONAL</option>
-        <option <?php if ($personal['Municipio'] == 'ABEJONES') echo 'selected'; ?> value="ABEJONES">ABEJONES</option>
-        <option <?php if ($personal['Municipio'] == 'GUELATAO DE JUÁREZ') echo 'selected'; ?> value="GUELATAO DE JUÁREZ">GUELATAO DE JUÁREZ</option>
-        <option <?php if ($personal['Municipio'] == 'IXTLÁN DE JUÁREZ') echo 'selected'; ?> value="IXTLÁN DE JUÁREZ">IXTLÁN DE JUÁREZ</option>
-        <option <?php if ($personal['Municipio'] == 'NATIVIDAD') echo 'selected'; ?> value="NATIVIDAD">NATIVIDAD</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN ATEPEC') echo 'selected'; ?> value="SAN JUAN ATEPEC">SAN JUAN ATEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN CHICOMEZÚCHIL') echo 'selected'; ?> value="SAN JUAN CHICOMEZÚCHIL">SAN JUAN CHICOMEZÚCHIL</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN EVANGELISTA ANALCO') echo 'selected'; ?> value="SAN JUAN EVANGELISTA ANALCO">SAN JUAN EVANGELISTA ANALCO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN QUIOTEPEC') echo 'selected'; ?> value="SAN JUAN QUIOTEPEC">SAN JUAN QUIOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'CAPULALPAM DE MÉNDEZ') echo 'selected'; ?> value="CAPULALPAM DE MÉNDEZ">CAPULALPAM DE MÉNDEZ</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL ALOÁPAM') echo 'selected'; ?> value="SAN MIGUEL ALOÁPAM">SAN MIGUEL ALOÁPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL AMATLÁN') echo 'selected'; ?> value="SAN MIGUEL AMATLÁN">SAN MIGUEL AMATLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL DEL RÍO') echo 'selected'; ?> value="SAN MIGUEL DEL RÍO">SAN MIGUEL DEL RÍO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL YOTAO') echo 'selected'; ?> value="SAN MIGUEL YOTAO">SAN MIGUEL YOTAO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PABLO MACUILTIANGUIS') echo 'selected'; ?> value="SAN PABLO MACUILTIANGUIS">SAN PABLO MACUILTIANGUIS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO YANERI') echo 'selected'; ?> value="SAN PEDRO YANERI">SAN PEDRO YANERI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO YOLOX') echo 'selected'; ?> value="SAN PEDRO YOLOX">SAN PEDRO YOLOX</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA ANA YANERI') echo 'selected'; ?> value="SANTA ANA YANERI">SANTA ANA YANERI</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA IXTEPEJI') echo 'selected'; ?> value="SANTA CATARINA IXTEPEJI">SANTA CATARINA IXTEPEJI</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA LACHATAO') echo 'selected'; ?> value="SANTA CATARINA LACHATAO">SANTA CATARINA LACHATAO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA JALTIANGUIS') echo 'selected'; ?> value="SANTA MARÍA JALTIANGUIS">SANTA MARÍA JALTIANGUIS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA YAVESÍA') echo 'selected'; ?> value="SANTA MARÍA YAVESÍA">SANTA MARÍA YAVESÍA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO COMALTEPEC') echo 'selected'; ?> value="SANTIAGO COMALTEPEC">SANTIAGO COMALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO LAXOPA') echo 'selected'; ?> value="SANTIAGO LAXOPA">SANTIAGO LAXOPA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO XIACUÍ') echo 'selected'; ?> value="SANTIAGO XIACUÍ">SANTIAGO XIACUÍ</option>
-        <option <?php if ($personal['Municipio'] == 'NUEVO ZOQUIAPAM') echo 'selected'; ?> value="NUEVO ZOQUIAPAM">NUEVO ZOQUIAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'TEOCOCUILCO DE MARCOS PÉREZ') echo 'selected'; ?> value="TEOCOCUILCO DE MARCOS PÉREZ">TEOCOCUILCO DE MARCOS PÉREZ</option>
-        <option <?php if ($personal['Municipio'] == 'ASUNCIÓN CACALOTEPEC') echo 'selected'; ?> value="ASUNCIÓN CACALOTEPEC">ASUNCIÓN CACALOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'TAMAZALUPAM DEL ESPÍRITU SANTO') echo 'selected'; ?> value="TAMAZALUPAM DEL ESPÍRITU SANTO">TAMAZALUPAM DEL ESPÍRITU SANTO</option>
-        <option <?php if ($personal['Municipio'] == 'MIXISTLÁN DE LA REFORMA') echo 'selected'; ?> value="MIXISTLÁN DE LA REFORMA">MIXISTLÁN DE LA REFORMA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN COTZOCON') echo 'selected'; ?> value="SAN JUAN COTZOCON">SAN JUAN COTZOCON</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN MAZATLÁN') echo 'selected'; ?> value="SAN JUAN MAZATLÁN">SAN JUAN MAZATLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LUCAS CAMOTLÁN') echo 'selected'; ?> value="SAN LUCAS CAMOTLÁN">SAN LUCAS CAMOTLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL QUETZALTEPEC') echo 'selected'; ?> value="SAN MIGUEL QUETZALTEPEC">SAN MIGUEL QUETZALTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO OCOTEPEC') echo 'selected'; ?> value="SAN PEDRO OCOTEPEC">SAN PEDRO OCOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO Y SAN PABLO AYUTLA') echo 'selected'; ?> value="SAN PEDRO Y SAN PABLO AYUTLA">SAN PEDRO Y SAN PABLO AYUTLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA ALOTEPEC') echo 'selected'; ?> value="SANTA MARÍA ALOTEPEC">SANTA MARÍA ALOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TEPANTLALI') echo 'selected'; ?> value="SANTA MARÍA TEPANTLALI">SANTA MARÍA TEPANTLALI</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TLAHUILTOLTEPEC') echo 'selected'; ?> value="SANTA MARÍA TLAHUILTOLTEPEC">SANTA MARÍA TLAHUILTOLTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO ATITLÁN') echo 'selected'; ?> value="SANTIAGO ATITLÁN">SANTIAGO ATITLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO IXCUINTEPEC') echo 'selected'; ?> value="SANTIAGO IXCUINTEPEC">SANTIAGO IXCUINTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO ZACATEPEC') echo 'selected'; ?> value="SANTIAGO ZACATEPEC">SANTIAGO ZACATEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO TEPUXTEPEC') echo 'selected'; ?> value="SANTO DOMINGO TEPUXTEPEC">SANTO DOMINGO TEPUXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'TOTONTEPEC VILLA DE MORELOS') echo 'selected'; ?> value="TOTONTEPEC VILLA DE MORELOS">TOTONTEPEC VILLA DE MORELOS</option>
-        <option <?php if ($personal['Municipio'] == 'VILLA HIDALGO') echo 'selected'; ?> value="VILLA HIDALGO">VILLA HIDALGO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS SOLAGA') echo 'selected'; ?> value="SAN ANDRÉS SOLAGA">SAN ANDRÉS SOLAGA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS YAA') echo 'selected'; ?> value="SAN ANDRÉS YAA">SAN ANDRÉS YAA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BALTAZAR YATZACHI EL BAJO') echo 'selected'; ?> value="SAN BALTAZAR YATZACHI EL BAJO">SAN BALTAZAR YATZACHI EL BAJO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BARTOLOMÉ ZOOGOCHO') echo 'selected'; ?> value="SAN BARTOLOMÉ ZOOGOCHO">SAN BARTOLOMÉ ZOOGOCHO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN CRISTÓBAL LACHIRIOAG') echo 'selected'; ?> value="SAN CRISTÓBAL LACHIRIOAG">SAN CRISTÓBAL LACHIRIOAG</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO CAJONOS') echo 'selected'; ?> value="SAN FRANCISCO CAJONOS">SAN FRANCISCO CAJONOS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ILDEFONSO VILLA ALTA') echo 'selected'; ?> value="SAN ILDEFONSO VILLA ALTA">SAN ILDEFONSO VILLA ALTA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN JUQUILA VIJANOS') echo 'selected'; ?> value="SAN JUAN JUQUILA VIJANOS">SAN JUAN JUQUILA VIJANOS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN TABAA') echo 'selected'; ?> value="SAN JUAN TABAA">SAN JUAN TABAA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN YAEE') echo 'selected'; ?> value="SAN JUAN YAEE">SAN JUAN YAEE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN YATZONA') echo 'selected'; ?> value="SAN JUAN YATZONA">SAN JUAN YATZONA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MATEO CAJONOS') echo 'selected'; ?> value="SAN MATEO CAJONOS">SAN MATEO CAJONOS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MELCHOR BETAZA') echo 'selected'; ?> value="SAN MELCHOR BETAZA">SAN MELCHOR BETAZA</option>
-        <option <?php if ($personal['Municipio'] == 'VILLA TALEA DE CASTRO') echo 'selected'; ?> value="VILLA TALEA DE CASTRO">VILLA TALEA DE CASTRO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PABLO YAGANIZA') echo 'selected'; ?> value="SAN PABLO YAGANIZA">SAN PABLO YAGANIZA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO CAJONOS') echo 'selected'; ?> value="SAN PEDRO CAJONOS">SAN PEDRO CAJONOS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA TEMAXCALAPA') echo 'selected'; ?> value="SANTA MARÍA TEMAXCALAPA">SANTA MARÍA TEMAXCALAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA YALINA') echo 'selected'; ?> value="SANTA MARÍA YALINA">SANTA MARÍA YALINA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO CAMOTLÁN') echo 'selected'; ?> value="SANTIAGO CAMOTLÁN">SANTIAGO CAMOTLÁN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO LALOPA') echo 'selected'; ?> value="SANTIAGO LALOPA">SANTIAGO LALOPA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO ZOOCHILA') echo 'selected'; ?> value="SANTIAGO ZOOCHILA">SANTIAGO ZOOCHILA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO ROAYAGA') echo 'selected'; ?> value="SANTO DOMINGO ROAYAGA">SANTO DOMINGO ROAYAGA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO XAGACIA') echo 'selected'; ?> value="SANTO DOMINGO XAGACIA">SANTO DOMINGO XAGACIA</option>
-        <option <?php if ($personal['Municipio'] == 'TANETZE DE ZARAGOZA') echo 'selected'; ?> value="TANETZE DE ZARAGOZA">TANETZE DE ZARAGOZA</option>
-        <option <?php if ($personal['Municipio'] == 'MIAHUATLAN DE PORFIRIO DÍAZ') echo 'selected'; ?> value="MIAHUATLAN DE PORFIRIO DÍAZ">MIAHUATLAN DE PORFIRIO DÍAZ</option>
-        <option <?php if ($personal['Municipio'] == 'MONJAS') echo 'selected'; ?> value="MONJAS">MONJAS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS PAXTLAN') echo 'selected'; ?> value="SAN ANDRÉS PAXTLAN">SAN ANDRÉS PAXTLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN CRISTÓBAL AMATLAN') echo 'selected'; ?> value="SAN CRISTÓBAL AMATLAN">SAN CRISTÓBAL AMATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO LOGUECHE') echo 'selected'; ?> value="SAN FRANCISCO LOGUECHE">SAN FRANCISCO LOGUECHE</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO OZOLOTEPEC') echo 'selected'; ?> value="SAN FRANCISCO OZOLOTEPEC">SAN FRANCISCO OZOLOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ILDENFONSO AMATLAN') echo 'selected'; ?> value="SAN ILDENFONSO AMATLAN">SAN ILDENFONSO AMATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JERÓNIMO COATLAN') echo 'selected'; ?> value="SAN JERÓNIMO COATLAN">SAN JERÓNIMO COATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JOSÉ DEL PEÑASCO') echo 'selected'; ?> value="SAN JOSÉ DEL PEÑASCO">SAN JOSÉ DEL PEÑASCO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JOSE LACHIGUIRI') echo 'selected'; ?> value="SAN JOSE LACHIGUIRI">SAN JOSE LACHIGUIRI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN MIXTEPEC') echo 'selected'; ?> value="SAN JUAN MIXTEPEC">SAN JUAN MIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN OZOLOTEPEC') echo 'selected'; ?> value="SAN JUAN OZOLOTEPEC">SAN JUAN OZOLOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LUIS AMATLAN') echo 'selected'; ?> value="SAN LUIS AMATLAN">SAN LUIS AMATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MARCIAL OZOLOTEPEC') echo 'selected'; ?> value="SAN MARCIAL OZOLOTEPEC">SAN MARCIAL OZOLOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MATEO RIO HONDO') echo 'selected'; ?> value="SAN MATEO RIO HONDO">SAN MATEO RIO HONDO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL COATLAN') echo 'selected'; ?> value="SAN MIGUEL COATLAN">SAN MIGUEL COATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN MIGUEL SUCHIXTEPEC') echo 'selected'; ?> value="SAN MIGUEL SUCHIXTEPEC">SAN MIGUEL SUCHIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN NICOLÁS') echo 'selected'; ?> value="SAN NICOLÁS">SAN NICOLÁS</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PABLO COATLAN') echo 'selected'; ?> value="SAN PABLO COATLAN">SAN PABLO COATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO MIXTEPEC') echo 'selected'; ?> value="SAN PEDRO MIXTEPEC">SAN PEDRO MIXTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN SEBASTIÁN COATLAN') echo 'selected'; ?> value="SAN SEBASTIÁN COATLAN">SAN SEBASTIÁN COATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SAN SEBASTIÁN RÍO HONDO') echo 'selected'; ?> value="SAN SEBASTIÁN RÍO HONDO">SAN SEBASTIÁN RÍO HONDO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN SIMÓN ALMOLONGAS') echo 'selected'; ?> value="SAN SIMÓN ALMOLONGAS">SAN SIMÓN ALMOLONGAS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA ANA MIAHUATLAN') echo 'selected'; ?> value="SANTA ANA MIAHUATLAN">SANTA ANA MIAHUATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA CUIXTL') echo 'selected'; ?> value="SANTA CATARINA CUIXTL">SANTA CATARINA CUIXTL</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ XITLA') echo 'selected'; ?> value="SANTA CRUZ XITLA">SANTA CRUZ XITLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA LUCÍA MIAHUATLAN') echo 'selected'; ?> value="SANTA LUCÍA MIAHUATLAN">SANTA LUCÍA MIAHUATLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA OZOLOTEPEC') echo 'selected'; ?> value="SANTA MARÍA OZOLOTEPEC">SANTA MARÍA OZOLOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO XANICA') echo 'selected'; ?> value="SANTIAGO XANICA">SANTIAGO XANICA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO OZOLOTEPEC') echo 'selected'; ?> value="SANTO DOMINGO OZOLOTEPEC">SANTO DOMINGO OZOLOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO TOMÁS TAMAZULAPAM') echo 'selected'; ?> value="SANTO TOMÁS TAMAZULAPAM">SANTO TOMÁS TAMAZULAPAM</option>
-        <option <?php if ($personal['Municipio'] == 'SITIO DE XITLAPEHUA') echo 'selected'; ?> value="SITIO DE XITLAPEHUA">SITIO DE XITLAPEHUA</option>
-        <option <?php if ($personal['Municipio'] == 'CONSTANCIA DEL ROSARIO') echo 'selected'; ?> value="CONSTANCIA DEL ROSARIO">CONSTANCIA DEL ROSARIO</option>
-        <option <?php if ($personal['Municipio'] == 'MESONES HIDALGO') echo 'selected'; ?> value="MESONES HIDALGO">MESONES HIDALGO</option>
-        <option <?php if ($personal['Municipio'] == 'PUTLA VILLA DE GUERRERO') echo 'selected'; ?> value="PUTLA VILLA DE GUERRERO">PUTLA VILLA DE GUERRERO</option>
-        <option <?php if ($personal['Municipio'] == 'LA REFORMA') echo 'selected'; ?> value="LA REFORMA">LA REFORMA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ANDRÉS CABECERA NUEVA') echo 'selected'; ?> value="SAN ANDRÉS CABECERA NUEVA">SAN ANDRÉS CABECERA NUEVA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO AMUZGOS') echo 'selected'; ?> value="SAN PEDRO AMUZGOS">SAN PEDRO AMUZGOS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ ITUNDUJIA') echo 'selected'; ?> value="SANTA CRUZ ITUNDUJIA">SANTA CRUZ ITUNDUJIA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA LUCÍA MONTEVERDE') echo 'selected'; ?> value="SANTA LUCÍA MONTEVERDE">SANTA LUCÍA MONTEVERDE</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA IPALAPA') echo 'selected'; ?> value="SANTA MARÍA IPALAPA">SANTA MARÍA IPALAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA ZACATEPEC') echo 'selected'; ?> value="SANTA MARÍA ZACATEPEC">SANTA MARÍA ZACATEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO CAHUACUA') echo 'selected'; ?> value="SAN FRANCISCO CAHUACUA">SAN FRANCISCO CAHUACUA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN FRANCISCO SOLA') echo 'selected'; ?> value="SAN FRANCISCO SOLA">SAN FRANCISCO SOLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN ILDEFONSO SOLA') echo 'selected'; ?> value="SAN ILDEFONSO SOLA">SAN ILDEFONSO SOLA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JACINTO TLACOTEPEC') echo 'selected'; ?> value="SAN JACINTO TLACOTEPEC">SAN JACINTO TLACOTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN LORENZO TEXMELUCAN') echo 'selected'; ?> value="SAN LORENZO TEXMELUCAN">SAN LORENZO TEXMELUCAN</option>
-        <option <?php if ($personal['Municipio'] == 'VILLA SOLA DE VEGA') echo 'selected'; ?> value="VILLA SOLA DE VEGA">VILLA SOLA DE VEGA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CRUZ ZENZONTEPEC') echo 'selected'; ?> value="SANTA CRUZ ZENZONTEPEC">SANTA CRUZ ZENZONTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA LACHIXIO') echo 'selected'; ?> value="SANTA MARÍA LACHIXIO">SANTA MARÍA LACHIXIO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA SOLA') echo 'selected'; ?> value="SANTA MARÍA SOLA">SANTA MARÍA SOLA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA ZANIZA') echo 'selected'; ?> value="SANTA MARÍA ZANIZA">SANTA MARÍA ZANIZA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO AMOLTEPEC') echo 'selected'; ?> value="SANTIAGO AMOLTEPEC">SANTIAGO AMOLTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO MINAS') echo 'selected'; ?> value="SANTIAGO MINAS">SANTIAGO MINAS</option>
-        <option <?php if ($personal['Municipio'] == 'SANTIAGO TEXTITLAN') echo 'selected'; ?> value="SANTIAGO TEXTITLAN">SANTIAGO TEXTITLAN</option>
-        <option <?php if ($personal['Municipio'] == 'SANTO DOMINGO TEOJOMULCO') echo 'selected'; ?> value="SANTO DOMINGO TEOJOMULCO">SANTO DOMINGO TEOJOMULCO</option>
-        <option <?php if ($personal['Municipio'] == 'SAN VICENTE LACHIXIO') echo 'selected'; ?> value="SAN VICENTE LACHIXIO">SAN VICENTE LACHIXIO</option>
-        <option <?php if ($personal['Municipio'] == 'ZAPOTITLÁN DEL RÍO') echo 'selected'; ?> value="ZAPOTITLÁN DEL RÍO">ZAPOTITLÁN DEL RÍO</option>
-        <option <?php if ($personal['Municipio'] == 'ASUNCION TLACOLULITA') echo 'selected'; ?> value="ASUNCION TLACOLULITA">ASUNCION TLACOLULITA</option>
-        <option <?php if ($personal['Municipio'] == 'NEJAPA DE MADERO') echo 'selected'; ?> value="NEJAPA DE MADERO">NEJAPA DE MADERO</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA QUIOQUITANI') echo 'selected'; ?> value="SANTA CATARINA QUIOQUITANI">SANTA CATARINA QUIOQUITANI</option>
-        <option <?php if ($personal['Municipio'] == 'SAN BARTOLO YAUTEPEC') echo 'selected'; ?> value="SAN BARTOLO YAUTEPEC">SAN BARTOLO YAUTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN CARLOS YAUTEPEC') echo 'selected'; ?> value="SAN CARLOS YAUTEPEC">SAN CARLOS YAUTEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN JUQUILA MIXES') echo 'selected'; ?> value="SAN JUAN JUQUILA MIXES">SAN JUAN JUQUILA MIXES</option>
-        <option <?php if ($personal['Municipio'] == 'SAN JUAN LAJARCIA') echo 'selected'; ?> value="SAN JUAN LAJARCIA">SAN JUAN LAJARCIA</option>
-        <option <?php if ($personal['Municipio'] == 'SAN PEDRO MARTIR QUIECHAPA') echo 'selected'; ?> value="SAN PEDRO MARTIR QUIECHAPA">SAN PEDRO MARTIR QUIECHAPA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA ANA TAVELA') echo 'selected'; ?> value="SANTA ANA TAVELA">SANTA ANA TAVELA</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA CATARINA QUIERI') echo 'selected'; ?> value="SANTA CATARINA QUIERI">SANTA CATARINA QUIERI</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA ECATEPEC') echo 'selected'; ?> value="SANTA MARÍA ECATEPEC">SANTA MARÍA ECATEPEC</option>
-        <option <?php if ($personal['Municipio'] == 'SANTA MARÍA QUIEGOLANI') echo 'selected'; ?> value="SANTA MARÍA QUIEGOLANI">SANTA MARÍA QUIEGOLANI</option>
-
-    </select>
-    <div class="invalid-feedback">Se requiere una selección válida.</div>
-    </div>
 
 
-    <div class="col-sm-6">
-        <label for="colonia" class="form-label">Localidad/Colonia/Agencia</label>
-        <input type="text" class="form-control" id="colonia" name="colonia" value="<?php echo $personal['Colonia']; ?>"><br>
-        <div class="invalid-feedback">Se requiere una colonia válida.</div>
-    </div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
     <div class="col-sm-6">
@@ -1033,17 +454,434 @@ if (!empty($personal['foto']) && strpos($personal['foto'], "uploads/") !== false
         <div class="invalid-feedback">Se requiere un estado válido.</div>
     </div>
 
-    <div class="col-sm-6">
-    <label for="region" class="form-label">Región</label>
-    <input type="text" class="form-control" id="region"  name="region" readonly value="<?php echo $personal['Region']; ?>"><br>
-    <div class="invalid-feedback">Se requiere una colonia válida.</div>
-    </div>
+
+
+
+
+
+    <input type="hidden" id="selected_region_id">
+        <input type="hidden" id="selected_distrito_id">
+        <input type="hidden" id="selected_municipio_id">
+        <input type="hidden" id="selected_localidad_id"> 
+
+
+        <div class="col-sm-6">
+  <label for="cp" class="form-label">Código Postal (CP)</label>
+  <input type="number" max="100000" min="1" class="form-control" id="cp" name="cp" placeholder="" value="<?php echo $personal['CP']; ?>">
+  <div class="invalid-feedback">Se requiere un código postal válido.</div>
+</div>
+
+        <div class="col-sm-6">
+
+            <label for="input_region" class="form-label">Región:</label>
+            <input type="text" class="form-control" id="input_region" name="region" value="<?php echo $personal['Region']; ?>" autocomplete="off">
+            <div class="sugerencias" id="sug_region"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_distrito" class="form-label">Distrito:</label>
+            <input type="text" id="input_distrito" class="form-control" placeholder="Escribe para buscar distrito..." autocomplete="off">
+            <div class="sugerencias" id="sug_distrito"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_municipio" class="form-label">Municipio:</label>
+            <input type="text" id="input_municipio" class="form-control" name="municipio" value="<?php echo $personal['Municipio']; ?>" autocomplete="off">
+            <div class="sugerencias" id="sug_municipio"></div>
+        </div>
+
+        <div class="col-sm-6">
+            <label for="input_localidad" class="form-label">Localidad:</label>
+            <input type="text" id="input_localidad" class="form-control" name="colonia" value="<?php echo $personal['Colonia']; ?>" autocomplete="off">
+            <div class="sugerencias" id="sug_localidad"></div>
+        </div>
+
+        <div id="detalles" style="display: none;">
+           
+            <p><strong>Localidad:</strong> <span id="res_localidad"></span></p>
+            <p><strong>Municipio:</strong> <span id="res_municipio"></span></p>
+            <p><strong>Distrito:</strong> <span id="res_distrito"></span></p>
+            <p><strong>Región:</strong> <span id="res_region"></span></p>
+        </div>
+
+
+
+
+
+
+
+
+
+
+
+  <script>
+        // --- Referencias a los elementos ---
+        const inputs = {
+            region: document.getElementById('input_region'),
+            distrito: document.getElementById('input_distrito'),
+            municipio: document.getElementById('input_municipio'),
+            localidad: document.getElementById('input_localidad')
+        };
+        const suggestions = {
+            region: document.getElementById('sug_region'),
+            distrito: document.getElementById('sug_distrito'),
+            municipio: document.getElementById('sug_municipio'),
+            localidad: document.getElementById('sug_localidad')
+        };
+        const selectedIds = {
+            region: document.getElementById('selected_region_id'),
+            distrito: document.getElementById('selected_distrito_id'),
+            municipio: document.getElementById('selected_municipio_id'),
+            localidad: document.getElementById('selected_localidad_id') // Añadido
+        };
+
+        // --- LÓGICA DE BÚSQUEDA (keyup) ---
+
+        inputs.region.addEventListener('keyup', e => handleSearch('region', e.target.value));
+        inputs.distrito.addEventListener('keyup', e => handleSearch('distrito', e.target.value));
+        inputs.municipio.addEventListener('keyup', e => handleSearch('municipio', e.target.value));
+        inputs.localidad.addEventListener('keyup', e => handleSearch('localidad', e.target.value));
+
+        async function handleSearch(type, query) {
+            // Limpia sugerencias si la búsqueda es muy corta o vacía
+            if (query.length < 2) {
+                suggestions[type].innerHTML = '';
+                // Si el campo se vació manualmente, también resetea su ID oculto y los hijos
+                if (query.length === 0) {
+                     if(selectedIds[type]) {
+                        selectedIds[type].value = '';
+                    }
+                    resetChildren(type);
+                }
+                return;
+            }
+
+            // Construye parámetros base
+            const params = new URLSearchParams({ type: type, q: query });
+
+            // --- Lógica de filtrado en cascada ---
+            // Añade IDs de niveles superiores a los parámetros si existen
+            if (type === 'distrito' && selectedIds.region.value) {
+                params.append('region_id', selectedIds.region.value);
+            }
+            if (type === 'municipio') {
+                 if (selectedIds.distrito.value) params.append('distrito_id', selectedIds.distrito.value);
+                 else if (selectedIds.region.value) params.append('region_id', selectedIds.region.value); // Filtro por región si no hay distrito
+            }
+            if (type === 'localidad') {
+                if (selectedIds.municipio.value) params.append('municipio_id', selectedIds.municipio.value);
+                else if (selectedIds.distrito.value) params.append('distrito_id', selectedIds.distrito.value);
+                else if (selectedIds.region.value) params.append('region_id', selectedIds.region.value);
+            }
+
+            try {
+                // Llama a la API
+                const response = await fetch(`./api.php?${params.toString()}`);
+                 if (!response.ok) { // Verifica si la respuesta HTTP fue exitosa
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                 }
+                const data = await response.json();
+                 // Verifica si la respuesta JSON contiene un error del backend
+                 if (data.error) {
+                    console.error("Error del backend:", data.error);
+                    suggestions[type].innerHTML = `<div>Error: ${data.error}</div>`; // Muestra error en sugerencias
+                 } else {
+                    mostrarSugerencias(type, data); // Muestra sugerencias si todo ok
+                 }
+            } catch (error) {
+                // Captura errores de red o de parseo JSON
+                console.error("Error en fetch o procesando JSON:", error);
+                suggestions[type].innerHTML = `<div>Error al buscar: ${error.message}</div>`; // Muestra error
+            }
+        }
+
+        // --- FUNCIÓN genérica para mostrar sugerencias (ACTUALIZADA) ---
+        function mostrarSugerencias(type, data) {
+            const sugBox = suggestions[type];
+            sugBox.innerHTML = ''; // Limpia sugerencias anteriores
+
+            // Verifica si data es un array; si no, muestra mensaje o error
+            if (!Array.isArray(data)) {
+                 console.warn("La respuesta de la API no es un array:", data);
+                 sugBox.innerHTML = '<div>No se recibieron sugerencias válidas.</div>';
+                 return;
+            }
+            if (data.length === 0) {
+                 sugBox.innerHTML = '<div>No hay coincidencias.</div>';
+                 return;
+            }
+
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                // Determina el ID correcto a usar según el tipo y los nombres de columna de tu API
+                let id_value = item.id_region || item.id_distrito || item.id_municipio_inegi || item.id_asentamiento;
+
+                // Asegura que item.nombre exista antes de usarlo
+                div.innerHTML = `<strong>${item.nombre || 'Nombre no disponible'}</strong>`;
+
+                // Añadir info extra si es localidad (asentamiento)
+                if (type === 'localidad' && item.tipo_asentamiento) {
+                     div.innerHTML += `<small>${item.tipo_asentamiento} - CP: ${item.codigo_postal || 'N/A'}</small>`;
+                }
+
+                // Añade el listener SOLO si id_value es válido
+                if (id_value !== undefined && id_value !== null) {
+                    // Pasamos type, el objeto item completo y el id_value extraído
+                    div.addEventListener('click', () => handleSuggestionClick(type, item, id_value));
+                } else {
+                    console.warn("Item sin ID válido encontrado:", item); // Advertencia si un item no tiene ID
+                }
+                sugBox.appendChild(div);
+            });
+        }
+
+        // --- FUNCIÓN genérica para manejar clic en sugerencia (ACTUALIZADA) ---
+        async function handleSuggestionClick(type, itemData, id) { // Recibe el ID extraído también
+            console.log(`Clic en sugerencia - Tipo: ${type}, ID: ${id}, Nombre: ${itemData.nombre}`); // <-- DEBUG
+
+            // 1. Limpiar todas las cajas de sugerencias
+            Object.values(suggestions).forEach(sug => sug.innerHTML = '');
+
+            // 2. Ocultar el panel de detalles (se mostrará después si aplica)
+            document.getElementById('detalles').style.display = 'none';
+
+            // *** 3. Rellenar el campo clickeado INMEDIATAMENTE ***
+            inputs[type].value = itemData.nombre; // Usa el nombre del item clickeado
+            // Guardar ID seleccionado en el campo oculto correspondiente
+            if (selectedIds[type]) {
+                selectedIds[type].value = id;
+            }
+             // Si se hizo clic en un nivel superior, limpiar los hijos AHORA para evitar búsquedas con filtros incorrectos
+             resetChildren(type);
+
+
+            // 4. Llamar a la API para obtener TODOS los detalles y rellenar campos
+            console.log(`Fetching details for ${type} with ID: ${id}`); // <-- DEBUG
+            await fetchFullDetails(type, id); // Llama siempre para asegurar consistencia y rellenar todo
+        }
+
+        // --- FUNCIÓN para obtener detalles y rellenar todo (SIN CAMBIOS RESPECTO A LA ANTERIOR) ---
+        async function fetchFullDetails(type, id) {
+            // Construye el nombre del parámetro esperado por api.php (ej: 'municipio_id')
+            const paramName = (type === 'localidad') ? 'localidad_id' : `${type}_id`;
+
+            try {
+                const response = await fetch(`./api.php?type=get_full_details&${paramName}=${id}`);
+                if (!response.ok) {
+                    throw new Error(`Error ${response.status}: ${response.statusText}`);
+                }
+                const details = await response.json();
+                if (details.error) {
+                     console.error("Error del backend en get_full_details:", details.error);
+                     // Podrías mostrar un mensaje al usuario aquí
+                } else {
+                    // 4. Rellenar todos los campos con la información obtenida
+                    populateFields(details);
+                }
+            } catch (error) {
+                 console.error("Error en fetchFullDetails:", error);
+                 // Podrías mostrar un mensaje al usuario aquí
+            }
+        }
+
+
+       // --- FUNCIÓN para rellenar los campos (ACTUALIZADA CON DEBUG) ---
+       // --- FUNCIÓN para rellenar los campos (ACTUALIZADA CON CP) ---
+function populateFields(details) {
+    console.log("Datos recibidos para rellenar:", details); // DEBUG
+
+    // Región
+    if (details.region_id !== undefined && details.region_nombre !== undefined) {
+        inputs.region.value = details.region_nombre || '';
+        selectedIds.region.value = details.region_id || '';
+    } else {
+        inputs.region.value = '';
+        selectedIds.region.value = '';
+    }
+
+    // Distrito
+    if (details.distrito_id !== undefined && details.distrito_nombre !== undefined) {
+        inputs.distrito.value = details.distrito_nombre || '';
+        selectedIds.distrito.value = details.distrito_id || '';
+    } else {
+        inputs.distrito.value = '';
+        selectedIds.distrito.value = '';
+    }
+
+    // Municipio
+    if (details.municipio_id !== undefined && details.municipio_nombre !== undefined) {
+        inputs.municipio.value = details.municipio_nombre || '';
+        selectedIds.municipio.value = details.municipio_id || '';
+    } else {
+        inputs.municipio.value = '';
+        selectedIds.municipio.value = '';
+    }
+
+    // Localidad
+    if (details.localidad_id !== undefined && details.localidad_nombre !== undefined) {
+        inputs.localidad.value = details.localidad_nombre || '';
+        selectedIds.localidad.value = details.localidad_id || '';
+    } else {
+        inputs.localidad.value = '';
+        selectedIds.localidad.value = '';
+    }
+
+    // --- NUEVO: Código Postal ---
+    if (details.codigo_postal !== undefined && details.codigo_postal !== null) {
+        document.getElementById('cp').value = details.codigo_postal;
+    } else {
+        document.getElementById('cp').value = '';
+    }
+
+    // Mostrar detalles
+    if (details.localidad_id !== null && details.localidad_id !== undefined) {
+        document.getElementById('res_localidad').textContent = details.localidad_nombre || 'N/A';
+        document.getElementById('res_municipio').textContent = details.municipio_nombre || 'N/A';
+        document.getElementById('res_distrito').textContent = details.distrito_nombre || 'N/A';
+        document.getElementById('res_region').textContent = details.region_nombre || 'N/A';
+        // Añadir info extra si existe
+        let detallesExtra = '';
+        if (details.tipo_asentamiento) detallesExtra += ` (${details.tipo_asentamiento})`;
+        if (details.codigo_postal) detallesExtra += ` - CP: ${details.codigo_postal}`;
+        document.getElementById('res_localidad').textContent += detallesExtra;
+
+        document.getElementById('detalles').style.display = 'block';
+    } else {
+        document.getElementById('detalles').style.display = 'none';
+    }
+}
+
+
+        // --- FUNCIÓN para resetear campos hijos ---
+        function resetChildren(typeChanged) {
+             console.log(`Reseteando hijos de ${typeChanged}`); // <-- DEBUG
+             document.getElementById('detalles').style.display = 'none'; // Oculta detalles siempre
+             // Define la jerarquía para saber qué limpiar
+             const hierarchy = ['region', 'distrito', 'municipio', 'localidad'];
+             const startIndex = hierarchy.indexOf(typeChanged);
+
+             // Si se encontró el tipo y no es el último nivel
+             if (startIndex > -1 && startIndex < hierarchy.length - 1) {
+                // Itera sobre los niveles inferiores
+                for (let i = startIndex + 1; i < hierarchy.length; i++) {
+                    const childType = hierarchy[i];
+                    if (inputs[childType]) {
+                        inputs[childType].value = ''; // Limpia input visible
+                        inputs[childType].placeholder = `Escribe para buscar ${childType}...`; // Restaura placeholder si es necesario
+                    }
+                    if (selectedIds[childType]) {
+                        selectedIds[childType].value = ''; // Limpia ID oculto
+                    }
+                     if (suggestions[childType]) {
+                        suggestions[childType].innerHTML = ''; // Limpia sugerencias hijas
+                    }
+                }
+             }
+             // Si se borra la localidad, solo ocultamos detalles (ya hecho arriba)
+        }
+
+       // --- ¡NUEVA! Función para limpiar todos los campos (se puede llamar si necesitas un botón "Limpiar todo") ---
+         function resetFields() {
+             Object.values(inputs).forEach(input => input.value = '');
+             Object.values(selectedIds).forEach(hidden => hidden.value = '');
+             Object.values(suggestions).forEach(sug => sug.innerHTML = ''); // Limpia todas las sugerencias
+             document.getElementById('detalles').style.display = 'none';
+             console.log("Todos los campos reseteados."); // <-- DEBUG
+        }
+
+    </script>
+   
+
+
+
+
+
+
+
+
+
+
+
 
     <div class="col-sm-6">
         <label for="pais_procedencia" class="form-label">País de Procedencia</label>
-        <input type="text" class="form-control" id="pais_procedencia" name="pais_procedencia" value="<?php echo $personal['PaisProcedencia']; ?>">
+        <input type="text" class="form-control" id="pais_procedencia" name="pais_procedencia" >
     <div class="invalid-feedback">Se requiere un País de Procedencia válido.</div>
     </div>
+
+<div class="col-sm-6">
+  <label for="pais_procedencia" class="form-label">PAÍS DE PROCEDENCIA</label>
+  <select class="form-select" id="pais_procedencia" name="pais_procedencia" >
+    <option value="<?php echo $personal['PaisProcedencia']; ?>"></option>
+    <option value="MÉXICO" selected>MÉXICO</option>
+    <option value="GUATEMALA">GUATEMALA</option>
+    <option value="BELICE">BELICE</option>
+    <option value="EL SALVADOR">EL SALVADOR</option>
+    <option value="HONDURAS">HONDURAS</option>
+    <option value="NICARAGUA">NICARAGUA</option>
+    <option value="COSTA RICA">COSTA RICA</option>
+    <option value="PANAMÁ">PANAMÁ</option>
+    <option value="CUBA">CUBA</option>
+    <option value="REPÚBLICA DOMINICANA">REPÚBLICA DOMINICANA</option>
+    <option value="PUERTO RICO">PUERTO RICO</option>
+    <option value="COLOMBIA">COLOMBIA</option>
+    <option value="VENEZUELA">VENEZUELA</option>
+    <option value="ECUADOR">ECUADOR</option>
+    <option value="PERÚ">PERÚ</option>
+    <option value="BOLIVIA">BOLIVIA</option>
+    <option value="PARAGUAY">PARAGUAY</option>
+    <option value="CHILE">CHILE</option>
+    <option value="ARGENTINA">ARGENTINA</option>
+    <option value="URUGUAY">URUGUAY</option>
+    <option value="BRASIL">BRASIL</option>
+    <option value="ESTADOS UNIDOS">ESTADOS UNIDOS</option>
+    <option value="CANADÁ">CANADÁ</option>
+    <option value="ESPAÑA">ESPAÑA</option>
+    <option value="PORTUGAL">PORTUGAL</option>
+    <option value="FRANCIA">FRANCIA</option>
+    <option value="ITALIA">ITALIA</option>
+    <option value="ALEMANIA">ALEMANIA</option>
+    <option value="REINO UNIDO">REINO UNIDO</option>
+    <option value="PAÍSES BAJOS">PAÍSES BAJOS</option>
+    <option value="SUIZA">SUIZA</option>
+    <option value="SUECIA">SUECIA</option>
+    <option value="NORUEGA">NORUEGA</option>
+    <option value="FINLANDIA">FINLANDIA</option>
+    <option value="DINAMARCA">DINAMARCA</option>
+    <option value="RUSIA">RUSIA</option>
+    <option value="CHINA">CHINA</option>
+    <option value="JAPÓN">JAPÓN</option>
+    <option value="COREA DEL SUR">COREA DEL SUR</option>
+    <option value="INDIA">INDIA</option>
+    <option value="FILIPINAS">FILIPINAS</option>
+    <option value="VIETNAM">VIETNAM</option>
+    <option value="TAILANDIA">TAILANDIA</option>
+    <option value="INDONESIA">INDONESIA</option>
+    <option value="MALASIA">MALASIA</option>
+    <option value="SINGAPUR">SINGAPUR</option>
+    <option value="AUSTRALIA">AUSTRALIA</option>
+    <option value="NUEVA ZELANDA">NUEVA ZELANDA</option>
+    <option value="MARRUECOS">MARRUECOS</option>
+    <option value="EGIPTO">EGIPTO</option>
+    <option value="SUDÁFRICA">SUDÁFRICA</option>
+    <option value="NIGERIA">NIGERIA</option>
+    <option value="GHANA">GHANA</option>
+    <option value="ETIOPÍA">ETIOPÍA</option>
+    <option value="KENIA">KENIA</option>
+    <option value="TURQUÍA">TURQUÍA</option>
+    <option value="ISRAEL">ISRAEL</option>
+    <option value="ARABIA SAUDITA">ARABIA SAUDITA</option>
+    <option value="EMIRATOS ÁRABES UNIDOS">EMIRATOS ÁRABES UNIDOS</option>
+    <option value="IRÁN">IRÁN</option>
+    <option value="PAKISTÁN">PAKISTÁN</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+  <div class="invalid-feedback">SE REQUIERE UN PAÍS DE PROCEDENCIA VÁLIDO.</div>
+</div>
+
+
+
 
     <div class="col-sm-6">
         <label for="direccion_temporal" class="form-label">Dirección Temporal</label>
