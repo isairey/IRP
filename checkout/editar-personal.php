@@ -296,14 +296,29 @@ require_once __DIR__ . '/../pages/header.php';
 
     <?php
 // Determinar la foto
+// Determinar la foto del personal
+$ruta_base = "../uploads/personal/";
 $foto = "default.png"; // Imagen por defecto
-if ($personal && !empty($personal['foto']) && strtoupper($personal['foto']) !== "SIN DATOS") {
+
+if ($personal && !empty($personal['foto']) && strtoupper(trim($personal['foto'])) !== "SIN DATOS") {
+    // Verifica si la ruta contiene "uploads/"
     if (strpos($personal['foto'], "uploads/") !== false) {
-        $foto = "../" . $personal['foto'];
+        $ruta_foto = "../" . $personal['foto'];
     } else {
-        $foto = "../uploads/personal/" . $personal['foto'];
+        $ruta_foto = $ruta_base . $personal['foto'];
     }
+
+    // Si el archivo existe, úsalo; si no, usa la imagen por defecto
+    if (file_exists($ruta_foto)) {
+        $foto = $ruta_foto;
+    } else {
+        $foto = $ruta_base . "default.png";
+    }
+} else {
+    // Si no tiene foto o dice "SIN DATOS"
+    $foto = $ruta_base . "default.png";
 }
+
 ?>
     
         <div class="container">

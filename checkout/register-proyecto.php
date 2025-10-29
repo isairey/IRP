@@ -210,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <div class="col-sm-6">
         <label for="monto_financiamiento" class="form-label">Monto de Financiamiento</label>
-        <input type="text" class="form-control" id="monto_financiamiento" name="monto_financiamiento" step="0.01" required>
+        <input type="number" max="10" class="form-control" id="monto_financiamiento" name="monto_financiamiento" step="0.01" required>
         <div class="invalid-feedback">Se requiere un apellido paterno válido.</div>
     </div>
 
@@ -249,7 +249,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             <hr class="my-4">
 
-    <button class="w-100 btn btn-primary btn-lg" type="submit"  onclick="return confirmarEnvio();">Registrar</button>
+    <button class="w-100 btn btn-primary btn-lg" type="submit"  >Registrar</button>
     </form>
     </div>
     </div>

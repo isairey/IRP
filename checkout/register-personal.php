@@ -4,7 +4,7 @@ require_once __DIR__ . '/../pages/seccion.php';
 ?>
 <?php
 require_once __DIR__ . '/../db/config.php';
-
+ $instituciones = $conn->query("SELECT ID_Institucion, NombreInstitucion FROM Instituciones ORDER BY NombreInstitucion ASC")->fetchAll(PDO::FETCH_ASSOC);
 // Verificamos si se recibieron datos del formulario
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Recibimos los datos del formulario
@@ -780,41 +780,24 @@ function populateFields(details) {
         <input type="text" class="form-control" id="puesto" name="puesto" placeholder="">
         <div class="invalid-feedback">Se requiere un Puesto válido.</div>
     </div> -->
-
- <div class="col-sm-6">
-    <label for="institucion" class="form-label">INSTITUCIÓN PROVENIENTE</label>
-    <select class="form-select" id="institucionn" name="institucion" >
-        <option value="">SELECCIONA UNA INSTITUCIÓN</option>
-        <?php
-        require_once "../db/config.php"; // Ajusta la ruta
-        $stmt = $conn->query("SELECT NombreInstitucion FROM instituciones ORDER BY NombreInstitucion ASC");
-        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $nombre = htmlspecialchars($row['NombreInstitucion'], ENT_QUOTES, 'UTF-8');
-            echo "<option value='$nombre'>$nombre</option>";
-        }
-        ?>
-        <option value="OTRO">OTRO</option>
-    </select>
-    <div class="invalid-feedback">SE REQUIERE UNA INSTITUCIÓN VÁLIDA.</div>
+<div class="mb-3">
+  <label class="form-label">Institución</label>
+  <select name="institucion" id="institucion" class="form-select" required>
+    <option value="">-- Selecciona una institución --</option>
+    <?php foreach($instituciones as $inst): ?>
+      <option value="<?= htmlspecialchars($inst['ID_Institucion']) ?>">
+        <?= htmlspecialchars($inst['NombreInstitucion']) ?>
+      </option>
+    <?php endforeach; ?>
+    <option value="__otro__">➕ Otro…</option>
+  </select>
+  <div class="invalid-feedback">Selecciona una institución.</div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const institucionSelect = document.getElementById('institucionn');
 
-    institucionSelect.addEventListener('change', function () {
-        if (this.value === "") {
-            this.setCustomValidity('Se requiere una institución válida.');
-            this.classList.add('is-invalid');
-            this.classList.remove('is-valid');
-        } else {
-            this.setCustomValidity('');
-            this.classList.remove('is-invalid');
-            this.classList.add('is-valid');
-        }
-    });
-});
-</script>
+
+
+
 
 
     
@@ -979,6 +962,35 @@ document.addEventListener('DOMContentLoaded', function () {
     </div>
     </main>
 
+
+<!-- Modal para agregar institución -->
+<div class="modal fade" id="modalInstitucion" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog">
+    <form id="formInstitucion" class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Agregar Institución</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <div id="instAlert" class="alert alert-danger d-none"></div>
+        <div class="mb-3">
+          <label>Nombre de la Institución</label>
+          <input type="text" name="nueva_institucion" class="form-control" required>
+        </div>
+        <div class="mb-3">
+          <label>Descripción</label>
+          <textarea name="descripcion" class="form-control"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="submit" id="btnGuardarInst" class="btn btn-primary">Guardar</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
         <footer class="my-5 pt-5 text-body-secondary text-center text-small">
             <p class="mb-1">&copy;Copyright GESMujer © 2024 </p>
                 <ul class="list-inline">
@@ -994,3 +1006,90 @@ document.addEventListener('DOMContentLoaded', function () {
 
 
         </html>
+
+        <script>
+  const selInst = document.getElementById('institucion');
+  const modalInstEl = document.getElementById('modalInstitucion');
+  const modalInst = new bootstrap.Modal(modalInstEl);
+  const formInst = document.getElementById('formInstitucion');
+  const alertInst = document.getElementById('instAlert');
+  let lastValidInstValue = "";
+
+  // Guardar valor anterior antes de cambiar
+  selInst.addEventListener('focus', () => { lastValidInstValue = selInst.value; });
+
+  // Abrir modal al elegir "Otro"
+  selInst.addEventListener('change', () => {
+    if (selInst.value === '__otro__') {
+      alertInst.classList.add('d-none');
+      formInst.reset();
+      modalInst.show();
+      selInst.value = ''; // limpiar select temporalmente
+    }
+  });
+
+  // Enviar nueva institución por AJAX
+  formInst.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(formInst);
+
+    try {
+      const response = await fetch('guardar_institucion.php', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await response.json();
+
+      if (data.success) {
+        // Agregar nueva opción al select
+        const opt = document.createElement('option');
+        opt.value = data.id; // ID devuelto desde PHP
+        opt.textContent = data.nombre;
+        selInst.insertBefore(opt, selInst.querySelector('option[value="__otro__"]'));
+
+        // Seleccionarla automáticamente
+        selInst.value = data.id;
+
+        modalInst.hide();
+      } else {
+        alertInst.textContent = data.message || 'Error al guardar la institución.';
+        alertInst.classList.remove('d-none');
+      }
+    } catch (err) {
+      alertInst.textContent = 'Error de conexión con el servidor.';
+      alertInst.classList.remove('d-none');
+    }
+  });
+</script>
+
+<script>
+    /*
+document.addEventListener('DOMContentLoaded', function () {
+    const institucionSelect = document.getElementById('institucion');
+
+    // --- Validación general del select ---
+    function validarInstitucion() {
+        const valor = institucionSelect.value.trim();
+
+        if (valor === "" || valor === "__otro__") {
+            institucionSelect.setCustomValidity('Se requiere una institución válida.');
+            institucionSelect.classList.add('is-invalid');
+            institucionSelect.classList.remove('is-valid');
+        } else {
+            institucionSelect.setCustomValidity('');
+            institucionSelect.classList.remove('is-invalid');
+            institucionSelect.classList.add('is-valid');
+        }
+    }
+
+    // Ejecutar validación cada vez que cambie
+    institucionSelect.addEventListener('change', validarInstitucion);
+
+    // --- Escuchar evento personalizado cuando se inserta una nueva institución ---
+    document.addEventListener('institucion-agregada', (e) => {
+        // Esperar un pequeño tiempo para que el valor se actualice bien
+        setTimeout(validarInstitucion, 100);
+    });
+});  */
+</script>

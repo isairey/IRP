@@ -15,23 +15,23 @@ if (!isset($_SESSION['user_id']) || !isset($_SESSION['role_id'])) {
 $idUsuario = $_SESSION['user_id'];
 
 // Consultar los datos del usuario con JOIN a rol
-$sql = "
+$sqls = "
     SELECT p.Nombre, p.foto, r.Descripcion,p.ID_Personal
     FROM personal p
     LEFT JOIN rol r ON p.ID_Rol = r.ID_Rol
     WHERE p.ID_Personal = :id
     LIMIT 1
 ";
-$stmt = $conn->prepare($sql);
-$stmt->bindParam(':id', $idUsuario, PDO::PARAM_INT);
-$stmt->execute();
-$usuarios = $stmt->fetch(PDO::FETCH_ASSOC);
+$stmt2 = $conn->prepare($sqls);
+$stmt2->bindParam(':id', $idUsuario, PDO::PARAM_INT);
+$stmt2->execute();
+$usuarios3 = $stmt2->fetch(PDO::FETCH_ASSOC);
 
 // Si no hay foto guardada, usar una por defecto
 
 
 // Si no hay foto guardada, usar una por defecto
-$foto = !empty($usuarios['foto']) ? $usuarios['foto'] : 'default.png';
+$foto = !empty($usuarios3['foto']) ? $usuarios3['foto'] : 'default.png';
 
 // Verificar si la ruta ya incluye "uploads/"
 if (strpos($foto, "uploads/") !== false) {
@@ -74,7 +74,7 @@ if (strpos($foto, "uploads/") !== false) {
     <div class="dropdown">
       <a class="nav-link dropdown-toggle d-flex align-items-center text-white" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
         <img src="<?= $fotoFinal ?>" alt="Usuario" class="rounded-circle me-2 border border-light shadow-sm" width="40" height="40">
-        <span class="d-none d-md-inline fw-semibold"><?= htmlspecialchars($usuarios['Nombre']) ?></span>
+        <span class="d-none d-md-inline fw-semibold"><?= htmlspecialchars($usuarios3['Nombre']) ?></span>
       </a>
 
       <ul class="dropdown-menu dropdown-menu-end mt-2 shadow border-0 rounded-3 animate-dropdown">
@@ -84,14 +84,14 @@ if (strpos($foto, "uploads/") !== false) {
          class="rounded-circle me-2 border border-success-subtle" 
          width="35" height="35">
     <div>
-      <strong><?= htmlspecialchars($usuarios['Nombre']) ?></strong><br>
-      <small class="text-muted"><?= htmlspecialchars($usuarios['Descripcion']) ?></small>
+      <strong><?= htmlspecialchars($usuarios3['Nombre']) ?></strong><br>
+      <small class="text-muted"><?= htmlspecialchars($usuarios3['Descripcion']) ?></small>
     </div>
   </div>
 </li>
 
         <li>
-          <a class="dropdown-item py-2" href="../checkout/editar-personal.php?id=<?= htmlspecialchars($usuarios['ID_Personal']) ?>">
+          <a class="dropdown-item py-2" href="../checkout/editar-personal.php?id=<?= htmlspecialchars($usuarios3['ID_Personal']) ?>">
             <i class="bi bi-person me-2 text-success"></i> Perfil
           </a>
         </li>
