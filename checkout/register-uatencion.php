@@ -378,7 +378,7 @@ require_once __DIR__ . '/../pages/header.php';
 
             <hr class="my-4">
 
-    <button class="w-100 btn btn-primary btn-lg" type="submit"  onclick="return confirmarEnvio();">Registrar</button>
+    <button class="w-100 btn btn-primary btn-lg" type="submit"  >Registrar</button>
     </form>
     </div>
     </div>

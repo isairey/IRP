@@ -365,7 +365,7 @@ try {
         echo "<tr>";
         echo "<td>{$personal['ID_Personal']}</td>";
     echo "<td>";
-$foto = !empty($personal['foto']) ? $personal['foto'] : 'default.png';
+$foto = !empty($personal['foto']) ? $personal['foto'] : '../../uploads/personal/default.png';
 // Verifica si la ruta ya incluye "uploads/"
 if (strpos($foto, "uploads/") !== false) {
     echo '<img src="../../' . htmlspecialchars($foto) . '" alt="Foto Personal" class="foto-ponente" width="80">';

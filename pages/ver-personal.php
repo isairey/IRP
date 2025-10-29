@@ -130,6 +130,17 @@ require_once __DIR__ . '/../pages/seccion.php';
   box-shadow: 0 1px 3px rgba(106, 13, 173, 0.5);
 }
 
+
+.foto-ponente {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;   /* Recorta la imagen para llenar el área sin deformarse */
+  border-radius: 8px;  /* Bordes redondeados (opcional) */
+  border: 1px solid #ccc; /* Borde ligero (opcional) */
+  background-color: #f8f9fa; /* Fondo gris claro en caso de error o imagen transparente */
+}
+
+
     </style>
 
     
@@ -367,14 +378,19 @@ try {
         echo "<tr>";
         echo "<td>{$personal['ID_Personal']}</td>";
     echo "<td>";
-$foto = !empty($personal['foto']) ? $personal['foto'] : 'default.png';
-// Verifica si la ruta ya incluye "uploads/"
-if (strpos($foto, "uploads/") !== false) {
-    echo '<img src="../' . htmlspecialchars($foto) . '" alt="Foto Personal" class="foto-ponente" width="80">';
-} else {
-    echo '<img src="../uploads/personal/' . htmlspecialchars($foto) . '" alt="Foto Personal" class="foto-ponente" width="80">';
+
+$ruta_base = "../uploads/personal/";
+$foto = !empty($personal['foto']) ? $personal['foto'] : "default.png";
+$ruta_foto = (strpos($foto, "uploads/") !== false) ? "../$foto" : $ruta_base . $foto;
+
+// Si el archivo no existe, usar la imagen por defecto
+if (!file_exists($ruta_foto)) {
+    $ruta_foto = $ruta_base . "default.png";
 }
+
+echo '<img src="' . htmlspecialchars($ruta_foto) . '" alt="Foto Personal" class="foto-ponente">';
 echo "</td>";
+
 
 
         echo "<td>{$personal['Nombre']} {$personal['ApellidoPaterno']} {$personal['ApellidoMaterno']}</td>";

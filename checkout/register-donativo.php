@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     <div class="col-sm-6">
         <label for="monto_donacion" class="form-label">Monto de Donación</label>
-        <input type="text" class="form-control" id="monto_donacion" name="monto_donacion" step="0.01" required>
+        <input type="number" class="form-control" id="monto_donacion" name="monto_donacion" step="0.01" required>
         <div class="invalid-feedback">Se requiere un Monto de Donación válido.</div>
     </div>
 

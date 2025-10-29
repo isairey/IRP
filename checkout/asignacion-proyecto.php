@@ -23,10 +23,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Ejecutar la consulta
         $stmt->execute();
-               header("Location: ../pages/ver-proyectos.php?statuss=success");
+               header("Location: ../pages/ver-proyectos-asignados.php?statuss=success");
 exit();
     } catch (PDOException $e) {
-       header("Location: ../pages/ver-proyectos.php?statuss=error&msg=" . urlencode($e->getMessage()));
+       header("Location: ../pages/ver-proyectos-asignados.php?statuss=error&msg=" . urlencode($e->getMessage()));
 exit();
     }
 

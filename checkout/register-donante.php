@@ -159,13 +159,13 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="apellido_paterno" class="form-label">Apellido Paterno:</label>
-        <input type="text" class="form-control" id="apellido_paterno" name="apellido_paterno" placeholder="" required>
+        <input type="text" class="form-control" id="apellido_paterno" name="apellido_paterno" placeholder="" >
         <div class="invalid-feedback">Se requiere un apellido paterno válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="apellido_materno" class="form-label">Apellido Materno:</label>
-        <input type="text" class="form-control" id="apellido_materno" name="apellido_materno" placeholder="" required>
+        <input type="text" class="form-control" id="apellido_materno" name="apellido_materno" placeholder="" >
         <div class="invalid-feedback">Se requiere un apellido materno válido.</div>
     </div>
 
@@ -173,14 +173,14 @@ require_once __DIR__ . '/../pages/header.php';
         <label for="email" class="form-label">Correo electrónico</label>
         <div class="input-group has-validation">
         <span class="input-group-text">@</span>
-        <input type="email" class="form-control" id="email" name="email" placeholder="Correo electrónico" required>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Correo electrónico" >
         <div class="invalid-feedback">Se requiere una dirección de correo electrónico válida.</div>
         </div>
     </div>
 
     <div class="col-sm-6">
         <label for="telefono" class="form-label">Teléfono celular</label>
-        <input type="text" class="form-control" id="telefono" name="telefono" placeholder="" required>
+        <input type="text" class="form-control" id="telefono" name="telefono" placeholder="" >
         <div class="invalid-feedback">Se requiere un número de teléfono celular válido.</div>
     </div>
 

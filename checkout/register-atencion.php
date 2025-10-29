@@ -5,6 +5,13 @@ require_once __DIR__ . '/../pages/seccion.php';
 <?php
 require_once __DIR__ . '/../db/config.php';
 
+
+
+
+require_once __DIR__ . '/../pages/header.php';
+
+
+
 // Verificamos si se recibieron datos del formulario
 // Verificamos si se recibieron datos del formulario
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -118,11 +125,6 @@ $tipoMensaje = "";
       </symbol>
     </svg>
 
-
-
-<?php
-require_once __DIR__ . '/../pages/header.php';
-?>
 
 
 
