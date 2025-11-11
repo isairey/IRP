@@ -149,23 +149,9 @@ hr {
               </a>
             </li>
 
-            <hr class="my-3">
 
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-personal.php">
-                <svg class="bi"><use xlink:href="#personita"/></svg>
-                Registrar Personal 
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-personal.php">
-              <i class="bi bi-person-lines-fill"></i>
-                Lista personal
-              </a>
-            </li>
-        
 
-          <hr class="my-3">
+             <hr class="my-3">
 
           <li class="nav-item">
               <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-cita.php">
@@ -189,6 +175,70 @@ hr {
               <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-atenciones.php">
               <i class="bi bi-journal-bookmark-fill"></i>
                 Historial de atenciones
+              </a>
+            </li>
+
+
+
+
+             <hr class="my-3">
+
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-tutor-adolecente.php">
+                <svg class="bi"><use xlink:href="#personita"/></svg>
+                Registrar Nueva Usuaria Adolecente
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-usuario-adolecente.php">
+                <svg class="bi"><use xlink:href="#people"/></svg>
+                Lista de Usuarias Adolecentes
+              </a>
+            </li>
+          
+        
+
+          <hr class="my-3">
+
+          <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-citaa.php">
+              <i class="bi bi-calendar-check-fill"></i>
+                Registrar Cita Adolecente
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-atenciona.php">
+              <i class="bi bi-clipboard2-fill"></i>
+                Registrar Atención Adolecente
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-citasa.php">
+              <i class="bi bi-calendar3"></i>
+                Ver Citas Adolecente
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-atencionesa.php">
+              <i class="bi bi-journal-bookmark-fill"></i>
+                Historial de atenciones Adolecente
+              </a>
+            </li>
+
+
+
+              <hr class="my-3">
+
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-personal.php">
+                <svg class="bi"><use xlink:href="#personita"/></svg>
+                Registrar Personal 
+              </a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-personal.php">
+              <i class="bi bi-person-lines-fill"></i>
+                Lista personal
               </a>
             </li>
 

@@ -1,4 +1,6 @@
 <?php
+require_once __DIR__ . '/../pages/seccion.php';
+
 require_once __DIR__ . '/../db/config.php';
 
 // Manejar AJAX: cargar módulos del diplomado seleccionado

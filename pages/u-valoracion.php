@@ -389,7 +389,7 @@ try {
         echo "<td>{$usuario['CanalizacionInterna']}</td>";
         echo "<td>{$usuario['AuxiliosPsicologicos']}</td>";
         echo "<td>";
-        echo "<a href='editar_usuario.php?id={$usuario['id']}' class='btn btn-primary btn-sm'>Editar</a> ";
+        echo "<a href='../checkout/editar_usuaria.php?id={$usuario['id']}' class='btn btn-primary btn-sm'>Editar</a> ";
         echo "<button class='btn btn-danger btn-sm eliminar-usuario' data-id='{$usuario['id']}'>Eliminar</button>";
         echo "</td>";
         echo "</tr>";

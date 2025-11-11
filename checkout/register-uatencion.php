@@ -60,11 +60,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Ejecutamos la consulta
         $stmt->execute();
-              header("Location: ../pages/ver-atenciones.php?status=success");
+              header("Location: ../pages/ver-atenciones.php?statuss=success");
 exit();
     } catch (PDOException $e) {
        $conn->rollBack();
-        header("Location: ../pages/ver-atenciones.php?status=error&msg=" . urlencode($e->getMessage()));
+        header("Location: ../pages/ver-atenciones.php?statuss=error&msg=" . urlencode($e->getMessage()));
 exit();
     }
 

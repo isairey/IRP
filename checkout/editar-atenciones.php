@@ -3,7 +3,7 @@ require_once __DIR__ . '/../pages/seccion.php';
 
 require_once __DIR__ . '/../db/config.php';
 
-require_once __DIR__ . '/../pages/header.php';
+
 
 
 
@@ -80,6 +80,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       header("Location: ../pages/ver-atenciones.php?status=updated");
         exit;
 }
+
+require_once __DIR__ . '/../pages/header.php';
 ?>
 
 

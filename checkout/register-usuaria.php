@@ -32,8 +32,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $lenguaIndigena = !empty($_POST['lenguaIndigena']) ? $_POST['lenguaIndigena'] : '-';
     $escolaridad = !empty($_POST['escolaridad']) ? $_POST['escolaridad'] : '-';
     $estadocivil = !empty($_POST['estadocivil']) ? $_POST['estadocivil'] : '-';
-    $orientacionSexual = !empty($_POST['orientacionSexual']) ? $_POST['orientacionSexual'] : '-';
+   
+    
+    
+    $discapacidads = !empty($_POST['discapacidads']) ? $_POST['discapacidads'] : '-';
     $discapacidad = !empty($_POST['discapacidad']) ? $_POST['discapacidad'] : '-';
+
     $decendencia = !empty($_POST['decendencia']) ? $_POST['decendencia'] : '-';
     $numDecendencia = !empty($_POST['numDecendencia']) ? $_POST['numDecendencia'] : '-';
     $calle = !empty($_POST['calle']) ? $_POST['calle'] : '-';
@@ -55,26 +59,128 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $telCelular = !empty($_POST['telCelular']) ? $_POST['telCelular'] : '-';
     $telFijo = !empty($_POST['telFijo']) ? $_POST['telFijo'] : '-';
     $telConfianza = !empty($_POST['telConfianza']) ? $_POST['telConfianza'] : '-';
+
+    $nombreconfianza = !empty($_POST['nombreconfianza']) ? $_POST['nombreconfianza'] : '-';
+    $parentesco = !empty($_POST['parentesco']) ? $_POST['parentesco'] : '-';
+
+    $tipoLgbt = !empty($_POST['tipoLgbt']) ? $_POST['tipoLgbt'] : '-';
+    $comunidadLGBT = !empty($_POST['comunidadLGBT']) ? $_POST['comunidadLGBT'] : '-';
+
+    $grupoEtnico = !empty($_POST['grupoEtnico']) ? $_POST['grupoEtnico'] : '-';
+    $perteneceEtnico = !empty($_POST['perteneceEtnico']) ? $_POST['perteneceEtnico'] : '-';
+
+    $padresLengua = !empty($_POST['padresLengua']) ? $_POST['padresLengua'] : '-';
+    $lenguaPadres = !empty($_POST['lenguaPadres']) ? $_POST['lenguaPadres'] : '-';
+
+    $aniosOaxaca = !empty($_POST['aniosOaxaca']) ? $_POST['aniosOaxacas'] : '-';
+
+    $observacionesAdicionales = !empty($_POST['observacionesAdicionales']) ? $_POST['observacionesAdicionales'] : '-';
+
+
+
     $email = !empty($_POST['email']) ? $_POST['email'] : '-';
     $emailRespaldo = !empty($_POST['emailRespaldo']) ? $_POST['emailRespaldo'] : '-';
     $curp = !empty($_POST['curp']) ? $_POST['curp'] : '-';
     $ine = !empty($_POST['ine']) ? $_POST['ine'] : '-';
     $ocupacion = !empty($_POST['ocupacion']) ? $_POST['ocupacion'] : '-';
+
+    $tipoEmpleo = !empty($_POST['tipoEmpleo']) ? $_POST['tipoEmpleo'] : '-';
+
     $fuenteIngresos = !empty($_POST['fuenteIngresos']) ? $_POST['fuenteIngresos'] : '-';
+
+    $ingresoMensual = !empty($_POST['ingresoMensual']) ? $_POST['ingresoMensual'] : '-';
+    $apoyosSociales = !empty($_POST['apoyosSociales']) ? $_POST['apoyosSociales'] : '-';
+    $recibeApoyo = !empty($_POST['recibeApoyo']) ? $_POST['recibeApoyo'] : '-';
+    $apoyoDetalle = !empty($_POST['apoyoDetalle']) ? $_POST['apoyoDetalle'] : '-';
+
+
+    $totalIngresosFamiliares = !empty($_POST['totalIngresosFamiliares']) ? $_POST['totalIngresosFamiliares'] : '-';
+    $gastoAlimentacion = !empty($_POST['gastoAlimentacion']) ? $_POST['gastoAlimentacion'] : '-';
+    $gastoVivienda = !empty($_POST['gastoVivienda']) ? $_POST['gastoVivienda'] : '-';
+    $gastoServicios = !empty($_POST['gastoServicios']) ? $_POST['gastoServicios'] : '-';
+    $gastoTransporte = !empty($_POST['gastoTransporte']) ? $_POST['gastoTransporte'] : '-';
+    $gastoEducacion = !empty($_POST['gastoEducacion']) ? $_POST['gastoEducacion'] : '-';
+    $gastoSalud = !empty($_POST['gastoSalud']) ? $_POST['gastoSalud'] : '-';
+    $gastoDeudas = !empty($_POST['gastoDeudas']) ? $_POST['gastoDeudas'] : '-';
+    $gastoOtros = !empty($_POST['gastoOtros']) ? $_POST['gastoOtros'] : '-';
+
+
+
+
     $sectorEconomico = !empty($_POST['sectorEconomico']) ? $_POST['sectorEconomico'] : '-';
     $horasTrabajo = !empty($_POST['horasTrabajo']) ? $_POST['horasTrabajo'] : '-';
     $ingresosDiarios = !empty($_POST['ingresosDiarios']) ? $_POST['ingresosDiarios'] : '-';
     $tipoEnergia = !empty($_POST['tipoEnergia']) ? $_POST['tipoEnergia'] : '-';
     $agua = !empty($_POST['agua']) ? $_POST['agua'] : '-';
     $materialPiso = !empty($_POST['materialPiso']) ? $_POST['materialPiso'] : '-';
+
+    $numCuartos = !empty($_POST['numCuartos']) ? $_POST['numCuartos'] : '-';
+    $numHabitacionesDormir = !empty($_POST['numHabitacionesDormir']) ? $_POST['numHabitacionesDormir'] : '-';
+    $numPersonasHogar = !empty($_POST['numPersonasHogar']) ? $_POST['numPersonasHogar'] : '-';
+
+    $enteroGESMUJER = !empty($_POST['enteroGESMUJER']) ? $_POST['enteroGESMUJER'] : '-';
+    $electricidad = !empty($_POST['electricidad']) ? $_POST['electricidad'] : '-';
+    $internet = !empty($_POST['internet']) ? $_POST['internet'] : '-';
+    $gas = !empty($_POST['gas']) ? $_POST['gas'] : '-';
+    $television = !empty($_POST['television']) ? $_POST['television'] : '-';
+    $telefono = !empty($_POST['telefono']) ? $_POST['telefono'] : '-';
+    $bano = !empty($_POST['bano']) ? $_POST['bano'] : '-';
+
+
+
     $tipoServicioAgua = !empty($_POST['tipoServicioAgua']) ? $_POST['tipoServicioAgua'] : '-';
     $materialVivienda = !empty($_POST['materialVivienda']) ? $_POST['materialVivienda'] : '-';
-    $banioDentro = !empty($_POST['banioDentro']) ? $_POST['banioDentro'] : '-';
+
     $TipoBano = !empty($_POST['TipoBano']) ? $_POST['TipoBano'] : '-';
     $personasCasa = !empty($_POST['personasCasa']) ? $_POST['personasCasa'] : '-';
     $personasDormitorio = !empty($_POST['personasDormitorio']) ? $_POST['personasDormitorio'] : '-';
     $tipoVivienda = !empty($_POST['tipoVivienda']) ? $_POST['tipoVivienda'] : '-';
-    $comoSeEntero = !empty($_POST['comoSeEntero']) ? $_POST['comoSeEntero'] : '-';
+    //$comoSeEntero = !empty($_POST['comoSeEntero']) ? $_POST['comoSeEntero'] : '-';
+
+    $descripcionSolicitud = !empty($_POST['descripcionSolicitud']) ? $_POST['descripcionSolicitud'] : '-';
+
+    $vpsConducta = !empty($_POST['vpsConducta']) ? $_POST['vpsConducta'] : '-';
+    $vpsDetalles = !empty($_POST['vpsDetalles']) ? $_POST['vpsDetalles'] : '-';
+
+
+    $vfConducta = !empty($_POST['vfConducta']) ? $_POST['vfConducta'] : '-';
+    $vfDetalles = !empty($_POST['vfDetalles']) ? $_POST['vfDetalles'] : '-';
+
+
+
+    $vsConducta = !empty($_POST['vsConducta']) ? $_POST['vsConducta'] : '-';
+    $vsDetalles = !empty($_POST['vsDetalles']) ? $_POST['vsDetalles'] : '-';
+    $acosoConducta = !empty($_POST['acosoConducta']) ? $_POST['acosoConducta'] : '-';
+    $acosoDetalles = !empty($_POST['acosoDetalles']) ? $_POST['acosoDetalles'] : '-';
+    $veConducta = !empty($_POST['veConducta']) ? $_POST['veConducta'] : '-';
+    $veDetalles = !empty($_POST['veDetalles']) ? $_POST['veDetalles'] : '-';
+    $vvConducta = !empty($_POST['vvConducta']) ? $_POST['vvConducta'] : '-';
+    $vvDetalles = !empty($_POST['vvDetalles']) ? $_POST['vvDetalles'] : '-';
+    $voConducta = isset($_POST['voConducta']) ? $_POST['voConducta'] : '';
+    $voDetalles = isset($_POST['voDetalles']) ? $_POST['voDetalles'] : '-';
+    $vpConducta = isset($_POST['vpConducta']) ? $_POST['vpConducta'] : '-';
+    $vpDetalles = isset($_POST['vpDetalles']) ? $_POST['vpDetalles'] : '-';
+    $vcConducta = isset($_POST['vcConducta']) ? $_POST['vcConducta'] : '-';
+    $vcDetalles = isset($_POST['vcDetalles']) ? $_POST['vcDetalles'] : '-';
+    $vlConducta = isset($_POST['vlConducta']) ? $_POST['vlConducta'] : '-';
+    $vlDetalles = isset($_POST['vlDetalles']) ? $_POST['vlDetalles'] : '-';
+
+
+    $riesgoConducta = !empty($_POST['riesgoConducta']) ? $_POST['riesgoConducta'] : '-';
+    $riesgoDetalles = !empty($_POST['riesgoDetalles']) ? $_POST['riesgoDetalles'] : '-';
+    $riesgoSituacion = !empty($_POST['riesgoSituacion']) ? $_POST['riesgoSituacion'] : '-';
+    $riesgoDetalless = !empty($_POST['riesgoDetalless']) ? $_POST['riesgoDetalless'] : '-';
+    $vulnerabilidad = isset($_POST['vulnerabilidad']) ? $_POST['vulnerabilidad'] : '';
+    $vulnerabilidadDetalles = isset($_POST['vulnerabilidadDetalles']) ? $_POST['vulnerabilidadDetalles'] : '-';
+    $factores_contextuales = isset($_POST['factores_contextuales']) ? $_POST['factores_contextuales'] : '-';
+    $factores_contextuales_detalle = isset($_POST['factores_contextuales_detalle']) ? $_POST['factores_contextuales_detalle'] : '-';
+    $escala_riesgo = isset($_POST['escala_riesgo']) ? $_POST['escala_riesgo'] : '-';
+    $escala_riesgo_detalle = isset($_POST['escala_riesgo_detalle']) ? $_POST['escala_riesgo_detalle'] : '-';
+
+     $observacionesEntrevistadora = isset($_POST['observacionesEntrevistadora']) ? $_POST['observacionesEntrevistadora'] : '-';
+
+
+
     $parejaTrabaja = !empty($_POST['parejaTrabaja']) ? $_POST['parejaTrabaja'] : '-';
     $NombreAgresor = !empty($_POST['NombreAgresor']) ? $_POST['NombreAgresor'] : '-';
     $DondeTrabaja = !empty($_POST['DondeTrabaja']) ? $_POST['DondeTrabaja'] : '-';
@@ -104,9 +210,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $canalizacionInterna = isset($_POST['canalizacionInterna']) ? $_POST['canalizacionInterna'] : '-';
     $auxiliosPsicologicos = isset($_POST['auxiliosPsicologicos']) ? $_POST['auxiliosPsicologicos'] : '-';
 
+    $observacionesInstitucion = isset($_POST['observacionesInstitucion']) ? $_POST['observacionesInstitucion'] : '-';
+    $primerosAuxiliosPsicologicos = isset($_POST['primerosAuxiliosPsicologicos']) ? $_POST['primerosAuxiliosPsicologicos'] : '-';
+    $auxiliosPsicologicos = isset($_POST['auxiliosPsicologicos']) ? $_POST['auxiliosPsicologicos'] : '-';
+
+    $id_personal = isset($_POST['personal_input']) ? $_POST['personal_input'] : '-';
+
+
+
     // Preparar la consulta SQL para insertar los datos en la tabla Usuario
-    $sql = "INSERT INTO Usuario (Nombre, ApellidoPaterno, ApellidoMaterno, FechaNacimiento, Edad, FechaRegistro, Sexo, LugarNacimiento, Indigena, LenguaMaterna, HablaLenguaIndigena, LenguaIndigena, Escolaridad, estadocivil, OrientacionSexual, Discapacidad, Decendencia, NumDecendencia, Calle, NumInterior, NumExterior, CP, Estado, Municipio, Colonia, Region, CallePC, NumInteriorPC, NumExteriorPC, CPPC, EstadoPC, MunicipioPC, ColoniaPC, RegionPC, TelCelular, TelFijo, TelConfianza, Email, EmailRespaldo, CURP, INE, RutaCURP, RutaINE, RutaComDomicilio, Ocupacion, FuenteIngresos, SectorEconomico, HorasTrabajo, IngresosDiarios, TipoEnergia, Agua, MaterialPiso, TipoServicioAgua, MaterialVivienda, BanioDentro, TipoBano, PersonasCasa, PersonasDormitorio, TipoVivienda, ComoSeEntero, ParejaTrabaja, DondeTrabaja, NombreAgresor, SituacionUsuaria, RelacionAgresora, TipoRelacion, ViveConPareja, TiempoViviendoPareja, chantajeado, comochantajeado, ParejaCelosa, UtilizaHijos, Consumidora, Agresion, IncrementoAgresiones, AtencionMedica, AmenazadaConArmas, IntentoAhorcar, SienteTemorVida, PoseeArmaFuego, Denuncia, TipoDenuncia, IngresadoPrision, ValoracionRiesgo, Canalizacion, CanalizacionExterna, CanalizacionInterna, AuxiliosPsicologicos) 
-            VALUES ('$nombre', '$apellidoPaterno', '$apellidoMaterno', '$fechaNacimiento', '$edad', '$fecharegistro', '$sexo', '$lugarNacimiento', '$indigena', '$lenguaMaterna', '$hablaLenguaIndigena', '$lenguaIndigena', '$escolaridad', '$estadocivil', '$orientacionSexual', '$discapacidad', '$decendencia', '$numDecendencia', '$calle', '$numInterior','$numExterior','$cp', '$estado', '$municipio', '$colonia', '$region', '$callePC', '$numInteriorPC', '$numExteriorPC', '$cppc', '$estadoPC', '$municipioPC', '$coloniaPC', '$regionPC', '$telCelular', '$telFijo', '$telConfianza', '$email', '$emailRespaldo', '$curp', '$ine', '$rutaCURP', '$rutaINE', '$rutaComDomicilio', '$ocupacion', '$fuenteIngresos', '$sectorEconomico', '$horasTrabajo', '$ingresosDiarios', '$tipoEnergia', '$agua', '$materialPiso', '$tipoServicioAgua', '$materialVivienda', '$banioDentro', '$TipoBano', '$personasCasa', '$personasDormitorio', '$tipoVivienda', '$comoSeEntero', '$parejaTrabaja', '$DondeTrabaja', '$NombreAgresor', '$situacionUsuaria', '$relacionAgresora', '$tipoRelacion', '$viveConPareja', '$tiempoViviendoPareja', '$chantajeado', '$comochantajeado', '$parejaCelosa', '$utilizaHijos', '$consumidora', '$agresion', '$incrementoAgresiones', '$atencionMedica', '$amenazadaConArmas', '$intentoAhorcar', '$sienteTemorVida', '$poseeArmaFuego', '$denuncia', '$tipoDenuncia', '$ingresadoPrision', '$valoracionRiesgo', '$canalizacion', '$canalizacionExterna', '$canalizacionInterna', '$auxiliosPsicologicos')";
+    $sql = "INSERT INTO Usuario (id_personal,Nombre, ApellidoPaterno, ApellidoMaterno, FechaNacimiento, Edad, FechaRegistro, Sexo, LugarNacimiento, Indigena, LenguaMaterna, HablaLenguaIndigena, LenguaIndigena, Escolaridad, estadocivil, Discapacidad,discapacidads, Decendencia, NumDecendencia, Calle, NumInterior, NumExterior, CP, Estado, Municipio, Colonia, Region, CallePC, NumInteriorPC, NumExteriorPC, CPPC, EstadoPC, MunicipioPC, ColoniaPC, RegionPC, TelCelular, TelFijo, TelConfianza,nombreconfianza,perentesco,tipoLgbt, comunidadLGBT, perteneceEtnico, grupoEtnico,padresLengua, lenguaPadres,aniosOaxaca,observacionesAdicionales, Email, EmailRespaldo, CURP, INE, RutaCURP, RutaINE, RutaComDomicilio, Ocupacion,tipoEmpleo, FuenteIngresos,  ingresoMensual, apoyosSociales, recibeApoyo, apoyoDetalle,  totalIngresosFamiliares, gastoAlimentacion, gastoVivienda, gastoServicios, gastoTransporte, gastoEducacion, gastoSalud, gastoDeudas, gastoOtros,           SectorEconomico, HorasTrabajo, IngresosDiarios, TipoEnergia, Agua, MaterialPiso, numCuartos, numHabitacionesDormir, numPersonasHogar,enteroGESMUJER, electricidad, internet, gas, television, telefono,bano,  TipoServicioAgua, MaterialVivienda,  TipoBano, PersonasCasa, PersonasDormitorio, TipoVivienda, descripcionSolicitud, vpsConducta, vpsDetalles,          vfConducta, vfDetalles, vsConducta, vsDetalles, acosoConducta, acosoDetalles, veConducta, veDetalles, vvConducta, vvDetalles, voConducta, voDetalles, vpConducta, vpDetalles, vcConducta, vcDetalles, vlConducta, vlDetalles,         riesgoConducta, riesgoDetalles, riesgoSituacion, riesgoDetalless, vulnerabilidad, vulnerabilidadDetalles, factores_contextuales, factores_contextuales_detalle, escala_riesgo, escala_riesgo_detalle, observacionesEntrevistadora    , ParejaTrabaja, DondeTrabaja, NombreAgresor, SituacionUsuaria, RelacionAgresora, TipoRelacion, ViveConPareja, TiempoViviendoPareja, chantajeado, comochantajeado, ParejaCelosa, UtilizaHijos, Consumidora, Agresion, IncrementoAgresiones, AtencionMedica, AmenazadaConArmas, IntentoAhorcar, SienteTemorVida, PoseeArmaFuego, Denuncia, TipoDenuncia, IngresadoPrision, ValoracionRiesgo, Canalizacion, CanalizacionExterna, CanalizacionInterna, AuxiliosPsicologicos, observacionesInstitucion, primerosAuxiliosPsicologicos, auxiliosPsicologicoss) 
+            VALUES ('$id_personal','$nombre', '$apellidoPaterno', '$apellidoMaterno', '$fechaNacimiento', '$edad', '$fecharegistro', '$sexo', '$lugarNacimiento', '$indigena', '$lenguaMaterna', '$hablaLenguaIndigena', '$lenguaIndigena', '$escolaridad', '$estadocivil', '$discapacidad', '$discapacidads', '$decendencia', '$numDecendencia', '$calle', '$numInterior','$numExterior','$cp', '$estado', '$municipio', '$colonia', '$region', '$callePC', '$numInteriorPC', '$numExteriorPC', '$cppc', '$estadoPC', '$municipioPC', '$coloniaPC', '$regionPC', '$telCelular', '$telFijo', '$telConfianza','$nombreconfianza', '$parentesco', '$tipoLgbt',  '$comunidadLGBT', '$grupoEtnico', '$perteneceEtnico', '$padresLengua', '$lenguaPadres', '$aniosOaxaca', '$observacionesAdicionales', '$email', '$emailRespaldo', '$curp', '$ine', '$rutaCURP', '$rutaINE', '$rutaComDomicilio', '$ocupacion', '$tipoEmpleo', '$fuenteIngresos', '$ingresoMensual' , '$apoyosSociales', '$recibeApoyo', '$apoyoDetalle', '$totalIngresosFamiliares', '$gastoAlimentacion', '$gastoVivienda', '$gastoServicios', '$gastoTransporte', '$gastoEducacion', '$gastoSalud', '$gastoDeudas', '$gastoOtros', '$sectorEconomico', '$horasTrabajo', '$ingresosDiarios', '$tipoEnergia', '$agua', '$materialPiso', '$numCuartos', '$numHabitacionesDormir', '$numPersonasHogar', '$enteroGESMUJER', '$electricidad', '$internet', '$gas', '$television', '$telefono', '$bano', '$tipoServicioAgua', '$materialVivienda', '$TipoBano', '$personasCasa', '$personasDormitorio', '$tipoVivienda', '$descripcionSolicitud', '$vpsConducta', '$vpsDetalles', '$vsConducta', '$vsDetalles', '$acosoConducta', '$acosoDetalles', '$veConducta', '$veDetalles', '$vvConducta', '$vvDetalles', '$voConducta', '$voDetalles', '$vpConducta', '$vpDetalles', '$vcConducta', '$vcDetalles', '$vlConducta', '$vlDetalles',  '$riesgoConducta', '$riesgoDetalles', '$riesgoSituacion', '$riesgoDetalless', '$vulnerabilidad', '$vulnerabilidadDetalles', '$factores_contextuales', '$factores_contextuales_detalle', '$escala_riesgo', '$escala_riesgo_detalle', '$observacionesEntrevistadora', '$vfConducta', '$vfDetalles', '$parejaTrabaja', '$DondeTrabaja', '$NombreAgresor', '$situacionUsuaria', '$relacionAgresora', '$tipoRelacion', '$viveConPareja', '$tiempoViviendoPareja', '$chantajeado', '$comochantajeado', '$parejaCelosa', '$utilizaHijos', '$consumidora', '$agresion', '$incrementoAgresiones', '$atencionMedica', '$amenazadaConArmas', '$intentoAhorcar', '$sienteTemorVida', '$poseeArmaFuego', '$denuncia', '$tipoDenuncia', '$ingresadoPrision', '$valoracionRiesgo', '$canalizacion', '$canalizacionExterna', '$canalizacionInterna', '$auxiliosPsicologicos', '$observacionesInstitucion', '$primerosAuxiliosPsicologicos', '$auxiliosPsicologicos')";
 
 // Preparar y ejecutar la consulta SQL
 try {
@@ -114,6 +228,54 @@ try {
     $stmt->execute();
 
     $userId = $conn->lastInsertId();
+
+
+
+
+
+$sql_last_user_id = "SELECT MAX(id) AS ultimo_id_usuario FROM Usuario";
+$result_last_user_id = $conn->query($sql_last_user_id);
+
+if ($result_last_user_id) {
+    $row = $result_last_user_id->fetch(PDO::FETCH_ASSOC);
+    $ultimo_id_usuario = $row["ultimo_id_usuario"];
+} else {
+    echo "Error al obtener el último ID de usuario: " . $conn->errorInfo()[2];
+    exit();
+}
+
+// Verificar si se han enviado datos del formulario de tipos de violencia
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST["id_tipo_violencia"])) {
+    // Verificar si se han seleccionado tipos de violencia
+    $id_tipos_violencia = $_POST["id_tipo_violencia"];
+    
+    if (empty($id_tipos_violencia)) {
+        // Si no se seleccionó ningún tipo de violencia, mostrar un mensaje de error
+        echo "Debes seleccionar al menos un tipo de violencia.";
+    } else {
+        // Procesar el formulario
+        try {
+            // Preparar la consulta para insertar cada tipo de violencia seleccionado
+            $query = "INSERT INTO Usuarios_Tipos_Violencia (ID_Usuario, ID_Tipo_Violencia) VALUES (?, ?)";
+            $stmt = $conn->prepare($query);
+            
+            // Iterar sobre cada tipo de violencia seleccionado y ejecutar la consulta
+            foreach ($id_tipos_violencia as $id_tipo_violencia) {
+                $stmt->execute([$ultimo_id_usuario, $id_tipo_violencia]);
+            }
+            
+            // echo '<script>alert("Formulario enviado correctamente");</script>';
+            echo '<script>window.close();</script>';
+        } catch(PDOException $e) {
+            // Manejar errores de manera adecuada
+            echo "Error al insertar el registro: " . $e->getMessage();
+        }
+    }
+} elseif ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Si se envió el formulario pero no se recibieron datos de tipos de violencia, mostrar una alerta
+    echo "<script>alert('No se han recibido datos de tipos de violencia.');</script>";
+}
+
 
 // Insertar hijos si hay alguno
 if(isset($_POST['hijos']) && is_array($_POST['hijos'])) {
@@ -137,11 +299,41 @@ if(isset($_POST['hijos']) && is_array($_POST['hijos'])) {
 }
 
 
+
+   
+
+
+// Datos a insertar (puedes recibirlos de un formulario POST)
+$id_usuario   = $conn->lastInsertId();
+$id_personal  = $_POST['id_personal'];
+$observaciones = "SIN DATOS";
+
+try {
+    $sql = "INSERT INTO atenciones (id_usuario, id_personal, observaciones) 
+            VALUES (:id_usuario, :id_personal, :observaciones)";
+    $stmt = $conn->prepare($sql);
+
+    $stmt->bindParam(':id_usuario', $id_usuario, PDO::PARAM_INT);
+    $stmt->bindParam(':id_personal', $id_personal, PDO::PARAM_INT);
+    $stmt->bindParam(':observaciones', $observaciones, PDO::PARAM_STR);
+
+    $stmt->execute();
+
+    echo "Registro de atención creado correctamente. ID: " . $conn->lastInsertId();
+} catch(PDOException $e) {
+    echo "Error al registrar atención: " . $e->getMessage();
+}
+
+
+
+
+
+
      header("Location: ../pages/ver-usuaria.php?status=success");
 exit();
 } catch (PDOException $e) {
     // Registro de errores en un archivo de registro
-    $conn->rollBack();
+    
         header("Location: ../pages/ver-usuaria.php?status=error&msg=" . urlencode($e->getMessage()));
 exit();
   $file_path = '/xampp/htdocs/ERP/ERP_IRP/db/error_log.txt';
@@ -248,12 +440,81 @@ require_once __DIR__ . '/../pages/header.php';
         <p class="lead"></p>
     </div>
 
+
+
+
+
+
+
+    
     <div class="row g-5">
     <div class="col-xxl-12 col-xxl-12">
         <h4 class="mb-3">Datos Generales</h4>
-        <form id="miFormulario" class="needs-validation" action="register-usuaria.php" method="POST" enctype="multipart/form-data"  novalidate onsubmit="closePopup();">
+        <form id="miFormulario" class="needs-validation" action="register-usuaria.php" method="POST" enctype="multipart/form-data"  novalidate >
     <div class="row g-3">
             
+
+
+<div class="col-sm-12 position-relative">
+    <label for="id_personal" class="form-label">Especialista</label>
+    <input type="text" id="personal_input" name="personal_input" class="form-control" placeholder="Escribe el nombre del especialista...">
+    <input type="hidden" id="id_personal" name="id_personal">
+    <div id="sugerencias_personal" class="list-group" style="position:absolute; z-index:1000; width:100%;"></div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+    const input = document.getElementById("personal_input");
+    const sugerencias = document.getElementById("sugerencias_personal");
+    const idPersonal = document.getElementById("id_personal");
+
+    input.addEventListener("keyup", () => {
+        const texto = input.value.trim();
+
+        if (texto.length < 2) {
+            sugerencias.innerHTML = "";
+            return;
+        }
+
+        // 🔹 Ajusta la ruta según tu estructura de carpetas
+        fetch("./ajax/buscar_personal.php?q=" + encodeURIComponent(texto))
+            .then(res => res.json())
+            .then(data => {
+                sugerencias.innerHTML = "";
+                if (data.length > 0) {
+                    data.forEach(item => {
+                        const div = document.createElement("div");
+                        div.classList.add("list-group-item", "list-group-item-action");
+                        div.textContent = item.NombreCompleto;
+                        div.dataset.id = item.ID_Personal;
+
+                        div.addEventListener("click", () => {
+                            input.value = item.NombreCompleto;
+                            idPersonal.value = item.ID_Personal;
+                            sugerencias.innerHTML = "";
+                        });
+
+                        sugerencias.appendChild(div);
+                    });
+                } else {
+                    sugerencias.innerHTML = "<div class='list-group-item disabled'>Sin coincidencias</div>";
+                }
+            })
+            .catch(() => {
+                sugerencias.innerHTML = "<div class='list-group-item disabled'>Error de conexión</div>";
+            });
+    });
+});
+</script>
+
+
+
+
+
+
+
+
+
     <div class="col-sm-12">
         <label for="firstName" class="form-label">Nombre</label>
         <input type="text" class="form-control" id="firstName" name="nombre" placeholder="" required  oninput="validateInput(this)">
@@ -263,13 +524,13 @@ require_once __DIR__ . '/../pages/header.php';
 
     <div class="col-sm-6">
         <label for="lastName" class="form-label">Apellido Paterno:</label>
-        <input type="text" class="form-control" id="lastNames" name="apellidoPaterno" placeholder="">
+        <input type="text" class="form-control" id="lastNames" name="apellidoPaterno" placeholder="" required>
         <div class="invalid-feedback">Se requiere un apellido paterno válido.</div>
     </div>
 
     <div class="col-sm-6">
         <label for="secondLastName" class="form-label">Apellido Materno:</label>
-        <input type="text" class="form-control" id="secondLastNames" name="apellidoMaterno" placeholder="">
+        <input type="text" class="form-control" id="secondLastNames" name="apellidoMaterno" placeholder="" required>
         <div class="invalid-feedback">Se requiere un apellido materno válido.</div>
     </div>
 
@@ -290,18 +551,8 @@ require_once __DIR__ . '/../pages/header.php';
         <div class="invalid-feedback">Se requiere una Fecha de Inicio válida.</div>
     </div>
 
+
     <div class="col-sm-6">
-        <label for="sexo" class="form-label">Sexo</label>
-        <select class="form-select" id="sexo" name="sexo" aria-label="Selecciona una opción">
-        <option selected disabled value="">Selecciona una opción...</option>
-        <option value="MASCULINO">MASCULINO</option>
-        <option value="FEMENINO">FEMENINO</option>
-        <option value="OTRO">OTRO</option>
-        </select>
-        <div class="invalid-feedback">Se requiere una selección válida.</div>
-    </div>
-    
-<div class="col-sm-12">
     <label for="lugarNacimiento" class="form-label">Lugar de Nacimiento</label>
     <input type="text" class="form-control" id="lugarNacimiento" name="lugarNacimiento" placeholder="Escribe o selecciona un Municipio ..." autocomplete="off">
     <div class="sugerencias" id="sug_lugarNacimiento" style="border:1px solid #ccc; max-height:150px; overflow-y:auto;"></div>
@@ -310,32 +561,14 @@ require_once __DIR__ . '/../pages/header.php';
 </div>
 
 <?php
-// --- PHP: obtener todos los distritos/municipios ---
-$host = 'localhost';
-$db   = 'oaxacaa';
-$user = 'root';
-$pass = '';
-$charset = 'utf8mb4';
+require_once __DIR__ . '/../db/configoaxaca.php';// o la ruta correcta si está en otra carpeta
 
-$dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+$stmt = $pdo->query("SELECT id_municipio_inegi, nombre FROM municipios ORDER BY nombre ASC");
+$municipios = $stmt->fetchAll();
 
-try {
-    $pdo = new PDO($dsn, $user, $pass, [
-        PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC
-    ]);
-
-    $stmt = $pdo->query("SELECT id_municipio_inegi, nombre FROM municipios ORDER BY nombre ASC");
-    $municipios = $stmt->fetchAll();
-
-    // Pasar los datos a JS como array
-    $municipios_json = json_encode($municipios);
-
-} catch (PDOException $e) {
-    $municipios_json = json_encode([]);
-    echo "<script>console.error('Error al cargar municipios: ".$e->getMessage()."');</script>";
-}
+$municipios_json = json_encode($municipios);
 ?>
+
 
 <script>
 const input = document.getElementById('lugarNacimiento');
@@ -382,6 +615,19 @@ input.addEventListener('blur', () => {
     setTimeout(() => { sugBox.innerHTML = ''; }, 150);
 });
 </script>
+
+
+    <div class="col-sm-6">
+        <label for="sexo" class="form-label">Sexo</label>
+        <select class="form-select" id="sexo" name="sexo" aria-label="Selecciona una opción">
+        <option selected disabled value="">Selecciona una opción...</option>
+        <option value="MASCULINO">MASCULINO</option>
+        <option value="FEMENINO">FEMENINO</option>
+        <option value="OTRO">OTRO</option>
+        </select>
+        <div class="invalid-feedback">Se requiere una selección válida.</div>
+    </div>
+    
 
 
 
@@ -469,164 +715,155 @@ input.addEventListener('blur', () => {
   }
 </script>
 
- 
-    <div class="col-sm-6">
-        <label for="escolaridad" class="form-label">Escolaridad</label>
-        <select class="form-select" id="escolaridad" name="escolaridad" aria-label="Selecciona una opción">
-            <option selected disabled value="">Selecciona una opción...</option>
-            <option value="NINGUNA">NINGUNA</option>
-            <option value="PRIMARIA TERMINADA">PRIMARIA TERMINADA</option>
-            <option value="PRIMARIA TRUNCA">PRIMARIA TRUNCA</option>
-            <option value="SECUNDARIA TERMINADA">SECUNDARIA TERMINADA</option>
-            <option value="SECUNDARIA TRUNCA">SECUNDARIA TRUNCA</option>
-            <option value="PREPARATORIA TERMINADA">PREPARATORIA TERMINADA</option>
-            <option value="PREPARATORIA TRUNCA">PREPARATORIA TRUNCA</option>
-            <option value="UNIVERSIDAD TERMINADA">UNIVERSIDAD TERMINADA</option>
-            <option value="UNIVERSIDAD TRUNCA">UNIVERSIDAD TRUNCA</option>
-            <option value="POSTGRADO">POSTGRADO</option>
-            
-        </select>
-    <div class="invalid-feedback"> Se requiere una selección válida.</div>
-    </div>
-
-    <div class="col-sm-6">
-        <label for="estadocivil" class="form-label">Estado civil</label>
-        <select class="form-select" id="estadocivil" name="estadocivil" aria-label="Selecciona una opción">
-            <option selected disabled value="">Selecciona una opción...</option>
-            <option value="SOLTERA">SOLTERA</option>
-            <option value="CASADA">CASADA</option>
-            <option value="DIVORCIADA">DIVORCIADA</option>
-            <option value="SEPARADA">SEPARADA</option>
-            <option value="VIUDA">VIUDA</option>
-            <option value="CONCUBINATO">CONCUBINATO</option>
-            <option value="OTRA">OTRA</option>
-        </select>
-    <div class="invalid-feedback"> Se requiere una selección válida.</div>
-    </div>
 
 
-    <div class="col-sm-6">
-        <label for="orientacionSexual" class="form-label">Orientación Sexual</label>
-        <select class="form-select" id="orientacionSexual" name="orientacionSexual" aria-label="Selecciona una opción">
-        <option selected disabled value="">Selecciona una opción...</option>
-            <option value="HETEROSEXUAL">HETEROSEXUAL</option>
-            <option value="LESBIANA">LESBIANA</option>
-            <option value="BISEXUAL">BISEXUAL</option>
-            <option value="OTRA">OTRA</option>
-        </select>
-    <div class="invalid-feedback">Se requiere una selección válida.</div>
+
+
+ <h4>Datos de Contacto</h4>
+            <hr class="my-4">
+
+             <div class="col-sm-6">
+        <label for="telFijo" class="form-label">Teléfono fijo</label>
+        <input type="number" class="form-control" id="telFijo" name="telFijo" placeholder="" >
+        <div class="invalid-feedback">Se requiere un número de teléfono fijo válido.</div>
     </div>
     
-    <div class="col-sm-12">
-        <label for="discapacidad" class="form-label">Tiene alguna Discapacidad</label>
-        <select class="form-select" id="discapacidad" name="discapacidad" aria-label="Selecciona una opción">
-        <option selected disabled value="">Selecciona una opción...</option>
-            <option value="MUDA">MUDA</option>
-            <option value="SORDA-CIEGA">SORDA-CIEGA</option>
-            <option value="INTELECTUAL">INTELECTUAL</option>
-            <option value="PSICOSOCIAL">PSICOSOCIAL</option>
-            <option value="AUDITIVA">AUDITIVA</option>
-            <option value="VISUAL">VISUAL</option>
-            <option value="FISICA">FISICA</option>
-            <option value="NINGUNA">NINGUNA</option>
-            <option value="OTRA">OTRA</option>
-        </select>
-    <div class="invalid-feedback">Se requiere una selección válida.</div>
+
+    <div class="col-sm-6">
+        <label for="telCelular" class="form-label">Teléfono celular</label>
+        <input type="number" class="form-control" id="telCelular" name="telCelular" placeholder="">
+        <div class="invalid-feedback">Se requiere un número de teléfono celular válido.</div>
     </div>
 
-   <div class="col-sm-6">
-    <label class="form-label">¿Tiene Hijos e Hijas?</label>
-    <div class="form-check">
-        <input class="form-check-input" type="radio" name="decendencia" id="hijos1" value="SI" onclick="showHijosInput()">
-        <label class="form-check-label" for="hijos1">SI</label>
+     <div class="col-sm-6">
+        <label for="email" class="form-label">Correo electrónico</label>
+        <div class="input-group has-validation">
+        <span class="input-group-text">@</span>
+        <input type="email" class="form-control" maxlength="50" id="email" name="email" placeholder="Correo electrónico">
+        <div class="invalid-feedback">Se requiere una dirección de correo electrónico válida.</div>
+        </div>
     </div>
-    <div class="form-check">
-        <input class="form-check-input" type="radio" name="decendencia" id="hijos2" value="NO" onclick="hideHijosInput()">
-        <label class="form-check-label" for="hijos2">NO</label>
+
+    <div class="col-sm-6">
+        <label for="emailRespaldo" class="form-label">Correo electrónico de respaldo<span class="text-body-secondary">(Opcional)</span></label>
+        <div class="input-group has-validation">
+        <span class="input-group-text">@</span>
+        <input type="email" class="form-control" maxlength="50" id="emailRespaldo" name="emailRespaldo" placeholder="Correo electrónico">
+    </div>
+</DIV>
+
+
+   
+    <div class="col-sm-6">
+        <label for="telConfianza" class="form-label">Teléfono de confianza</label>
+        <input type="number" class="form-control" id="telConfianza" name="telConfianza" placeholder="">
+        <div class="invalid-feedback">Se requiere un número de teléfono de confianza válido.</div>
+    </div>
+
+   
+
+<div class="col-sm-6">
+        <label for="telConfianza" class="form-label">Nombre</label>
+        <input type="text" class="form-control" id="firstname" name="nombreconfianza" placeholder="">
+        <div class="invalid-feedback">Se requiere un número de teléfono de confianza válido.</div>
+    </div>
+
+    
+<div class="col-sm-6">
+    <label for="parentesco" class="form-label">Parentesco</label>
+    <select class="form-select" id="parentesco" name="parentesco" >
+        <option value="">-- Selecciona un parentesco --</option>
+        <option value="padre">Padre</option>
+        <option value="madre">Madre</option>
+        <option value="hermano">Hermano</option>
+        <option value="hermana">Hermana</option>
+        <option value="tio">Tío</option>
+        <option value="tia">Tía</option>
+        <option value="abuelo">Abuelo</option>
+        <option value="abuela">Abuela</option>
+        <option value="amigo">Amigo/a</option>
+        <option value="otro">Otro</option>
+    </select>
+    <div class="invalid-feedback">
+        Se requiere seleccionar un parentesco válido.
     </div>
 </div>
 
-<div class="col-sm-12" id="HijosInput" style="display: none;">
-    <label for="numDecendencia" class="form-label">¿Cuántos?</label>
-    <input type="number" min="1" max="15" class="form-control mb-3" id="numDecendencia" name="numDecendencia" placeholder="Ingrese un número" oninput="generarCamposHijos()">
-    <div class="invalid-feedback">Se requiere un número válido.</div>
 
-    <div id="formularios_hijos"></div>
+ <h4>Datos de Orientacion Social</h4>
+            <hr class="my-4">
+
+           <div class="col-sm-6">
+  <label class="form-label">¿Pertenece a una comunidad LGBT+?</label>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="comunidadLGBT" id="lgbtSi" value="SI" onclick="showLgbtSelect()">
+    <label class="form-check-label" for="lgbtSi">Sí</label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="comunidadLGBT" id="lgbtNo" value="NO" onclick="hideLgbtSelect()">
+    <label class="form-check-label" for="lgbtNo">No</label>
+  </div>
+</div>
+
+<div class="col-sm-6" id="lgbtSelectContainer" style="display: none;">
+  <label for="tipoLgbt" class="form-label">¿A cuál?</label>
+  <select class="form-select" id="tipoLgbt" name="tipoLgbt">
+    <option selected disabled value="">Seleccionar opción...</option>
+    <option value="Lesbiana">Lesbiana</option>
+    <option value="Gay">Gay</option>
+    <option value="Bisexual">Bisexual</option>
+    <option value="Transgénero">Transgénero</option>
+    <option value="Queer">Queer</option>
+    <option value="Intersex">Intersex</option>
+    <option value="Asexual">Asexual</option>
+    <option value="Otro">Otro</option>
+  </select>
 </div>
 
 <script>
-function showHijosInput() {
-    document.getElementById('HijosInput').style.display = 'block';
-}
+  function showLgbtSelect() {
+    document.getElementById('lgbtSelectContainer').style.display = 'block';
+  }
 
-function hideHijosInput() {
-    document.getElementById('HijosInput').style.display = 'none';
-    document.getElementById('formularios_hijos').innerHTML = ''; // Limpiar campos si el usuario cambia a NO
-}
-
-function generarCamposHijos() {
-    const cantidad = parseInt(document.getElementById('numDecendencia').value) || 0;
-    const contenedor = document.getElementById('formularios_hijos');
-    contenedor.innerHTML = ''; // Limpiar antes de generar
-
-    for (let i = 0; i < cantidad; i++) {
-        const div = document.createElement('div');
-        div.classList.add('mb-3');
-        div.innerHTML = `
-            <h5>Hijo ${i + 1}</h5>
-            <div class="row">
-
-                <div class="col-sm-6">
-                    <label class="form-label">Nombre:</label>
-                    <input type="text" name="hijos[${i}][nombre]" id="firstName" class="form-control" required  oninput="validateInput(this)">
-                <div class="invalid-feedback">Se requiere un nombre válido.</div>
-    <div class="valid-feedback">Looks good!</div>
-                    </div>
-                <div class="col-sm-6">
-                    <label class="form-label">Apellido Paterno:</label>
-                    <input type="text" name="hijos[${i}][apellido_paterno]" class="form-control" >
-                </div>
-            </div>
-            <div class="row mt-2">
-                <div class="col-sm-6">
-                    <label class="form-label">Apellido Materno:</label>
-                    <input type="text" name="hijos[${i}][apellido_materno]" class="form-control">
-                </div>
-                <div class="col-sm-6">
-                    <label class="form-label">Fecha de Nacimiento:</label>
-                    <input type="date" name="hijos[${i}][fecha_nacimiento]" class="form-control" >
-                </div>
-            </div>
-            <div class="row mt-2">
-                <div class="col-sm-6">
-                    <label class="form-label">Sexo:</label>
-                    <select name="hijos[${i}][sexo]" class="form-select" >
-                        <option value="">Selecciona</option>
-                        <option value="Masculino">Masculino</option>
-                        <option value="Femenino">Femenino</option>
-                    </select>
-                </div>
-                <div class="col-sm-6">
-                    <label class="form-label">Escolaridad:</label>
-                    <input type="text" name="hijos[${i}][escolaridad]" class="form-control">
-                </div>
-            </div>
-            <div class="row mt-2">
-                <div class="col-sm-6">
-                    <label class="form-label">Condición:</label>
-                    <input type="text" name="hijos[${i}][condicion]" class="form-control">
-                </div>
-            </div>
-            <hr>
-        `;
-        contenedor.appendChild(div);
-    }
-}
+  function hideLgbtSelect() {
+    document.getElementById('lgbtSelectContainer').style.display = 'none';
+    document.getElementById('tipoLgbt').value = ''; // Limpia selección
+  }
 </script>
 
 
 
-        <h4>Datos de Domicilio</h4>
+
+<h4>Estado Civil</h4>
+            <hr class="my-4">
+
+   <div class="col-sm-6">
+  <label for="estadoCivil" class="form-label">ESTADO CIVIL</label>
+  <select class="form-select" id="estadoCivil" name="estadocivil" >
+    <option selected disabled value="">SELECCIONAR ESTADO CIVIL...</option>
+    <option value="SOLTERO">SOLTERO/A</option>
+    <option value="CASADO">CASADO/A</option>
+    <option value="DIVORCIADO">DIVORCIADO/A</option>
+    <option value="VIUDO">VIUDO/A</option>
+    <option value="UNION_LIBRE">UNIÓN LIBRE</option>
+    <option value="SEPARADO">SEPARADO/A</option>
+    <option value="COMPROMETIDO">COMPROMETIDO/A</option>
+    <option value="CONCUBINATO">CONCUBINATO</option>
+    <option value="PAREJA_DE_HECHO">PAREJA DE HECHO</option>
+    <option value="ANULADO">MATRIMONIO ANULADO</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+  <div class="invalid-feedback">
+    SE REQUIERE SELECCIONAR UN ESTADO CIVIL.
+  </div>
+</div>
+
+
+
+
+
+
+        <h4>Residencia y Origen</h4>
         <hr class="my-4">
 
     <div class="col-sm-6">
@@ -1010,28 +1247,267 @@ function populateFields(details) {
    
 
 
+<div class="col-sm-6">
+  <label class="form-label">¿PERTENECE A UN GRUPO ÉTNICO?</label>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="perteneceEtnico" id="etnicoSi" value="SI" onclick="showEtnicoSelect()">
+    <label class="form-check-label" for="etnicoSi">SÍ</label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="perteneceEtnico" id="etnicoNo" value="NO" onclick="hideEtnicoSelect()">
+    <label class="form-check-label" for="etnicoNo">NO</label>
+  </div>
+</div>
+
+<div class="col-sm-6" id="etnicoSelectContainer" style="display: none;">
+  <label for="grupoEtnico" class="form-label">¿A CUÁL?</label>
+  <select class="form-select" id="grupoEtnico" name="grupoEtnico">
+    <option selected disabled value="">SELECCIONAR GRUPO ÉTNICO...</option>
+    <option value="ZAPOTECO">ZAPOTECO</option>
+    <option value="MIXTECO">MIXTECO</option>
+    <option value="MAZATECO">MAZATECO</option>
+    <option value="CHINANTECO">CHINANTECO</option>
+    <option value="MIXE">MIXE</option>
+    <option value="TRIQUI">TRIQUI</option>
+    <option value="CHATINO">CHATINO</option>
+    <option value="AMUZGO">AMUZGO</option>
+    <option value="CUICATECO">CUICATECO</option>
+    <option value="HUAVE">HUAVE</option>
+    <option value="CHONTAL">CHONTAL</option>
+    <option value="IXCATECO">IXCATECO</option>
+    <option value="ZOQUE">ZOQUE</option>
+    <option value="NÁHUATL">NÁHUATL</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+</div>
+
+<script>
+  function showEtnicoSelect() {
+    document.getElementById('etnicoSelectContainer').style.display = 'block';
+  }
+
+  function hideEtnicoSelect() {
+    document.getElementById('etnicoSelectContainer').style.display = 'none';
+    document.getElementById('grupoEtnico').value = ''; // Limpia la selección
+  }
+</script>
+
+
+<div class="col-sm-6">
+  <label class="form-label">¿SU PADRE O MADRE HABLA ALGUNA LENGUA INDÍGENA?</label>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="padresLengua" id="padresLenguaSi" value="SI" onclick="showPadresLenguaSelect()">
+    <label class="form-check-label" for="padresLenguaSi">SÍ</label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="padresLengua" id="padresLenguaNo" value="NO" onclick="hidePadresLenguaSelect()">
+    <label class="form-check-label" for="padresLenguaNo">NO</label>
+  </div>
+</div>
+
+<div class="col-sm-6" id="padresLenguaSelectContainer" style="display: none;">
+  <label for="lenguaPadres" class="form-label">¿CUÁL?</label>
+  <select class="form-select" id="lenguaPadres" name="lenguaPadres">
+    <option selected disabled value="">SELECCIONAR LENGUA...</option>
+    <option value="ZAPOTECO">ZAPOTECO</option>
+    <option value="MIXTECO">MIXTECO</option>
+    <option value="MAZATECO">MAZATECO</option>
+    <option value="CHINANTECO">CHINANTECO</option>
+    <option value="MIXE">MIXE</option>
+    <option value="TRIQUI">TRIQUI</option>
+    <option value="CHATINO">CHATINO</option>
+    <option value="AMUZGO">AMUZGO</option>
+    <option value="CUICATECO">CUICATECO</option>
+    <option value="HUAVE">HUAVE</option>
+    <option value="CHONTAL">CHONTAL</option>
+    <option value="IXCATECO">IXCATECO</option>
+    <option value="ZOQUE">ZOQUE</option>
+    <option value="NÁHUATL">NÁHUATL</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+</div>
+
+<script>
+  function showPadresLenguaSelect() {
+    document.getElementById('padresLenguaSelectContainer').style.display = 'block';
+  }
+
+  function hidePadresLenguaSelect() {
+    document.getElementById('padresLenguaSelectContainer').style.display = 'none';
+    document.getElementById('lenguaPadres').value = ''; // Limpia la selección
+  }
+</script>
+
+
+<div class="col-sm-6">
+  <label for="aniosOaxaca" class="form-label">AÑOS DE VIVIR EN OAXACA</label>
+  <input type="number" class="form-control" id="aniosOaxaca" name="aniosOaxaca" min="0" placeholder="Ingrese el número de años" >
+  <div class="invalid-feedback">Por favor, ingrese un número válido de años.</div>
+</div>
+
+
+ <div class="col-sm-6">
+    <label class="form-label">¿TIENE HIJOS E HIJAS?</label>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="decendencia" id="hijos1" value="SI" onclick="showHijosInput()">
+        <label class="form-check-label" for="hijos1">SI</label>
+    </div>
+    <div class="form-check">
+        <input class="form-check-input" type="radio" name="decendencia" id="hijos2" value="NO" onclick="hideHijosInput()">
+        <label class="form-check-label" for="hijos2">NO</label>
+    </div>
+</div>
+
+<div class="col-sm-6" id="HijosInput" style="display: none;">
+    <label for="numDecendencia" class="form-label">¿CUANTOS?</label>
+    <input type="number" min="1" max="15" class="form-control mb-3" id="numDecendencia" name="numDecendencia" placeholder="Ingrese un número" oninput="generarCamposHijos()">
+    <div class="invalid-feedback">Se requiere un número válido.</div>
+
+    
+</div>
+<!-- SAQUE ESTE DIVE QUE CONTIENE EL FORMULARIO DEL OTRO VIV AVER SI SI FUNCIONA CAPTANDO LOS DATOS O NO -->
+<div id="formularios_hijos"></div>
+<script>
+function showHijosInput() {
+    document.getElementById('HijosInput').style.display = 'block';
+}
+
+function hideHijosInput() {
+    document.getElementById('HijosInput').style.display = 'none';
+    document.getElementById('formularios_hijos').innerHTML = ''; // Limpiar campos si el usuario cambia a NO
+}
+
+function generarCamposHijos() {
+    const cantidad = parseInt(document.getElementById('numDecendencia').value) || 0;
+    const contenedor = document.getElementById('formularios_hijos');
+    contenedor.innerHTML = ''; // Limpiar antes de generar
+
+    for (let i = 0; i < cantidad; i++) {
+        const div = document.createElement('div');
+        div.classList.add('mb-3');
+        div.innerHTML = `
+            <h5>Hijo ${i + 1}</h5>
+            <div class="row">
+
+                <div class="col-sm-6">
+                    <label class="form-label">Nombre:</label>
+                    <input type="text" name="hijos[${i}][nombre]" id="firstName" class="form-control" required  oninput="validateInput(this)">
+                <div class="invalid-feedback">Se requiere un nombre válido.</div>
+    <div class="valid-feedback">Looks good!</div>
+                    </div>
+                <div class="col-sm-6">
+                    <label class="form-label">Apellido Paterno:</label>
+                    <input type="text" name="hijos[${i}][apellido_paterno]" class="form-control" >
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-sm-6">
+                    <label class="form-label">Apellido Materno:</label>
+                    <input type="text" name="hijos[${i}][apellido_materno]" class="form-control">
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label">Fecha de Nacimiento:</label>
+                    <input type="date" name="hijos[${i}][fecha_nacimiento]" class="form-control" >
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-sm-6">
+                    <label class="form-label">Sexo:</label>
+                    <select name="hijos[${i}][sexo]" class="form-select" >
+                        <option value="">Selecciona</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Femenino">Femenino</option>
+                    </select>
+                </div>
+                <div class="col-sm-6">
+                    <label class="form-label">Escolaridad:</label>
+                    <input type="text" name="hijos[${i}][escolaridad]" class="form-control">
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-sm-6">
+                    <label class="form-label">Condición:</label>
+                    <input type="text" name="hijos[${i}][condicion]" class="form-control">
+                </div>
+            </div>
+            <hr>
+        `;
+        contenedor.appendChild(div);
+    }
+}
+</script>
+
+ <div class="col-sm-6">
+        <label for="escolaridad" class="form-label">NIVEL DE ESTUDIOS</label>
+        <select class="form-select" id="escolaridad" name="escolaridad" aria-label="Selecciona una opción">
+            <option selected disabled value="">Selecciona una opción...</option>
+            <option value="NINGUNA">NINGUNA</option>
+            <option value="PRIMARIA TERMINADA">PRIMARIA TERMINADA</option>
+            <option value="PRIMARIA TRUNCA">PRIMARIA TRUNCA</option>
+            <option value="SECUNDARIA TERMINADA">SECUNDARIA TERMINADA</option>
+            <option value="SECUNDARIA TRUNCA">SECUNDARIA TRUNCA</option>
+            <option value="PREPARATORIA TERMINADA">PREPARATORIA TERMINADA</option>
+            <option value="PREPARATORIA TRUNCA">PREPARATORIA TRUNCA</option>
+            <option value="UNIVERSIDAD TERMINADA">UNIVERSIDAD TERMINADA</option>
+            <option value="UNIVERSIDAD TRUNCA">UNIVERSIDAD TRUNCA</option>
+            <option value="POSTGRADO">POSTGRADO</option>
+            
+        </select>
+    <div class="invalid-feedback"> Se requiere una selección válida.</div>
+    </div>
+
+
+    <div class="col-sm-6">
+  <label class="form-label">¿PRESENTA ALGUNA DISCAPACIDAD?</label>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="discapacidads" id="discapacidadSi" value="SI" onclick="showDiscapacidadSelect()">
+    <label class="form-check-label" for="discapacidadSi">SÍ</label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="discapacidads" id="discapacidadNo" value="NO" onclick="hideDiscapacidadSelect()">
+    <label class="form-check-label" for="discapacidadNo">NO</label>
+  </div>
+</div>
+
+<div class="col-sm-6" id="discapacidadSelectContainer" style="display: none;">
+  <label for="tipoDiscapacidad" class="form-label">¿CUÁL?</label>
+  <select class="form-select" id="tipoDiscapacidad" name="discapacidad">
+    <option selected disabled value="">SELECCIONAR TIPO...</option>
+    <option value="MOTRIZ">MOTRIZ</option>
+    <option value="VISUAL">VISUAL</option>
+    <option value="AUDITIVA">AUDITIVA</option>
+    <option value="INTELECTUAL">INTELECTUAL</option>
+    <option value="DEL LENGUAJE">DEL LENGUAJE</option>
+    <option value="PSICOSOCIAL">PSICOSOCIAL</option>
+    <option value="MULTIPLE">MÚLTIPLE</option>
+    <option value="OTRA">OTRA</option>
+  </select>
+</div>
+
+<script>
+  function showDiscapacidadSelect() {
+    document.getElementById('discapacidadSelectContainer').style.display = 'block';
+  }
+
+  function hideDiscapacidadSelect() {
+    document.getElementById('discapacidadSelectContainer').style.display = 'none';
+    document.getElementById('tipoDiscapacidad').value = ''; // Limpia selección
+  }
+</script>
+
+
+    
+<div class="col-sm-12 mt-3">
+  <label for="observacionesAdicionales" class="form-label">OBSERVACIONES ADICIONALES</label>
+  <textarea class="form-control" id="observacionesAdicionales" name="observacionesAdicionales" rows="3" placeholder="Escriba cualquier observación adicional..."></textarea>
+</div>
+
+  
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-        <h4>Domicilio Persona de Confianza</h4>
+   <h4>Domicilio Persona de Confianza</h4>
         <hr class="my-4">
 
     <div class="col-sm-6">
@@ -1329,44 +1805,10 @@ function populateFields(details) {
     <div class="invalid-feedback">Se requiere una selección válida.</div>
     </div> -->
 
-            <h4>Datos de Contacto</h4>
-            <hr class="my-4">
 
-    <div class="col-sm-6">
-        <label for="telCelular" class="form-label">Teléfono celular</label>
-        <input type="number" class="form-control" id="telCelular" name="telCelular" placeholder="">
-        <div class="invalid-feedback">Se requiere un número de teléfono celular válido.</div>
-    </div>
 
-    <div class="col-sm-6">
-        <label for="telFijo" class="form-label">Teléfono fijo</label>
-        <input type="number" class="form-control" id="telFijo" name="telFijo" placeholder="" >
-        <div class="invalid-feedback">Se requiere un número de teléfono fijo válido.</div>
-    </div>
-    
-    <div class="col-sm-6">
-        <label for="telConfianza" class="form-label">Teléfono de confianza</label>
-        <input type="number" class="form-control" id="telConfianza" name="telConfianza" placeholder="">
-        <div class="invalid-feedback">Se requiere un número de teléfono de confianza válido.</div>
-    </div>
 
-    <div class="col-sm-6">
-        <label for="email" class="form-label">Correo electrónico</label>
-        <div class="input-group has-validation">
-        <span class="input-group-text">@</span>
-        <input type="email" class="form-control" maxlength="50" id="email" name="email" placeholder="Correo electrónico">
-        <div class="invalid-feedback">Se requiere una dirección de correo electrónico válida.</div>
-        </div>
-    </div>
-
-    <div class="col-sm-6">
-        <label for="emailRespaldo" class="form-label">Correo electrónico de respaldo<span class="text-body-secondary">(Opcional)</span></label>
-        <div class="input-group has-validation">
-        <span class="input-group-text">@</span>
-        <input type="email" class="form-control" maxlength="50" id="emailRespaldo" name="emailRespaldo" placeholder="Correo electrónico">
-    </div>
-</DIV>
-
+      
             <h4>Documentos comprobables</h4>
             <hr class="my-4">
 
@@ -1400,7 +1842,14 @@ function populateFields(details) {
         <div class="invalid-feedback">Se requiere una Comprobante de Domicilio.</div>
     </div>
 
-            <h3>Estudio socioeconómico</h3>
+
+
+
+
+
+
+
+  <h3>Estudio socioeconómico</h3>
             <hr class="my-4">
 
    <div class="col-sm-6">
@@ -1422,6 +1871,23 @@ function populateFields(details) {
     <div class="invalid-feedback">Se requiere una ocupación válida.</div>
 </div>
 
+<div class="col-sm-6 mt-3">
+  <label for="tipoEmpleo" class="form-label">Tipo de Empleo</label>
+  <select class="form-select" id="tipoEmpleo" name="tipoEmpleo" >
+    <option value="">Selecciona una opcion</option>
+    <option value="FORMAL">FORMAL</option>
+    <option value="INFORMAL">INFORMAL</option>
+    <option value="DESEMPLEADA">DESEMPLEADA</option>
+  </select>
+  <div class="invalid-feedback">Por favor, selecciona el tipo de empleo.</div>
+</div>
+
+<div class="col-sm-6" id="DondeTrabaja">
+        <label for="DondeTrabaja" class="form-label">¿Dónde trabaja?</label>
+        <input type="text" class="form-control" id="Trabaja" name="DondeTrabaja">
+        <div class="invalid-feedback">Se requiere un apellido válido.</div>
+    </div>
+
     
  <div class="col-sm-6">
     <label for="fuenteIngresos" class="form-label">Fuente de ingresos</label>
@@ -1442,7 +1908,7 @@ function populateFields(details) {
 </div>
 
 
-    <div class="col-sm-6">
+<div class="col-sm-6">
         <label for="sectorEconomico" class="form-label">Sector económico</label>
         <select class="form-select" id="sectorEconomico" name="sectorEconomico" aria-label="Default select example">
         <option selected disabled value="">Selecciona una opción...</option>
@@ -1474,31 +1940,181 @@ function populateFields(details) {
         <div class="invalid-feedback">Se requiere un número válido de ingresos diarios.</div>
     </div>
 
+
+<div class="col-sm-6 mt-3">
+  <label for="ingresoMensual" class="form-label">Ingreso Mensual Aproximado</label>
+  <input 
+    type="number" 
+    class="form-control" 
+    id="ingresoMensual" 
+    name="ingresoMensual" 
+    placeholder="Ejemplo: 5000" 
+    min="0" 
+    step="100" 
+    >
+  <div class="invalid-feedback">Por favor, ingresa un monto válido.</div>
+</div>
+
+
+
+
+<div class="col-sm-6 mt-3">
+  <label for="apoyosSociales" class="form-label">Otros Ingresos</label>
+  <select class="form-select" id="apoyosSociales" name="apoyosSociales">
+    <option value="">Selecciona una Opcion</option>
+    <option value="PROSPERA">PROSPERA</option>
+    <option value="PENSION_ADULTO_MAYOR">PENSIÓN ADULTO MAYOR</option>
+    <option value="PENSION_DISCAPACIDAD">PENSIÓN DISCAPACIDAD</option>
+     <option value="SUBSIDIO">SUBSIDIO</option>
+    <option value="REMESAS">REMESAS</option>
+    <option value="NEGOCIO_PROPIO">NEGOCIO PROPIO</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+</div>
+
+
+
+
+
+<div class="col-sm-6 mt-3">
+  <label class="form-label">¿Recibe apoyo económico de otras personas?</label>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="recibeApoyo" id="recibeApoyoSi" value="SI" onclick="showApoyoDetalle()">
+    <label class="form-check-label" for="recibeApoyoSi">Sí</label>
+  </div>
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="recibeApoyo" id="recibeApoyoNo" value="NO" onclick="hideApoyoDetalle()">
+    <label class="form-check-label" for="recibeApoyoNo">No</label>
+  </div>
+</div>
+
+<div class="col-sm-6 mt-2" id="apoyoDetalleContainer" style="display: none;">
+  <label for="apoyoDetalle" class="form-label">¿De quién?</label>
+  <select class="form-select" id="apoyoDetalle" name="apoyoDetalle">
+    <option value="">Selecciona una Opcion</option>
+    <option value="PADRE">PADRE</option>
+    <option value="MADRE">MADRE</option>
+    <option value="HERMANO_HERMANA">HERMANO / HERMANA</option>
+    <option value="ABUELO_ABUELA">ABUELO / ABUELA</option>
+    <option value="TIO_TIA">TÍO / TÍA</option>
+    <option value="PRIMO_PRIMA">PRIMO / PRIMA</option>
+    <option value="OTRO">OTRO</option>
+  </select>
+</div>
+
+<script>
+  function showApoyoDetalle() {
+    document.getElementById('apoyoDetalleContainer').style.display = 'block';
+  }
+
+  function hideApoyoDetalle() {
+    document.getElementById('apoyoDetalleContainer').style.display = 'none';
+    document.getElementById('apoyoDetalle').value = '';
+  }
+</script>
+
+
+
+<div class="col-sm-6 mt-3">
+  <label for="totalIngresosFamiliares" class="form-label">Total de ingresos familiares mensuales (MXN)</label>
+  <input type="number" class="form-control" id="totalIngresosFamiliares" name="totalIngresosFamiliares" placeholder="0" min="0" step="100">
+  <div class="invalid-feedback">Por favor ingresa un monto válido.</div>
+</div>
+
+
+
+
+
+
+<div class="col-6 mt-3">
+  <label class="form-label">Gastos fijos mensuales aproximados (MXN)</label>
+</div>
+
+<div class="col-sm-6 mt-2">
+  <label for="gastoAlimentacion" class="form-label">Alimentación</label>
+  <input type="number" class="form-control" id="gastoAlimentacion" name="gastoAlimentacion" placeholder="0" min="0" step="50">
+</div>
+
+<div class="col-sm-6 mt-2">
+  <label for="gastoVivienda" class="form-label">Vivienda</label>
+  <input type="number" class="form-control" id="gastoVivienda" name="gastoVivienda" placeholder="0" min="0" step="50">
+</div>
+
+<div class="col-sm-6 mt-2">
+  <label for="gastoServicios" class="form-label">Servicios (agua, luz, internet, etc.)</label>
+  <input type="number" class="form-control" id="gastoServicios" name="gastoServicios" placeholder="0" min="0" step="50">
+</div>
+
+<div class="col-sm-6 mt-2">
+  <label for="gastoTransporte" class="form-label">Transporte</label>
+  <input type="number" class="form-control" id="gastoTransporte" name="gastoTransporte" placeholder="0" min="0" step="50">
+</div>
+
+<div class="col-sm-6 mt-2">
+  <label for="gastoEducacion" class="form-label">Educación</label>
+  <input type="number" class="form-control" id="gastoEducacion" name="gastoEducacion" placeholder="0" min="0" step="50">
+</div>
+
+<div class="col-sm-6 mt-2">
+  <label for="gastoSalud" class="form-label">Salud</label>
+  <input type="number" class="form-control" id="gastoSalud" name="gastoSalud" placeholder="0" min="0" step="50">
+</div>
+
+<div class="col-sm-6 mt-2">
+  <label for="gastoDeudas" class="form-label">Deudas</label>
+  <input type="number" class="form-control" id="gastoDeudas" name="gastoDeudas" placeholder="0" min="0" step="50">
+</div>
+
+<div class="col-sm-6 mt-2">
+  <label for="gastoOtros" class="form-label">Otros</label>
+  <input type="number" class="form-control" id="gastoOtros" name="gastoOtros" placeholder="0" min="0" step="50">
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+
             <h4>Datos de vivienda </h4>
             <hr class="my-4">
 
-    <div class="col-sm-6">
-        <label for="tipoEnergia" class="form-label">Tipo de energía</label>
-        <select class="form-select" id="tipoEnergia" name="tipoEnergia" aria-label="Default select example">
+
+
+             <div class="col-sm-6">
+        <label for="tipoVivienda" class="form-label">Tipo de vivienda</label>
+        <select class="form-select" id="tipoVivienda" name="tipoVivienda" aria-label="Default select example">
         <option selected disabled value="">Selecciona una opción...</option>
-            <option value="ELECTRICA">Eléctrica</option>
-            <option value="SOLAR">Solar</option>
-            <option value="NINGUNA">Ninguna</option>
+            <option value="PRESTADA">Prestada</option>
+            <option value="RENTADA">Rentada</option>
+            <option value="PROPIA">Propia</option>
+            <option value="FINANCIADA">Financiada</option>
+            <option value="DE FAMILIARES">De familiares</option>
+            <option value="OTRO">Otro</option>
         </select>
-    <div class="invalid-feedback">Se requiere seleccionar el tipo de energía.</div>
+        <div class="invalid-feedback">Se requiere seleccionar el tipo de vivienda.</div>
     </div>
 
+
     <div class="col-sm-6">
-        <label class="form-label">¿La vivienda cuenta con servicios de agua?</label>
-        <div class="form-check">
-            <input class="form-check-input" type="radio" name="agua" id="aguaSI" value="SI">
-            <label class="form-check-label" for="aguaSI">Sí</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="radio" name="agua" id="aguaNO" value="NO">
-            <label class="form-check-label" for="aguaNO">No</label>
-        </div>
-        <div class="invalid-feedback">Se requiere seleccionar una opción para los servicios de agua.</div>
+        <label for="materialVivienda" class="form-label">Material de la vivienda</label>
+        <select class="form-select" id="materialVivienda" name="materialVivienda" aria-label="Default select example">
+        <option selected disabled value="">Selecciona una opción...</option>
+            <option value="LÁMINA">Lámina</option>
+            <option value="MATERIAL">Material</option>
+            <option value="MADERA">Madera</option>
+            <option value="OTRO">Otro</option>
+        </select>
+        <div class="invalid-feedback">Se requiere seleccionar el material de la vivienda.</div>
     </div>
 
     <div class="col-sm-6">
@@ -1514,6 +2130,192 @@ function populateFields(details) {
         <div class="invalid-feedback">Se requiere seleccionar el material del piso.</div>
     </div>
 
+<div class="col-sm-6 mt-2">
+  <label for="numCuartos" class="form-label">Número total de cuartos</label>
+  <input type="number" class="form-control" id="numCuartos" name="numCuartos" placeholder="0" min="0" step="1">
+</div>
+
+<div class="col-sm-6 mt-2">
+  <label for="numHabitacionesDormir" class="form-label">Número de habitaciones para dormir</label>
+  <input type="number" class="form-control" id="numHabitacionesDormir" name="numHabitacionesDormir" placeholder="0" min="0" step="1">
+</div>
+
+<div class="col-sm-6 mt-2">
+  <label for="numPersonasHogar" class="form-label">Número de personas que viven en el hogar</label>
+  <input type="number" class="form-control" id="numPersonasHogar" name="numPersonasHogar" placeholder="0" min="0" step="1">
+</div>
+
+    <div class="col-sm-6">
+        <label for="personasCasa" class="form-label">¿Cuántas personas viven en la misma casa, incluyendo a niñas y niños?</label>
+        <input type="number" max="20" class="form-control" id="personasCasa" name="personasCasa" placeholder="" >
+        <div class="invalid-feedback">Se requiere ingresar el número de personas que viven en la misma casa.</div>
+    </div>
+
+    <div class="col-sm-6">
+        <label for="personasDormitorio" class="form-label">¿Cuántas personas duermen en un mismo cuarto, incluyendo a niñas y niños?</label>
+        <input type="number" max="20" class="form-control" id="personasDormitorio" name="personasDormitorio" placeholder="">
+        <div class="invalid-feedback">Se requiere ingresar el número de personas que duermen en un mismo cuarto.</div>
+    </div>
+
+
+
+
+<div class="row mt-3">
+  <label class="form-label">Servicios con los que cuenta la vivienda:</label>
+
+  <div class="col-sm-6 mt-2">
+    <label class="form-label">Agua:</label>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="agua" id="aguaSi" value="SI">
+      <label class="form-check-label" for="aguaSi">Sí</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="agua" id="aguaNo" value="NO">
+      <label class="form-check-label" for="aguaNo">No</label>
+    </div>
+  </div>
+
+  <div class="col-sm-6 mt-2">
+    <label class="form-label">Electricidad:</label>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="electricidad" id="electricidadSi" value="SI">
+      <label class="form-check-label" for="electricidadSi">Sí</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="electricidad" id="electricidadNo" value="NO">
+      <label class="form-check-label" for="electricidadNo">No</label>
+    </div>
+  </div>
+
+  <div class="col-sm-6 mt-2">
+    <label class="form-label">Internet:</label>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="internet" id="internetSi" value="SI">
+      <label class="form-check-label" for="internetSi">Sí</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="internet" id="internetNo" value="NO">
+      <label class="form-check-label" for="internetNo">No</label>
+    </div>
+  </div>
+
+  <div class="col-sm-6 mt-2">
+    <label class="form-label">Gas:</label>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="gas" id="gasSi" value="SI">
+      <label class="form-check-label" for="gasSi">Sí</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="gas" id="gasNo" value="NO">
+      <label class="form-check-label" for="gasNo">No</label>
+    </div>
+  </div>
+
+  <div class="col-sm-6 mt-2">
+    <label class="form-label">Televisión por cable o satélite:</label>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="television" id="televisionSi" value="SI">
+      <label class="form-check-label" for="televisionSi">Sí</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="television" id="televisionNo" value="NO">
+      <label class="form-check-label" for="televisionNo">No</label>
+    </div>
+  </div>
+
+  <div class="col-sm-6 mt-2">
+    <label class="form-label">Teléfono fijo:</label>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="telefono" id="telefonoSi" value="SI">
+      <label class="form-check-label" for="telefonoSi">Sí</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="telefono" id="telefonoNo" value="NO">
+      <label class="form-check-label" for="telefonoNo">No</label>
+    </div>
+  </div>
+
+  <div class="col-sm-6 mt-2">
+    <label class="form-label">Baño:</label>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="bano" id="banoSi" value="SI">
+      <label class="form-check-label" for="banoSi">Sí</label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="radio" name="bano" id="banoNo" value="NO">
+      <label class="form-check-label" for="banoNo">No</label>
+    </div>
+  </div>
+</div>
+
+
+
+
+
+
+
+ <h4>Informacion de Referencia</h4>
+        <hr class="my-4">
+
+
+
+
+<div class="col-sm-6">
+  <label class="form-label">¿Cómo se enteró de GESMUJER?</label>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="enteroGESMUJER" id="iniciativa" value="Acudió por iniciativa propia">
+    <label class="form-check-label" for="iniciativa">Acudió por iniciativa propia</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="enteroGESMUJER" id="recomendacion" value="Recomendación de familiar o amistad">
+    <label class="form-check-label" for="recomendacion">Recomendación de familiar o amistad</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="enteroGESMUJER" id="canalizada" value="Canalizada por institución">
+    <label class="form-check-label" for="canalizada">Canalizada por institución</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="enteroGESMUJER" id="redes" value="Redes sociales">
+    <label class="form-check-label" for="redes">Redes sociales</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="enteroGESMUJER" id="otro" value="Otro">
+    <label class="form-check-label" for="otro">Otro</label>
+  </div>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="col-sm-6">
+        <label for="tipoEnergia" class="form-label">Tipo de energía</label>
+        <select class="form-select" id="tipoEnergia" name="tipoEnergia" aria-label="Default select example">
+        <option selected disabled value="">Selecciona una opción...</option>
+            <option value="ELECTRICA">Eléctrica</option>
+            <option value="SOLAR">Solar</option>
+            <option value="NINGUNA">Ninguna</option>
+        </select>
+    <div class="invalid-feedback">Se requiere seleccionar el tipo de energía.</div>
+    </div>
+
+
+    
+
     <div class="col-sm-6">
         <label for="tipoServicioAgua" class="form-label">Tipo de servicio de agua</label>
         <select class="form-select" id="tipoServicioAgua" name="tipoServicioAgua" aria-label="Default select example">
@@ -1528,33 +2330,8 @@ function populateFields(details) {
         <div class="invalid-feedback">Se requiere seleccionar el tipo de servicio de agua.</div>
     </div>
 
-    <div class="col-sm-6">
-        <label for="materialVivienda" class="form-label">Material de la vivienda</label>
-        <select class="form-select" id="materialVivienda" name="materialVivienda" aria-label="Default select example">
-        <option selected disabled value="">Selecciona una opción...</option>
-            <option value="LÁMINA">Lámina</option>
-            <option value="MATERIAL">Material</option>
-            <option value="MADERA">Madera</option>
-            <option value="OTRO">Otro</option>
-        </select>
-        <div class="invalid-feedback">Se requiere seleccionar el material de la vivienda.</div>
-    </div>
-
-    <div class="col-sm-6">
-        <label class="form-label">¿Cuenta con Baño dentro de la casa?</label>
-        <div class="form-check">
-            <input class="form-check-input" type="radio" name="banioDentro" id="banioDentroSI" value="SI">
-            <label class="form-check-label" for="banioDentroSI">Sí</label>
-        </div>
-        <div class="form-check">
-            <input class="form-check-input" type="radio" name="banioDentro" id="banioDentroNO" value="NO">
-            <label class="form-check-label" for="banioDentroNO">No</label>
-        </div>
-        <div class="invalid-feedback">Se requiere seleccionar si cuenta con baño dentro de la casa.</div>
-    </div>
-
-    <div class="col-sm-6">
-        <label for="TipoBano" class="form-label">¿Tipo de instalación sanitaria?</label>
+      <div class="col-sm-6">
+        <label for="TipoBano" class="form-label">Tipo de instalación sanitaria</label>
         <select class="form-select" id="TipoBano" name="TipoBano" aria-label="Default select example">
         <option selected disabled value="">Selecciona una opción...</option>
             <option value="DRENAJE">Drenaje</option>
@@ -1566,33 +2343,14 @@ function populateFields(details) {
     <div class="invalid-feedback">Se requiere seleccionar el tipo de instalación sanitaria.</div>
     </div>
 
-    <div class="col-sm-6">
-        <label for="personasCasa" class="form-label">¿Cuántas personas viven en la misma casa, incluyendo a niñas y niños?</label>
-        <input type="number" max="20" class="form-control" id="personasCasa" name="personasCasa" placeholder="" >
-        <div class="invalid-feedback">Se requiere ingresar el número de personas que viven en la misma casa.</div>
-    </div>
+    
 
-    <div class="col-sm-6">
-        <label for="personasDormitorio" class="form-label">¿Cuántas personas duermen en un mismo cuarto, incluyendo a niñas y niños?</label>
-        <input type="number" max="20" class="form-control" id="personasDormitorio" name="personasDormitorio" placeholder="">
-        <div class="invalid-feedback">Se requiere ingresar el número de personas que duermen en un mismo cuarto.</div>
-    </div>
 
-    <div class="col-sm-6">
-        <label for="tipoVivienda" class="form-label">Tipo de vivienda</label>
-        <select class="form-select" id="tipoVivienda" name="tipoVivienda" aria-label="Default select example">
-        <option selected disabled value="">Selecciona una opción...</option>
-            <option value="PRESTADA">Prestada</option>
-            <option value="RENTADA">Rentada</option>
-            <option value="PROPIA">Propia</option>
-            <option value="FINANCIADA">Financiada</option>
-            <option value="DE FAMILIARES">De familiares</option>
-            <option value="OTRO">Otro</option>
-        </select>
-        <div class="invalid-feedback">Se requiere seleccionar el tipo de vivienda.</div>
-    </div>
 
-    <div class="col-sm-12">
+
+   
+
+   <!-- <div class="col-sm-6">
         <label for="comoSeEntero" class="form-label">¿Cómo se enteró de GESMujer?</label>
         <select class="form-select" id="comoSeEntero" name="comoSeEntero" aria-label="Default select example">
         <option selected disabled value="">Selecciona una opción...</option>
@@ -1606,7 +2364,869 @@ function populateFields(details) {
         <div class="invalid-feedback">Se requiere seleccionar cómo se enteró del programa.</div>
     </div>
 
-    <div class="col-sm-6">
+-->
+
+<div class="col-sm-12">
+  <label for="descripcionSolicitud" class="form-label">Descripción y motivo de la solicitud</label>
+  <textarea class="form-control" id="descripcionSolicitud" name="descripcionSolicitud" rows="4" placeholder="Describa brevemente el motivo de su solicitud..."></textarea>
+</div>
+
+
+
+
+
+
+
+
+
+
+ <h4>Formulario Integral de Identificacion de Nivel de Riesgo</h4>
+        <hr class="my-4">
+
+
+
+<!-- Violencia psicológica -->
+<div class="col-12 mt-3">
+ 
+
+  
+  <h5>Violencia Psicológica</h5>
+
+  <!-- Opciones (solo una puede seleccionarse) -->
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpsConducta" id="vpsControla" value="La controla">
+    <label class="form-check-label" for="vpsControla">
+      La controla (control económico, de movimientos, amistades)
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpsConducta" id="vpsHumilla" value="La humilla, ridiculiza o insulta constantemente">
+    <label class="form-check-label" for="vpsHumilla">
+      La humilla, ridiculiza o insulta constantemente
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpsConducta" id="vpsAmenaza" value="La amenaza con hacerle daño a usted, sus hijas o familiares">
+    <label class="form-check-label" for="vpsAmenaza">
+      La amenaza con hacerle daño a usted, sus hijas o familiares
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpsConducta" id="vpsAisla" value="La aísla de su familia o amistades">
+    <label class="form-check-label" for="vpsAisla">
+      La aísla de su familia o amistades
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpsConducta" id="vpsControlaTelefonos" value="Revisa o controla sus mensajes y llamadas">
+    <label class="form-check-label" for="vpsControlaTelefonos">
+      Revisa o controla sus mensajes y llamadas
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpsConducta" id="vpsMinimiza" value="Minimiza o niega sus sentimientos">
+    <label class="form-check-label" for="vpsMinimiza">
+      Minimiza o niega sus sentimientos
+    </label>
+  </div>
+
+  <!-- Opción 'Otra' -->
+  
+  <div class="mt-3">
+    <label for="vpsDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="vpsDetalles" name="vpsDetalles" rows="3" placeholder="Describa más (fechas, frecuencia, contexto...)"></textarea>
+  </div>
+
+
+
+  <!-- Nota de seguridad (opcional) -->
+  <div class="mt-2 text-muted small">
+    Si la persona está en peligro inmediato, contactar a las autoridades locales o servicios de emergencia. 
+  </div>
+</div>
+
+
+
+
+<h5>Violencia Fisica</h5>
+            
+
+
+            
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vfConducta" id="vfGolpes" value="La ha golpeado">
+    <label class="form-check-label" for="vfGolpes">
+      La ha golpeado (puñetazos, patadas, empujones)
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vfConducta" id="vfObjetos" value="Le ha aventado objetos o utilizado armas">
+    <label class="form-check-label" for="vfObjetos">
+      Le ha aventado objetos o utilizado armas
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vfConducta" id="vfEstrangula" value="La ha intentado ahorcar o estrangular">
+    <label class="form-check-label" for="vfEstrangula">
+      La ha intentado ahorcar o estrangular
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vfConducta" id="vfQuema" value="Le ha causado quemaduras o lesiones visibles">
+    <label class="form-check-label" for="vfQuema">
+      Le ha causado quemaduras o lesiones visibles
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vfConducta" id="vfEmpuja" value="La empuja, jala o inmoviliza con fuerza">
+    <label class="form-check-label" for="vfEmpuja">
+      La empuja, jala o inmoviliza con fuerza
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="vfDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="vfDetalles" name="vfDetalles" rows="3" placeholder="Describa más (frecuencia, tipo de lesiones, fechas...)"></textarea>
+  </div>
+
+
+
+
+<h5>Violencia Sexual</h5>
+           
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vsConducta" id="vsObliga" value="La ha obligado a tener relaciones sexuales sin su consentimiento">
+    <label class="form-check-label" for="vsObliga">
+      La ha obligado a tener relaciones sexuales sin su consentimiento
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vsConducta" id="vsToca" value="La ha tocado sin su consentimiento">
+    <label class="form-check-label" for="vsToca">
+      La ha tocado sin su consentimiento
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vsConducta" id="vsAmenaza" value="La ha amenazado para tener actos sexuales">
+    <label class="form-check-label" for="vsAmenaza">
+      La ha amenazado para tener actos sexuales
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vsConducta" id="vsControla" value="Le impide usar métodos anticonceptivos">
+    <label class="form-check-label" for="vsControla">
+      Le impide usar métodos anticonceptivos
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vsConducta" id="vsHumilla" value="La humilla o la fuerza a realizar actos sexuales degradantes">
+    <label class="form-check-label" for="vsHumilla">
+      La humilla o la fuerza a realizar actos sexuales degradantes
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="vsDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="vsDetalles" name="vsDetalles" rows="3" placeholder="Describa más (frecuencia, contexto, amenazas, etc.)"></textarea>
+  </div>
+
+ 
+
+
+
+  <h5>Acoso y/o Hostigamiento Sexual</h5>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="acosoConducta" id="acosoComentarios" value="Le hace comentarios sexuales no deseados">
+    <label class="form-check-label" for="acosoComentarios">
+      Le hace comentarios sexuales no deseados
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="acosoConducta" id="acosoContacto" value="La toca sin su consentimiento en espacios públicos o laborales">
+    <label class="form-check-label" for="acosoContacto">
+      La toca sin su consentimiento en espacios públicos o laborales
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="acosoConducta" id="acosoMensajes" value="Le envía mensajes, fotos o insinuaciones sexuales sin su consentimiento">
+    <label class="form-check-label" for="acosoMensajes">
+      Le envía mensajes, fotos o insinuaciones sexuales sin su consentimiento
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="acosoConducta" id="acosoPresion" value="La presiona o condiciona favores sexuales a cambio de beneficios">
+    <label class="form-check-label" for="acosoPresion">
+      La presiona o condiciona favores sexuales a cambio de beneficios
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="acosoConducta" id="acosoPersecucion" value="La sigue o vigila con intenciones sexuales">
+    <label class="form-check-label" for="acosoPersecucion">
+      La sigue o vigila con intenciones sexuales
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="acosoDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="acosoDetalles" name="acosoDetalles" rows="3" placeholder="Describa más (frecuencia, lugares, personas involucradas, etc.)"></textarea>
+  </div>
+
+
+            
+  <h5>Violencia Económica y Patrimonial</h5>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="veConducta" id="veControlaDinero" value="Le controla o quita su dinero o bienes">
+    <label class="form-check-label" for="veControlaDinero">
+      Le controla o quita su dinero o bienes
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="veConducta" id="veImpideTrabajar" value="Le impide trabajar o estudiar">
+    <label class="form-check-label" for="veImpideTrabajar">
+      Le impide trabajar o estudiar
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="veConducta" id="veNoAporta" value="No aporta recursos para el hogar o hijas/os">
+    <label class="form-check-label" for="veNoAporta">
+      No aporta recursos para el hogar o hijas/os
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="veConducta" id="veDestruye" value="Destruye o retiene documentos personales o bienes">
+    <label class="form-check-label" for="veDestruye">
+      Destruye o retiene documentos personales o bienes
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="veConducta" id="veControlaGastos" value="Le obliga a justificar o pedir permiso para gastar dinero">
+    <label class="form-check-label" for="veControlaGastos">
+      Le obliga a justificar o pedir permiso para gastar dinero
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="veDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="veDetalles" name="veDetalles" rows="3" placeholder="Describa más (frecuencia, consecuencias, bienes afectados, etc.)"></textarea>
+  </div>
+
+
+
+        
+  <h5>Violencia Vicaria</h5>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vvConducta" id="vvAmenazaHijos" value="Amenaza con dañar o quitarle a sus hijas o hijos">
+    <label class="form-check-label" for="vvAmenazaHijos">
+      Amenaza con dañar o quitarle a sus hijas o hijos
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vvConducta" id="vvUsaHijos" value="Utiliza a sus hijas o hijos para causarle daño o manipularla">
+    <label class="form-check-label" for="vvUsaHijos">
+      Utiliza a sus hijas o hijos para causarle daño o manipularla
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vvConducta" id="vvImpideVer" value="Le impide o dificulta el contacto con sus hijas o hijos">
+    <label class="form-check-label" for="vvImpideVer">
+      Le impide o dificulta el contacto con sus hijas o hijos
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vvConducta" id="vvManipula" value="Manipula a sus hijas o hijos en su contra">
+    <label class="form-check-label" for="vvManipula">
+      Manipula a sus hijas o hijos en su contra
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vvConducta" id="vvNiegaApoyo" value="Niega apoyo económico o cuidados a hijas/os para castigarla">
+    <label class="form-check-label" for="vvNiegaApoyo">
+      Niega apoyo económico o cuidados a hijas/os para castigarla
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="vvDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="vvDetalles" name="vvDetalles" rows="3" placeholder="Describa más (situaciones, fechas, consecuencias, etc.)"></textarea>
+  </div>
+
+
+            
+  <h5>Violencia Obstétrica</h5>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="voConducta" id="voMaltrato" value="Fue maltratada verbal o físicamente durante el parto o atención médica">
+    <label class="form-check-label" for="voMaltrato">
+      Fue maltratada verbal o físicamente durante el parto o atención médica
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="voConducta" id="voSinConsentimiento" value="Le realizaron procedimientos sin su consentimiento (cesárea, episiotomía, etc.)">
+    <label class="form-check-label" for="voSinConsentimiento">
+      Le realizaron procedimientos sin su consentimiento (cesárea, episiotomía, etc.)
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="voConducta" id="voNegaronAtencion" value="Le negaron o retrasaron la atención médica durante el embarazo o parto">
+    <label class="form-check-label" for="voNegaronAtencion">
+      Le negaron o retrasaron la atención médica durante el embarazo o parto
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="voConducta" id="voDiscriminacion" value="Fue discriminada o humillada por su origen, edad o condición social durante la atención">
+    <label class="form-check-label" for="voDiscriminacion">
+      Fue discriminada o humillada por su origen, edad o condición social durante la atención
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="voConducta" id="voEsterilizacion" value="Fue esterilizada sin su consentimiento informado">
+    <label class="form-check-label" for="voEsterilizacion">
+      Fue esterilizada sin su consentimiento informado
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="voDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="voDetalles" name="voDetalles" rows="3" placeholder="Describa más (hospital, fechas, personal involucrado, consecuencias, etc.)"></textarea>
+  </div>
+
+
+
+
+  <h5>Violencia Política</h5>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpConducta" id="vpImpedirParticipacion" value="Le impidieron participar en actividades políticas o comunitarias por su género">
+    <label class="form-check-label" for="vpImpedirParticipacion">
+      Le impidieron participar en actividades políticas o comunitarias por su género
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpConducta" id="vpDesprestigio" value="Fue objeto de difamación, burlas o ataques en medios o redes por razones de género">
+    <label class="form-check-label" for="vpDesprestigio">
+      Fue objeto de difamación, burlas o ataques en medios o redes por razones de género
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpConducta" id="vpObstaculizacion" value="Le obstaculizaron el ejercicio de un cargo o funciones públicas por ser mujer">
+    <label class="form-check-label" for="vpObstaculizacion">
+      Le obstaculizaron el ejercicio de un cargo o funciones públicas por ser mujer
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpConducta" id="vpPresion" value="Recibió amenazas, presión o intimidación para renunciar a un cargo o candidatura">
+    <label class="form-check-label" for="vpPresion">
+      Recibió amenazas, presión o intimidación para renunciar a un cargo o candidatura
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vpConducta" id="vpViolenciaSimbolica" value="Sufrió violencia simbólica o verbal por ejercer liderazgo político">
+    <label class="form-check-label" for="vpViolenciaSimbolica">
+      Sufrió violencia simbólica o verbal por ejercer liderazgo político
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="vpDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="vpDetalles" name="vpDetalles" rows="3" placeholder="Describa más (institución, cargo, fecha, tipo de agresión, consecuencias, etc.)"></textarea>
+  </div>
+
+
+
+
+  <h5>Violencia Cibernética</h5>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vcConducta" id="vcDifusion" value="Difundieron fotos, videos o información íntima sin su consentimiento">
+    <label class="form-check-label" for="vcDifusion">
+      Difundieron fotos, videos o información íntima sin su consentimiento
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vcConducta" id="vcAmenazas" value="Recibió amenazas o acoso por redes sociales, mensajes o correo electrónico">
+    <label class="form-check-label" for="vcAmenazas">
+      Recibió amenazas o acoso por redes sociales, mensajes o correo electrónico
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vcConducta" id="vcSuplantacion" value="Alguien creó perfiles falsos o suplantó su identidad en línea">
+    <label class="form-check-label" for="vcSuplantacion">
+      Alguien creó perfiles falsos o suplantó su identidad en línea
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vcConducta" id="vcEspionaje" value="Fue vigilada o espiada mediante dispositivos, cámaras o software">
+    <label class="form-check-label" for="vcEspionaje">
+      Fue vigilada o espiada mediante dispositivos, cámaras o software
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vcConducta" id="vcPublicacion" value="Publicaron información personal o falsa para dañarla públicamente">
+    <label class="form-check-label" for="vcPublicacion">
+      Publicaron información personal o falsa para dañarla públicamente
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="vcDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="vcDetalles" name="vcDetalles" rows="3" placeholder="Describa más (plataforma, tipo de agresión, fecha, consecuencias, etc.)"></textarea>
+  </div>
+
+
+
+  <h5>Violencia Laboral</h5>  
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vlConducta" id="vlDiscriminacion" value="Ha sufrido discriminación en el trabajo por razones de género, embarazo o maternidad">
+    <label class="form-check-label" for="vlDiscriminacion">
+      Ha sufrido discriminación en el trabajo por razones de género, embarazo o maternidad
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vlConducta" id="vlDespido" value="Fue despedida o sancionada injustamente por razones personales o de género">
+    <label class="form-check-label" for="vlDespido">
+      Fue despedida o sancionada injustamente por razones personales o de género
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vlConducta" id="vlNegacionDerechos" value="Le negaron derechos laborales (salario, prestaciones, descansos, permisos)">
+    <label class="form-check-label" for="vlNegacionDerechos">
+      Le negaron derechos laborales (salario, prestaciones, descansos, permisos)
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vlConducta" id="vlAmenazas" value="Recibió amenazas, burlas, humillaciones o aislamiento en su lugar de trabajo">
+    <label class="form-check-label" for="vlAmenazas">
+      Recibió amenazas, burlas, humillaciones o aislamiento en su lugar de trabajo
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vlConducta" id="vlCambioFunciones" value="La cambiaron de funciones o le redujeron responsabilidades como forma de castigo o represalia">
+    <label class="form-check-label" for="vlCambioFunciones">
+      La cambiaron de funciones o le redujeron responsabilidades como forma de castigo o represalia
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="vlDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="vlDetalles" name="vlDetalles" rows="3" placeholder="Describa más (puesto, lugar de trabajo, fechas, contexto, responsables, etc.)"></textarea>
+  </div>
+
+
+
+
+<h4>Identificacion Detallada del Nivel de Riesgo</h4>
+            <hr class="my-4">
+
+
+
+
+
+
+  <h5>Riesgos por conductas del agresor</h5>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoConducta" id="amenazaMatar" value="Ha amenazado con matarla o matarse">
+    <label class="form-check-label" for="amenazaMatar">
+      Ha amenazado con matarla o matarse
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoConducta" id="armas" value="Posee o ha usado armas de fuego, cuchillos u otros objetos peligrosos">
+    <label class="form-check-label" for="armas">
+      Posee o ha usado armas de fuego, cuchillos u otros objetos peligrosos
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoConducta" id="acoso" value="La sigue, acosa o vigila constantemente">
+    <label class="form-check-label" for="acoso">
+      La sigue, acosa o vigila constantemente
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoConducta" id="aumentoViolencia" value="La violencia ha aumentado en frecuencia o gravedad">
+    <label class="form-check-label" for="aumentoViolencia">
+      La violencia ha aumentado en frecuencia o gravedad
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoConducta" id="celos" value="Muestra celos excesivos o control obsesivo sobre ella">
+    <label class="form-check-label" for="celos">
+      Muestra celos excesivos o control obsesivo sobre ella
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoConducta" id="drogas" value="Consume alcohol o drogas y se vuelve violento">
+    <label class="form-check-label" for="drogas">
+      Consume alcohol o drogas y se vuelve violento
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoConducta" id="controlEconomico" value="Controla totalmente el dinero o impide que ella trabaje">
+    <label class="form-check-label" for="controlEconomico">
+      Controla totalmente el dinero o impide que ella trabaje
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoConducta" id="amenazaFamilia" value="Amenaza o agrede a sus hijas, hijos o familiares">
+    <label class="form-check-label" for="amenazaFamilia">
+      Amenaza o agrede a sus hijas, hijos o familiares
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="riesgoDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="riesgoDetalles" name="riesgoDetalles" rows="3" placeholder="Describa más sobre las conductas de riesgo del agresor..."></textarea>
+  </div>
+
+
+
+
+  <h5>Riesgos por situación de violencia</h5>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoSituacion" id="viveConAgresor" value="Actualmente vive con el agresor">
+    <label class="form-check-label" for="viveConAgresor">
+      Actualmente vive con el agresor
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoSituacion" id="dependeEconomicamente" value="Depende económicamente del agresor">
+    <label class="form-check-label" for="dependeEconomicamente">
+      Depende económicamente del agresor
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoSituacion" id="sinRedApoyo" value="No cuenta con red de apoyo (familiares, amistades, comunidad)">
+    <label class="form-check-label" for="sinRedApoyo">
+      No cuenta con red de apoyo (familiares, amistades, comunidad)
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoSituacion" id="temorDenunciar" value="Tiene miedo de denunciar o de dejar al agresor">
+    <label class="form-check-label" for="temorDenunciar">
+      Tiene miedo de denunciar o de dejar al agresor
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoSituacion" id="embarazoDependencia" value="Está embarazada o tiene hijas/hijos pequeños que dependen del agresor">
+    <label class="form-check-label" for="embarazoDependencia">
+      Está embarazada o tiene hijas/hijos pequeños que dependen del agresor
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoSituacion" id="agresorBusca" value="El agresor la busca, la amenaza o intenta acercarse a pesar de medidas previas">
+    <label class="form-check-label" for="agresorBusca">
+      El agresor la busca, la amenaza o intenta acercarse a pesar de medidas previas
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoSituacion" id="desalojo" value="Ha sido expulsada o desalojada de su hogar por el agresor">
+    <label class="form-check-label" for="desalojo">
+      Ha sido expulsada o desalojada de su hogar por el agresor
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="riesgoSituacion" id="agresorNoCumple" value="El agresor no cumple medidas de protección o acuerdos legales">
+    <label class="form-check-label" for="agresorNoCumple">
+      El agresor no cumple medidas de protección o acuerdos legales
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="riesgoDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="riesgoDetalles" name="riesgoDetalless" rows="3" placeholder="Describa más sobre la situación de violencia o contexto actual..."></textarea>
+  </div>
+
+
+  <h5>Factores de vulnerabilidad de la mujer</h5>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vulnerabilidad" id="embarazo" value="Embarazo o maternidad reciente">
+    <label class="form-check-label" for="embarazo">
+      Embarazo o maternidad reciente
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vulnerabilidad" id="discapacidad" value="Tiene alguna discapacidad física, mental o sensorial">
+    <label class="form-check-label" for="discapacidad">
+      Tiene alguna discapacidad física, mental o sensorial
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vulnerabilidad" id="edadAvanzada" value="Es adulta mayor">
+    <label class="form-check-label" for="edadAvanzada">
+      Es adulta mayor
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vulnerabilidad" id="menorEdad" value="Es menor de edad">
+    <label class="form-check-label" for="menorEdad">
+      Es menor de edad
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vulnerabilidad" id="indigena" value="Pertenece a un pueblo o comunidad indígena">
+    <label class="form-check-label" for="indigena">
+      Pertenece a un pueblo o comunidad indígena
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vulnerabilidad" id="migrante" value="Es migrante o desplazada">
+    <label class="form-check-label" for="migrante">
+      Es migrante o desplazada
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vulnerabilidad" id="sinRecursos" value="Carece de recursos económicos o vivienda">
+    <label class="form-check-label" for="sinRecursos">
+      Carece de recursos económicos o vivienda
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vulnerabilidad" id="sinEducacion" value="Tiene bajo nivel educativo o no sabe leer/escribir">
+    <label class="form-check-label" for="sinEducacion">
+      Tiene bajo nivel educativo o no sabe leer/escribir
+    </label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="vulnerabilidad" id="aislamiento" value="Vive en una zona rural o aislada">
+    <label class="form-check-label" for="aislamiento">
+      Vive en una zona rural o aislada
+    </label>
+  </div>
+
+  <div class="mt-3">
+    <label for="vulnerabilidadDetalles" class="form-label">Detalles adicionales</label>
+    <textarea class="form-control" id="vulnerabilidadDetalles" name="vulnerabilidadDetalles" rows="3" placeholder="Describa más sobre la situación de vulnerabilidad (contexto, condiciones, apoyo recibido, etc.)"></textarea>
+  </div>
+
+<h5>Factores Contextuales</h5>
+
+<div class="col-sm-12 mt-3">
+ 
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="factores_contextuales" value="Vive en zona rural o aislada">
+    <label class="form-check-label">Vive en zona rural o aislada</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="factores_contextuales" value="No cuenta con red de apoyo cercana">
+    <label class="form-check-label">No cuenta con red de apoyo cercana</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="factores_contextuales" value="Dependencia económica del agresor">
+    <label class="form-check-label">Dependencia económica del agresor</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="factores_contextuales" value="Barreras para acceder a servicios o transporte">
+    <label class="form-check-label">Barreras para acceder a servicios o transporte</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="factores_contextuales" value="Discriminación por origen, condición o idioma">
+    <label class="form-check-label">Discriminación por origen, condición o idioma</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="factores_contextuales" value="Falta de instituciones o apoyo institucional en su comunidad">
+    <label class="form-check-label">Falta de instituciones o apoyo institucional en su comunidad</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="factores_contextuales" value="Otro">
+    <label class="form-check-label">Otro</label>
+  </div>
+    <div class="mt-3">
+  <label for="vulnerabilidadDetalles" class="form-label">Detalles adicionales</label>
+  <textarea class="form-control mt-2" name="factores_contextuales_detalle" placeholder="Especifique detalles..."></textarea>
+</div>
+</div>
+
+
+<h5>Escala orientativa de riesgo</h5>    
+<div class="col-sm-12 mt-3">
+  
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="escala_riesgo" value="Riesgo bajo">
+    <label class="form-check-label">Riesgo bajo</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="escala_riesgo" value="Riesgo medio">
+    <label class="form-check-label">Riesgo medio</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="escala_riesgo" value="Riesgo alto">
+    <label class="form-check-label">Riesgo alto</label>
+  </div>
+
+  <div class="form-check">
+    <input class="form-check-input" type="radio" name="escala_riesgo" value="Riesgo crítico">
+    <label class="form-check-label">Riesgo crítico</label>
+  </div>
+
+    <div class="mt-3">
+  <label for="Escala" class="form-label">Detalles adicionales</label>
+  <textarea class="form-control mt-2" name="escala_riesgo_detalle" placeholder="Especifique detalles o justificación..."></textarea>
+</div>
+</div>
+
+
+
+<div class="col-sm-12 mt-3">
+  <label class="form-label">Registrar Tipos de Violencia Detectada</label>
+
+  <div class="alert alert-info" role="alert">
+    Selecciona las casillas con el tipo de violencia detectada.
+  </div>
+
+ 
+    <label class="form-label">Tipos de Violencia:</label><br>
+
+    <?php
+      try {
+          $sql = "SELECT ID_Tipo_Violencia, Nombre_tipo FROM Tipos_Violencia";
+          $stmt = $conn->prepare($sql);
+          $stmt->execute();
+
+          if ($stmt->rowCount() > 0) {
+              $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+              $total_rows = count($rows);
+              $half_rows = ceil($total_rows / 2); // Dividir en dos columnas
+
+              echo "<div class='row'>";
+              foreach ($rows as $key => $row) {
+                  $checkbox_id = "tipo_violencia_" . $row['ID_Tipo_Violencia'];
+                  echo "<div class='form-check col-sm-6'>";
+                  echo "<input class='form-check-input' type='checkbox' id='$checkbox_id' name='id_tipo_violencia[]' value='" . $row['ID_Tipo_Violencia'] . "' >";
+                  echo "<label class='form-check-label' for='$checkbox_id'>" . htmlspecialchars($row['Nombre_tipo']) . "</label>";
+                  echo "</div>";
+
+                  if ($key + 1 == $half_rows) {
+                      echo "</div><div class='row mt-2'>";
+                  }
+              }
+              echo "</div>";
+          } else {
+              echo "<div class='alert alert-warning'>No hay tipos de violencia disponibles.</div>";
+          }
+      } catch(PDOException $e) {
+          echo "<div class='alert alert-danger'>Error al obtener los tipos de violencia.</div>";
+      }
+    ?>
+
+ 
+</div>
+
+
+<!-- Observaciones y firma de la entrevistadora -->
+<div class="col-sm-12 mt-3">
+
+
+  <div class="mb-3">
+    <label for="observacionesEntrevistadora" class="form-label">Observaciones</label>
+    <textarea class="form-control" id="observacionesEntrevistadora" name="observacionesEntrevistadora" rows="4" placeholder="Anote observaciones relevantes sobre la entrevista..."></textarea>
+  </div>
+
+ 
+</div>
+
+
+
+   
+
+    
+
+          
+
+            <h4>Valoración de Violencia</h4>
+            <hr class="my-4">
+
+    <div class="col-sm-12">
+        <div class="mb-3">
+        <label for="situacionUsuaria" class="form-label">Situación de usuaria</label>
+        <textarea class="form-control" id="situacionUsuaria" name="situacionUsuaria" rows="3" placeholder="Breve descripción del motivo de la solicitud de atención. (Circunstancias de modo, tiempo y lugar)"></textarea>
+        <div class="invalid-feedback">La situación de la usuaria es requerida.</div>
+        </div>
+    </div>
+
+
+
+     <div class="col-sm-6">
         <label class="form-label">¿La pareja es el agresor?</label>
         <div class="form-check">
             <input class="form-check-input" type="radio" name="parejaTrabaja" id="parejaTrabaja1" value="SI">
@@ -1624,24 +3244,6 @@ function populateFields(details) {
         <label for="NombreAgresor" class="form-label">¿Nombre del agresor?</label>
         <input type="text" class="form-control" id="Agresor" name="NombreAgresor">
         <div class="invalid-feedback">Se requiere un apellido válido.</div>
-    </div>
-
-    <div class="col-sm-6" id="DondeTrabaja">
-        <label for="DondeTrabaja" class="form-label">¿Dónde trabaja?</label>
-        <input type="text" class="form-control" id="Trabaja" name="DondeTrabaja">
-        <div class="invalid-feedback">Se requiere un apellido válido.</div>
-    </div>
-
-
-            <h4>Valoración de Violencia</h4>
-            <hr class="my-4">
-
-    <div class="col-sm-12">
-        <div class="mb-3">
-        <label for="situacionUsuaria" class="form-label">Situación de usuaria</label>
-        <textarea class="form-control" id="situacionUsuaria" name="situacionUsuaria" rows="3" placeholder="Breve descripción del motivo de la solicitud de atención. (Circunstancias de modo, tiempo y lugar)"></textarea>
-        <div class="invalid-feedback">La situación de la usuaria es requerida.</div>
-        </div>
     </div>
 
     <div class="col-sm-6">
@@ -1860,6 +3462,8 @@ function populateFields(details) {
 
             <h4>Valoración de Violencia</h4>
             <hr class="my-4">
+
+
     <div class="col-sm-12">
         <label for="valoracionRiesgo" class="form-label" id="valoracionRiesgo"  placeholder="Especifique el tipo de Violencia">Valoración de riesgo</label>
         <select class="form-select" id="valoracionRiesgo" name="valoracionRiesgo">
@@ -1884,6 +3488,10 @@ function populateFields(details) {
         </div>
     </div>
 
+    <!-- Observaciones de la institución o servicio -->
+
+
+
     <div class="col-sm-6" id="CanaInput" style="display: none;">
         <label for="canalizacionExterna" class="form-label">Externa</label>
         <input type="text" class="form-control" id="Externa" name="canalizacionExterna" placeholder="">
@@ -1901,6 +3509,25 @@ function populateFields(details) {
         </select> 
     </div>
 
+
+
+
+<div class="col-sm-12 mt-3">
+  <label for="observacionesInstitucion" class="form-label">Observaciones de la institución o servicio</label>
+  <textarea class="form-control" id="observacionesInstitucion" name="observacionesInstitucion" rows="4" placeholder="Anote observaciones relevantes por parte de la institución o servicio..."></textarea>
+</div>
+
+
+<!-- Primeros auxilios psicológicos -->
+<div class="col-sm-12 mt-3">
+  <label for="primerosAuxiliosPsicologicos" class="form-label ">
+    Primeros auxilios psicológicos (contención emocional, apoyo inmediato e intervención inicial)
+  </label>
+  <textarea class="form-control" id="primerosAuxiliosPsicologicos" name="primerosAuxiliosPsicologicos" rows="4" placeholder="Describa la contención emocional, apoyo inmediato e intervención inicial brindados a la persona..."></textarea>
+</div>
+
+
+
     <div class="col-sm-12">
     <div class="mb-3">
         <label for="auxiliosPsicologicos" class="form-label">Primeros auxilios psicológicos</label>
@@ -1909,9 +3536,26 @@ function populateFields(details) {
     <div class="invalid-feedback">Por favor, proporcione una descripción válida.</div>
     </div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <div class="alert alert-info mt-3" role="alert">
+    Recuerde explicar a la usuaria los pasos a seguir para su intervención, sus derechos y la importancia de su colaboración durante todo el proceso.
+  </div>
     <div class="col-sm-12">
     <div>
-    <button class="w-100 btn btn-primary btn-lg" type="submit"  onclick="openPopupp()">Registrar Usuario</button>
+    <button class="w-100 btn btn-primary btn-lg" type="submit"  >Registrar Usuario</button>
     </div>
     </div>
 
@@ -1919,8 +3563,7 @@ function populateFields(details) {
 
             <hr class="my-4">
 
-    <!-- <button class="w-100 btn btn-primary btn-lg" type="submit"  onclick="openPopup()">Registrar</button> -->
-    <!-- <button class="w-100 btn btn-primary btn-lg" type="submit">Registrar</button> -->
+    
     </form>
     </div>
     </div>
@@ -1944,25 +3587,9 @@ function populateFields(details) {
 
     <script>
         
-function openPopup() {
-    var num = document.getElementById('numDecendencia').value || 0;
-    // Abrimos el popup y enviamos el valor como parámetro
-    var popup = window.open('ventana_hijos.php?numDecendencia=' + encodeURIComponent(num), '_blank', 'width=700,height=700');
-}
+
 // Esta función se llama desde la ventana emergente para cerrarla después de enviar el formulario
-function closePopup() {
-    window.close();
-}
 
-
-  // --- Popup Functions ---
-  function openPopupp() {
-    var popup = window.open('venta-violencia.php', '_blank', 'width=700,height=700');
-  }
-
-  function closePopupp() {
-    window.close();
-  }
 
   // --- Validación del formulario antes de abrir popup ---
   document.addEventListener('DOMContentLoaded', function () {
@@ -1976,8 +3603,7 @@ function closePopup() {
       // Valida el formulario con las reglas HTML5 (required, pattern, etc.)
       if (form.checkValidity()) {
         // Si es válido, mostrar popup
-        openPopupp();
-
+      
         // Opcional: enviar el formulario si lo deseas
         form.submit();
       } else {

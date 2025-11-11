@@ -147,7 +147,7 @@ require_once __DIR__ . '/../pages/header.php';
     <div class="row g-5">
     <div class="col-xxl-12 col-xxl-12">
         <h4 class="mb-3">Datos Generales</h4>
-        <form class="needs-validation" action="register-cita.php" method="POST" enctype="multipart/form-data"  novalidate>
+        <form class="needs-validation" action="register-ucita.php" method="POST" enctype="multipart/form-data"  novalidate>
     <div class="row g-3">
 
 
