@@ -24,3 +24,5 @@ try {
 
 // A partir de aquí, puedes utilizar la variable $conn para realizar consultas a la base de datos
 ?>
+
+

@@ -332,12 +332,13 @@ require_once __DIR__ . '/../pages/footer.php';
     </div>
   </div>
 
-  <form for="search" class="d-flex" role="search">
-        <input class="form-control me-2" type="text" placeholder="Buscar" id="search" name="search" aria-label="Search">
-        <button class="btn btn-outline-success" type="submit">Buscar</button>
-        <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-personal.php'"><i class="bi bi-arrow-repeat"></i></button>
-      </form>
-
+  <div class="d-flex gap-2 justify-content-center py-5">
+    <form for="search" class="d-flex" role="search">
+      <input class="form-control me-2" type="text" placeholder="Buscar" id="search" name="search" aria-label="Search">
+      <button class="btn btn-outline-success" type="submit">Buscar</button>
+      <button class="btn btn-outline-secondary" type="button" onclick="window.location.href='../pages/ver-seminario.php'"><i class="bi bi-arrow-repeat"></i></button>
+    </form>
+  </div>
 
 <?php
 require_once __DIR__ . '/../db/config.php';

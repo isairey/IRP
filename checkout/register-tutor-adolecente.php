@@ -5410,9 +5410,9 @@ function mostrarCampoApoyo(mostrar) {
   </div>
 </div>
 
-<div class="col-sm-6 mt-2" id="apoyoDetalleContainer" style="display: none;">
-  <label for="apoyoDetalle" class="form-label">¿De quién?</label>
-  <select class="form-select" id="apoyoDetalle" name="apoyoDetalle2">
+<div class="col-sm-6 mt-2" id="apoyoDetalleContainer2" style="display: none;">
+  <label for="apoyoDetalle2" class="form-label">¿De quién?</label>
+  <select class="form-select" id="apoyoDetalle2" name="apoyoDetalle2">
     <option value="">Selecciona una Opcion</option>
     <option value="PADRE">PADRE</option>
     <option value="MADRE">MADRE</option>
@@ -5426,12 +5426,12 @@ function mostrarCampoApoyo(mostrar) {
 
 <script>
   function showApoyoDetalle() {
-    document.getElementById('apoyoDetalleContainer').style.display = 'block';
+    document.getElementById('apoyoDetalleContainer2').style.display = 'block';
   }
 
   function hideApoyoDetalle() {
-    document.getElementById('apoyoDetalleContainer').style.display = 'none';
-    document.getElementById('apoyoDetalle').value = '';
+    document.getElementById('apoyoDetalleContainer2').style.display = 'none';
+    document.getElementById('apoyoDetalle2').value = '';
   }
 </script>
 

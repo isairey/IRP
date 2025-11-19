@@ -1,217 +1,129 @@
 <?php
 require_once __DIR__ . '/../pages/seccion.php';
-
-?>
-<?php
 require_once __DIR__ . '/../db/config.php';
 
-// Verificar si se recibió un ID de personal válido
-if (isset($_GET['id']) && !empty($_GET['id'])) {
-    $personal_id = $_GET['id'];
-
-    // Consulta SQL para obtener los datos del personal basados en el ID proporcionado
-    $sql = "SELECT * FROM Personal WHERE ID_Personal = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->execute([$personal_id]);
-    $personal = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$personal) {
-        echo "No se encontró ningún personal con el ID proporcionado.";
-        exit;
-    } 
-
-    // Verificamos si se recibieron datos del formulario de edición
-    if ($_SERVER["REQUEST_METHOD"] == "POST") {
-
-
-
-require_once __DIR__ . '/../db/config.php';
-
-try {
-
-    $mensaje = "";
-$tipoMensaje = "";
-    $id = $_GET['id'];
-    $stmt = $conn->prepare("SELECT * FROM Personal WHERE ID_Personal = :id");
-    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-    $stmt->execute();
-    $personal = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!$personal) {
-        echo "Personal no encontrado.";
-        exit;
-    }
-} catch(PDOException $e) {
-    echo "Error: " . $e->getMessage();
+// Verificar ID válido
+if (!isset($_GET['id']) || empty($_GET['id'])) {
+    echo "ID de personal no especificado.";
     exit;
 }
 
-// Carpeta donde guardar la foto
-$uploadDirFoto = __DIR__ . '/../uploads/personal/';
+$personal_id = $_GET['id'];
 
-// Inicializar variable de foto
-$foto = $personal['foto'] ?? "SIN DATOS";
+// Obtener datos actuales del personal
+$stmt = $conn->prepare("SELECT * FROM Personal WHERE ID_Personal = :id");
+$stmt->bindParam(':id', $personal_id, PDO::PARAM_INT);
+$stmt->execute();
+$personal = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Función para subir archivo (general)
-function subirArchivo($inputName, $uploadDir, $rutaActual) {
-    if (isset($_FILES[$inputName]) && $_FILES[$inputName]['error'] === UPLOAD_ERR_OK) {
-        $nombreArchivo = time() . "_" . basename($_FILES[$inputName]['name']);
-        $rutaDestino = $uploadDir . $nombreArchivo;
+if (!$personal) {
+    echo "No se encontró el personal con ID: " . htmlspecialchars($personal_id);
+    exit;
+}
 
-        if (move_uploaded_file($_FILES[$inputName]['tmp_name'], $rutaDestino)) {
-            return "" . $nombreArchivo; // Ruta relativa
+// Si se envía el formulario
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+    // --- Manejo de FOTO ---
+    $carpetaDestino = __DIR__ . '/../uploads/personal/';
+    if (!file_exists($carpetaDestino)) {
+        mkdir($carpetaDestino, 0777, true);
+    }
+
+    // Mantener foto actual o actualizar si se sube una nueva
+    $foto = $personal['foto'] ?? "SIN DATOS";
+
+    if (isset($_FILES['foto']) && $_FILES['foto']['error'] == UPLOAD_ERR_OK) {
+        $nombreArchivo = uniqid() . "_" . basename($_FILES["foto"]["name"]);
+        $rutaArchivo = $carpetaDestino . $nombreArchivo;
+
+        if (move_uploaded_file($_FILES["foto"]["tmp_name"], $rutaArchivo)) {
+            $foto = $nombreArchivo;
+
+            // Borrar foto anterior si existía
+            if ($personal['foto'] !== "SIN DATOS" && file_exists($carpetaDestino . $personal['foto'])) {
+                unlink($carpetaDestino . $personal['foto']);
+            }
         }
     }
-    // Si no se sube archivo, retorna la ruta actual (mantiene el archivo existente)
-    return $rutaActual;
-}
 
-// Subir foto y mantener si no cambia
-$foto = subirArchivo('foto', $uploadDirFoto, $foto);
+    // --- Datos del formulario ---
+    $rol = $_POST["rol"];
+    $nombre = $_POST["nombre"];
+    $apellido_paterno = $_POST["apellido_paterno"];
+    $apellido_materno = $_POST["apellido_materno"];
+    $fecha_nacimiento = $_POST["fecha_nacimiento"];
+    $calle = $_POST["calle"];
+    $num_interior = $_POST["NumInterior"];
+    $num_exterior = $_POST["NumExterior"];
+    $cp = $_POST["cp"];
+    $estado = $_POST["estado"];
+    $municipio = $_POST["municipio"];
+    $colonia = $_POST["colonia"];
+    $region = $_POST["region"];
+    $pais_procedencia = $_POST["pais_procedencia"];
+    $direccion_temporal = $_POST["direccion_temporal"];
+    $sexo = $_POST["sexo"];
+    $genero = $_POST["genero"];
+    $email = $_POST["email"];
+    $tel = $_POST["tel"];
+    $nombre_contacto_emergencia = $_POST["nombre_contacto_emergencia"];
+    $tel_contacto_emergencia = $_POST["tel_contacto_emergencia"];
+    $grado_academico = $_POST["grado_academico"];
+    $institucion = $_POST["institucion"];
+    $area_asignada = $_POST["area_asignada"];
+    $estatus_personal = $_POST["estatus_personal"];
+    $fecha_ingreso = $_POST["fecha_ingreso"];
+    $fecha_termino = $_POST["fecha_termino"];
+    $clasificacion_personal = $_POST["clasificacion_personal"];
+    $problemas_salud_considerables = $_POST["problemas_salud_considerables"];
+    $problemas_movilidad = $_POST["problemas_movilidad"];
+    $observaciones = $_POST["observaciones"];
+    $password = $_POST["password"] ?? null;
 
+    // Contraseña
+    if (!empty($password)) {
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+    } else {
+        $hashed_password = $personal['Password'];
+    }
 
-
-
-
-
-        // Recibimos los datos actualizados del formulario
-        $rol = $_POST["rol"];
-        $nombre = $_POST["nombre"];
-        $apellido_paterno = $_POST["apellido_paterno"];
-        $apellido_materno = $_POST["apellido_materno"];
-        $fecha_nacimiento = $_POST["fecha_nacimiento"];
-        $calle = $_POST["calle"];
-        $num_interior = $_POST["NumInterior"];
-        $num_exterior = $_POST["NumExterior"];
-        $cp = $_POST["cp"];
-        $estado = $_POST["estado"];
-        $municipio = $_POST["municipio"];
-        $colonia = $_POST["colonia"];
-        $region = $_POST["region"];
-        $pais_procedencia = $_POST["pais_procedencia"];
-        $direccion_temporal = $_POST["direccion_temporal"];
-        $sexo = $_POST["sexo"];
-        $genero = $_POST["genero"];
-        $email = $_POST["email"];
-        $tel = $_POST["tel"];
-        $nombre_contacto_emergencia = $_POST["nombre_contacto_emergencia"];
-        $tel_contacto_emergencia = $_POST["tel_contacto_emergencia"];
-        $grado_academico = $_POST["grado_academico"];
-        $institucion = $_POST["institucion"];
-        $area_asignada = $_POST["area_asignada"];
-        $estatus_personal = $_POST["estatus_personal"];
-        $fecha_ingreso = $_POST["fecha_ingreso"];
-        $fecha_termino = $_POST["fecha_termino"];
-        $clasificacion_personal = $_POST["clasificacion_personal"];
-        $problemas_salud_considerables = $_POST["problemas_salud_considerables"];
-        $problemas_movilidad = $_POST["problemas_movilidad"];
-        $observaciones = $_POST["observaciones"];
-        $password = $_POST["password"] ?? null;
-
-// Si ingresaron una nueva contraseña, se hashea; si no, mantenemos la actual
-if (!empty($password)) {
-    $hashed_password = password_hash($password, PASSWORD_DEFAULT);
-} else {
-    $hashed_password = $personal['Password']; // Mantener la contraseña actual
-}
-    
-  
-    
-        try {
-            // Preparamos la consulta SQL de actualización
-            $sql_update = "UPDATE Personal SET 
-                            ID_Rol = ?, 
-                            Nombre = ?, 
-                            ApellidoPaterno = ?, 
-                            ApellidoMaterno = ?, 
-                            FechaNacimiento = ?, 
-                            Calle = ?, 
-                            NumInterior = ?, 
-                            NumExterior = ?, 
-                            CP = ?, 
-                            Estado = ?, 
-                            Municipio = ?, 
-                            Colonia = ?, 
-                            Region = ?, 
-                            PaisProcedencia = ?, 
-                            DireccionTemporal = ?, 
-                            Sexo = ?, 
-                            Genero = ?, 
-                            Email = ?, 
-                            Tel = ?, 
-                            NombreContactoEmergencia = ?, 
-                            TelContactoEmergencia = ?, 
-                            GradoAcademico = ?, 
-                            Institucion = ?, 
-                            AreaAsignada = ?, 
-                            EstatusPersonal = ?, 
-                            FechaIngreso = ?, 
-                            FechaTermino = ?, 
-                            ClasificacionPersonal = ?, 
-                            ProblemasSaludConsiderables = ?, 
-                            ProblemasMovilidad = ?, 
-                            Observaciones = ?, 
-                            foto = ?, 
-                            Password = ? 
-                            WHERE ID_Personal = ?";
-            $stmt_update = $conn->prepare($sql_update);
-    
-            // Vinculamos los parámetros
-            $stmt_update->bindParam(1, $rol);
-            $stmt_update->bindParam(2, $nombre);
-            $stmt_update->bindParam(3, $apellido_paterno);
-            $stmt_update->bindParam(4, $apellido_materno);
-            $stmt_update->bindParam(5, $fecha_nacimiento);
-            $stmt_update->bindParam(6, $calle);
-            $stmt_update->bindParam(7, $num_interior);
-            $stmt_update->bindParam(8, $num_exterior);
-            $stmt_update->bindParam(9, $cp);
-            $stmt_update->bindParam(10, $estado);
-            $stmt_update->bindParam(11, $municipio);
-            $stmt_update->bindParam(12, $colonia);
-            $stmt_update->bindParam(13, $region);
-            $stmt_update->bindParam(14, $pais_procedencia);
-            $stmt_update->bindParam(15, $direccion_temporal);
-            $stmt_update->bindParam(16, $sexo);
-            $stmt_update->bindParam(17, $genero);
-            $stmt_update->bindParam(18, $email);
-            $stmt_update->bindParam(19, $tel);
-            $stmt_update->bindParam(20, $nombre_contacto_emergencia);
-            $stmt_update->bindParam(21, $tel_contacto_emergencia);
-            $stmt_update->bindParam(22, $grado_academico);
-            $stmt_update->bindParam(23, $institucion);
-            $stmt_update->bindParam(24, $area_asignada);
-            $stmt_update->bindParam(25, $estatus_personal);
-            $stmt_update->bindParam(26, $fecha_ingreso);
-            $stmt_update->bindParam(27, $fecha_termino);
-            $stmt_update->bindParam(28, $clasificacion_personal);
-            $stmt_update->bindParam(29, $problemas_salud_considerables);
-            $stmt_update->bindParam(30, $problemas_movilidad);
-            $stmt_update->bindParam(31, $observaciones);
-            $stmt_update->bindParam(32, $foto);
-            $stmt_update->bindParam(33, $hashed_password);
-            $stmt_update->bindParam(34, $personal_id);
-    
-            // Ejecutamos la consulta de actualización
-            if ($stmt->execute()) {
-            $mensaje = "Personal actualizado correctamente";
-            $tipoMensaje = "success";
-        } else {
-            $mensaje = "Error al actualizar Personal";
-            $tipoMensaje = "error";
-        }
-        } catch (PDOException $e) {
-            // Registro de errores en un archivo de registro
-            $error_message = "Error al ejecutar la consulta SQL: " . $e->getMessage() . "\n";
-            $file_path = '/xampp/htdocs/ERP/ERP_IRP/db/error_log.txt';
+    // --- Actualizar registro ---
+    try {
+        $sql_update = "UPDATE Personal SET 
+            ID_Rol = ?, Nombre = ?, ApellidoPaterno = ?, ApellidoMaterno = ?, 
+            FechaNacimiento = ?, Calle = ?, NumInterior = ?, NumExterior = ?, 
+            CP = ?, Estado = ?, Municipio = ?, Colonia = ?, Region = ?, 
+            PaisProcedencia = ?, DireccionTemporal = ?, Sexo = ?, Genero = ?, 
+            Email = ?, Tel = ?, NombreContactoEmergencia = ?, 
+            TelContactoEmergencia = ?, GradoAcademico = ?, Institucion = ?, 
+            AreaAsignada = ?, EstatusPersonal = ?, FechaIngreso = ?, FechaTermino = ?, 
+            ClasificacionPersonal = ?, ProblemasSaludConsiderables = ?, 
+            ProblemasMovilidad = ?, Observaciones = ?, foto = ?, Password = ?
+            WHERE ID_Personal = ?";
         
-        
-            // Mostrar un mensaje genérico al usuario
-            echo '<script>alert("Se produjo un error en el servidor. Por favor, inténtalo de nuevo más tarde.");</script>';
-        }
+        $stmt_update = $conn->prepare($sql_update);
+
+        $stmt_update->execute([
+            $rol, $nombre, $apellido_paterno, $apellido_materno, $fecha_nacimiento,
+            $calle, $num_interior, $num_exterior, $cp, $estado, $municipio, $colonia, $region,
+            $pais_procedencia, $direccion_temporal, $sexo, $genero, $email, $tel,
+            $nombre_contacto_emergencia, $tel_contacto_emergencia, $grado_academico,
+            $institucion, $area_asignada, $estatus_personal, $fecha_ingreso, $fecha_termino,
+            $clasificacion_personal, $problemas_salud_considerables, $problemas_movilidad,
+            $observaciones, $foto, $hashed_password, $personal_id
+        ]);
+
+        header("Location: ../pages/ver-personal.php?status=success");
+        exit;
+
+    } catch (PDOException $e) {
+        header("Location: ../pages/ver-personal.php?status=error&msg=" . urlencode($e->getMessage()));
+        exit;
     }
 }
 ?>
+
 
 
 <!doctype html>

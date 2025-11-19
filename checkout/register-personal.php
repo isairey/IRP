@@ -49,7 +49,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 // Manejo de la foto
     $foto = "SIN DATOS";
     if (isset($_FILES['foto']) && $_FILES['foto']['error'] == UPLOAD_ERR_OK) {
-        $carpetaDestino = "../uploads/personal/";
+       $carpetaDestino = __DIR__ . '/../uploads/personal/';
         if (!file_exists($carpetaDestino)) {
             mkdir($carpetaDestino, 0777, true);
         }

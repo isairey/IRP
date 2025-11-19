@@ -8,7 +8,7 @@ $usuario_id = $_SESSION['user_id'];
 if (!isset($_SESSION['user_id'])) {
     
     // Si no ha iniciado sesión, redirigir al usuario a la página de inicio de sesión
-    header("Location: ../sign-in/index.php");
+    header("Location: ../../sign-in/index.php");
     exit();
 }
 
@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['logout'])) {
     unset($_SESSION['role_id']);
     
     // Redirigir al usuario a la página de inicio de sesión
-    header("Location: ../sign-in/index.php");
+    header("Location: ../../sign-in/index.php");
     exit();
 }
 ?>

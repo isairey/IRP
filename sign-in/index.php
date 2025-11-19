@@ -14,7 +14,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = $_POST['email'];
     $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT ID_Personal, Password, ID_Rol FROM Personal WHERE Email = :email ");
+    $stmt = $conn->prepare("SELECT ID_Personal, Password, ID_Rol FROM personal WHERE Email = :email ");
     $stmt->bindParam(':email', $email);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
