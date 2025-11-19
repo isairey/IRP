@@ -114,7 +114,7 @@ require_once __DIR__ . '/../pages/header.php';
             <p class="lead">Modifica los módulos existentes o agrega nuevos.</p>
         </div>
 
-        <form action="update-modulos.php" method="POST" id="modulosForm" class="needs-validation" novalidate>
+        <form action="./update-modulos.php" method="POST" id="modulosForm" class="needs-validation" novalidate>
             <input type="hidden" name="diplomado_id" value="<?= $diplomado['ID_Diplomado'] ?>">
 
             <div id="modulosContainer">

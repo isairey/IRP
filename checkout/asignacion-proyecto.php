@@ -12,9 +12,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $id_usuario = $_POST["id_usuario"];
     $id_proyecto = $_POST["id_proyecto"];
 
+    echo "ID Usuario: " . htmlspecialchars($id_usuario) . "<br>";
+echo "ID Proyecto: " . htmlspecialchars($id_proyecto) . "<br>";
+
+
     try {
         // Preparar la consulta SQL para insertar los datos
-        $sql = "INSERT INTO Asignaciones (ID_Usuario, ID_Proyecto) VALUES (?, ?)";
+        $sql = "INSERT INTO asignaciones (ID_Usuario, ID_Proyecto) VALUES (?, ?)";
         $stmt = $conn->prepare($sql);
 
         // Vincular los parámetros
@@ -30,8 +34,7 @@ exit();
 exit();
     }
 
-    // Cerrar la conexión
-    $conn = null;
+   
 }
 ?>
 

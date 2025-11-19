@@ -1,0 +1,321 @@
+<style>
+    /* ---------------------------------------------------- */
+    /* CSS Mínimo para el Acordeón (Caret y Submenú) */
+    /* ---------------------------------------------------- */
+
+    /* Estilo para los enlaces principales que abren el colapso */
+    .nav-link.collapse-toggle {
+        font-weight: 500; /* Aseguramos que el título del módulo se destaque */
+        padding-right: 2.5rem; /* Espacio extra para la flecha/caret */
+        position: relative;
+    }
+
+    /* Estilo para el ícono de flecha */
+    .collapse-toggle .caret {
+        transition: transform 0.3s ease;
+        position: absolute;
+        right: 1.5rem;
+    }
+
+    /* Rotar la flecha cuando el menú está abierto */
+    .collapse-toggle[aria-expanded="true"] .caret {
+        transform: rotate(180deg);
+    }
+
+    /* Estilo para los elementos del submenú */
+    .submenu-items .nav-link {
+        padding-left: 2.5rem; /* Indentación de los sub-elementos */
+        font-size: 0.95rem; /* Ligeramente más pequeño */
+        opacity: 0.85; /* Un poco más sutil que el título principal */
+    }
+
+    /* Eliminamos el padding superior si estaba en el offcanvas-body para mejor control */
+    .offcanvas-body {
+        padding-top: 0 !important;
+    }
+
+    /* Asegurar que las líneas divisorias estén separadas de los toggles */
+    hr.my-3 {
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="row">
+        <!-- Empieza -->
+        <div class="sidebar border border-right col-md-3 col-lg-2 p-0 bg-body-tertiary">
+            <div class="offcanvas-md offcanvas-end bg-body-tertiary" tabindex="-1" id="sidebarMenu" aria-labelledby="sidebarMenuLabel">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title" id="sidebarMenuLabel">Company name</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" data-bs-target="#sidebarMenu" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body d-md-flex flex-column p-0 pt-lg-3 overflow-y-auto">
+                    <ul class="nav flex-column">
+                        
+                        <!-- ÍTEM FIJO: INICIO -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 active" aria-current="page" href="../pages/home.php">
+                                <svg class="bi" width="1.1rem" height="1.1rem"><use xlink:href="#house-fill"/></svg>
+                                INICIO
+                            </a>
+                        </li>
+
+                        <hr class="my-3">
+                        
+                        <!-- 1. GESTIÓN DE USUARIAS (ACORDEÓN) -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 collapse-toggle" data-bs-toggle="collapse" href="#collapseUsuarias" role="button" aria-expanded="false" aria-controls="collapseUsuarias">
+                                <svg class="bi" width="1.1rem" height="1.1rem"><use xlink:href="#personita"/></svg>
+                                Gestión de Usuarias
+                                <span class="caret ms-auto"><i class="bi bi-chevron-down"></i></span>
+                            </a>
+                            <div class="collapse submenu-items" id="collapseUsuarias">
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-usuaria.php">
+                                    <svg class="bi" width="1.1rem" height="1.1rem"><use xlink:href="#personita"/></svg>
+                                    Registrar Nueva Usuaria
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-usuaria.php">
+                                    <svg class="bi" width="1.1rem" height="1.1rem"><use xlink:href="#people"/></svg>
+                                    Lista de Usuarias
+                                </a>
+                            </div>
+                        </li>
+
+                        <hr class="my-3">
+
+                        <!-- 2. GESTIÓN DE PERSONAL (ACORDEÓN) -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 collapse-toggle" data-bs-toggle="collapse" href="#collapsePersonal" role="button" aria-expanded="false" aria-controls="collapsePersonal">
+                                <i class="bi bi-person-workspace"></i>
+                                Gestión de Personal
+                                <span class="caret ms-auto"><i class="bi bi-chevron-down"></i></span>
+                            </a>
+                            <div class="collapse submenu-items" id="collapsePersonal">
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-personal.php">
+                                    <svg class="bi" width="1.1rem" height="1.1rem"><use xlink:href="#personita"/></svg>
+                                    Registrar Personal 
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-personal.php">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                    Lista Personal
+                                </a>
+                            </div>
+                        </li>
+
+                        <hr class="my-3">
+
+                        <!-- 3. CITAS Y ATENCIONES (ACORDEÓN) -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 collapse-toggle" data-bs-toggle="collapse" href="#collapseCitas" role="button" aria-expanded="false" aria-controls="collapseCitas">
+                                <i class="bi bi-calendar-check-fill"></i>
+                                Citas y Atenciones
+                                <span class="caret ms-auto"><i class="bi bi-chevron-down"></i></span>
+                            </a>
+                            <div class="collapse submenu-items" id="collapseCitas">
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-cita.php">
+                                    <i class="bi bi-calendar-check-fill"></i>
+                                    Registrar Cita
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-atencion.php">
+                                    <i class="bi bi-clipboard2-fill"></i>
+                                    Registrar Atención
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-citas.php">
+                                    <i class="bi bi-calendar3"></i>
+                                    Ver Citas
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-atenciones.php">
+                                    <i class="bi bi-journal-bookmark-fill"></i>
+                                    Historial de Atenciones
+                                </a>
+                            </div>
+                        </li>
+
+                        <hr class="my-3">
+
+                        <!-- 4. REGISTRO DE FEMINICIDIO (ACORDEÓN) -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 collapse-toggle" data-bs-toggle="collapse" href="#collapseFeminicidio" role="button" aria-expanded="false" aria-controls="collapseFeminicidio">
+                                <i class="bi bi-person-bounding-box"></i>
+                                Reg. de Feminicidio
+                                <span class="caret ms-auto"><i class="bi bi-chevron-down"></i></span>
+                            </a>
+                            <div class="collapse submenu-items" id="collapseFeminicidio">
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-f.php">
+                                    <i class="bi bi-person-bounding-box"></i>
+                                    Registrar Feminicidio
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-feminicidio.php">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                    Lista de Femenicidios
+                                </a>
+                            </div>
+                        </li>
+
+                        <hr class="my-3">
+
+                        <!-- 5. PROYECTOS (ACORDEÓN) -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 collapse-toggle" data-bs-toggle="collapse" href="#collapseProyectos" role="button" aria-expanded="false" aria-controls="collapseProyectos">
+                                <i class="bi bi-journal-plus"></i>
+                                Proyectos
+                                <span class="caret ms-auto"><i class="bi bi-chevron-down"></i></span>
+                            </a>
+                            <div class="collapse submenu-items" id="collapseProyectos">
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-proyecto.php">
+                                    <i class="bi bi-patch-plus-fill"></i>
+                                    Registrar Nuevo Proyecto
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignacion-proyecto.php">
+                                    <svg class="bi" width="1.1rem" height="1.1rem"><use xlink:href="#puzzle"/></svg>
+                                    Asignar Proyecto 
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-proyectos.php">
+                                    <i class="bi bi-journal-plus"></i>
+                                    Ver Proyectos
+                                </a>
+                            </div>
+                        </li>
+
+                        <hr class="my-3">
+
+                        <!-- 6. DONACIONES (ACORDEÓN) -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 collapse-toggle" data-bs-toggle="collapse" href="#collapseDonaciones" role="button" aria-expanded="false" aria-controls="collapseDonaciones">
+                                <i class="bi bi-piggy-bank-fill"></i>
+                                Donaciones
+                                <span class="caret ms-auto"><i class="bi bi-chevron-down"></i></span>
+                            </a>
+                            <div class="collapse submenu-items" id="collapseDonaciones">
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-donante.php">
+                                    <i class="bi bi-person-vcard"></i>
+                                    Registrar Donante 
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-donantes.php">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                    Lista de Donantes 
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-donativo.php">
+                                    <i class="bi bi-piggy-bank-fill"></i>
+                                    Registrar Donativo
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-donaciones.php">
+                                    <i class="bi bi-card-checklist"></i>
+                                    Ver Donaciones
+                                </a>
+                            </div>
+                        </li>
+
+                        <hr class="my-3">
+
+                        <!-- 7. FORMACIÓN Y EVENTOS (ACORDEÓN PRINCIPAL) -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 collapse-toggle" data-bs-toggle="collapse" href="#collapseFormacion" role="button" aria-expanded="false" aria-controls="collapseFormacion">
+                                <i class="bi bi-mortarboard-fill"></i>
+                                Formación y Eventos
+                                <span class="caret ms-auto"><i class="bi bi-chevron-down"></i></span>
+                            </a>
+                            <div class="collapse submenu-items" id="collapseFormacion">
+                                
+                                <!-- Ponentes -->
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/regiter-ponentes.php">
+                                    <i class="bi bi-person-vcard"></i>
+                                    Registrar Ponente 
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-ponentes.php">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                    Lista de Ponentes 
+                                </a>
+
+                                <!-- Diplomados -->
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-diplomado.php">
+                                    <i class="bi bi-journal-check"></i>
+                                    Registrar Diplomado
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-diplomado.php">
+                                    <i class="bi bi-list-check"></i>
+                                    Lista de Diplomados
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignar-diplomado-ponente.php">
+                                    <i class="bi bi-share"></i>
+                                    Asignar Diplomado
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-asistentes.php">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                    Ver Asistentes (Diplomados)
+                                </a>
+                                
+                                <!-- Seminarios -->
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-seminario.php">
+                                    <i class="bi bi-journal-check"></i>
+                                    Registrar Seminario
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-seminario.php">
+                                    <i class="bi bi-list-check"></i>
+                                    Lista de Seminarios
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignar-seminario-ponente.php">
+                                    <i class="bi bi-share"></i>
+                                    Asignar Seminario
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-asistentes_seminario.php">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                    Ver Asistentes (Seminarios)
+                                </a>
+
+                                <!-- Talleres -->
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/register-taller.php">
+                                    <i class="bi bi-journal-check"></i>
+                                    Registrar Taller
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-taller.php">
+                                    <i class="bi bi-list-check"></i>
+                                    Lista de Talleres
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../checkout/asignar-taller-ponente.php">
+                                    <i class="bi bi-share"></i>
+                                    Asignar Taller
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-asistentes_taller.php">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                    Ver Asistentes (Talleres)
+                                </a>
+                            </div>
+                        </li>
+                        
+                        <hr class="my-3">
+
+                        <!-- 8. EMPODERAMIENTO (ACORDEÓN) -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 collapse-toggle" data-bs-toggle="collapse" href="#collapseEmpoderamiento" role="button" aria-expanded="false" aria-controls="collapseEmpoderamiento">
+                                <i class="bi bi-clipboard-data-fill"></i>
+                                Empoderamiento
+                                <span class="caret ms-auto"><i class="bi bi-chevron-down"></i></span>
+                            </a>
+                            <div class="collapse submenu-items" id="collapseEmpoderamiento">
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/citas.php">
+                                    <i class="bi bi-person-vcard"></i>
+                                    Ver Plan de Empoderamiento
+                                </a>
+                                <a class="nav-link d-flex align-items-center gap-2" href="../pages/ver-donantes.php">
+                                    <i class="bi bi-person-lines-fill"></i>
+                                    Ver Récord de Citas
+                                </a>
+                            </div>
+                        </li>
+                        
+                        <hr class="my-3">
+                        
+                        <!-- ÍTEM FIJO: CERRAR SESIÓN -->
+                        <li class="nav-item">
+                            <a class="nav-link d-flex align-items-center gap-2 text-danger" href="../pages/sign-out.php">
+                                <svg class="bi" width="1.1rem" height="1.1rem"><use xlink:href="#door-closed"/></svg>
+                                Cerrar Sesión
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+

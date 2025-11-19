@@ -451,7 +451,7 @@ try {
     echo "<td>{$usuario['FechaNacimiento']}</td>";
     echo "<td>{$usuario['Edad']} años</td>";
     echo "<td>{$usuario['Sexo']}</td>";
-    echo "<td>{$usuario['OrientacionSexual']}</td>";
+    echo "<td>{$usuario['tipoLgbt']}</td>";
     echo "<td>{$usuario['Estadocivil']}</td>";
     echo "<td>{$usuario['LugarNacimiento']}</td>";
     echo "<td>{$usuario['LenguaMaterna']}</td>";
@@ -672,7 +672,7 @@ document.addEventListener("DOMContentLoaded", () => {
             var celdas = filas[i].getElementsByTagName("td");
             if (celdas.length > 0) {
                 var id = celdas[0].innerHTML; // Obtiene el valor del ID
-                celdas[0].innerHTML = "GES-" + id; // Agrega el prefijo "GES-" al valor del ID
+                celdas[0].innerHTML = "GESM-" + id; // Agrega el prefijo "GES-" al valor del ID
             }
             }
         });

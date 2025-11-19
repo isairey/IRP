@@ -12,7 +12,7 @@ require_once __DIR__ . '/seccion.php';
     <meta name="description" content="">
     <meta name="author" content="Mark Otto, Jacob Thornton, and Bootstrap contributors">
     <meta name="generator" content="Hugo 0.122.0">
-    <title>Listado de Feminicidios</title>
+    <title>Listado de usuarias</title>
 
     <link rel="canonical" href="https://getbootstrap.com/docs/5.3/examples/dashboard/">
 
@@ -21,6 +21,7 @@ require_once __DIR__ . '/seccion.php';
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@docsearch/css@3">
 
 <link href="../assets/dist/css/bootstrap.min.css" rel="stylesheet">
+
 
     <style>
       .bd-placeholder-img {
@@ -129,6 +130,7 @@ require_once __DIR__ . '/seccion.php';
     </style>
 
     
+    <!-- Custom styles for this template -->
     <!-- Custom styles for this template -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.min.css" rel="stylesheet">
     <!-- Custom styles for this template -->
@@ -243,16 +245,12 @@ require_once __DIR__ . '/seccion.php';
   </symbol>
 </svg>
 
+
 <!-- Menu de arriba -->
 
 <?php
 require_once __DIR__ . '/../pages/header.php';
 ?>
-
-
-
-
-
 
 
 <?php
@@ -473,7 +471,7 @@ try {
 
 
     </main>
-
+    
     
         <footer class="my-5 pt-5 text-body-secondary text-center text-small">
            <?php
@@ -484,6 +482,16 @@ try {
         </footer>
   </div>
 </div>
+</div>
+
+
+<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous"></script>
+    <script src="dashboard.js"></script>
+
+
+
 <?php if (isset($_GET['statuss'])): ?>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
@@ -511,6 +519,8 @@ try {
         });
     </script>
 <?php endif; ?>
+
+
 <script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
 <script>
         // Agregar un controlador de eventos click para los botones de eliminación
@@ -527,8 +537,16 @@ try {
         });
     </script>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous">
-      
-    </script><script src="dashboard.js"></script>
+    <!-- Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Bootstrap JS (con Popper incluido) -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.js" integrity="sha384-eI7PSr3L1XLISH8JdDII5YN/njoSsxfbrkCTnJrzXt+ENP5MOVBxD+l6sEG4zoLp" crossorigin="anonymous"></script>
+    <script src="dashboard.js"></script>
 </body>
 </html>

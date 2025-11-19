@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/seccion.php';
+require_once __DIR__ . '/../pages/seccion.php';
+
 ?>
 
 <!doctype html>
@@ -258,11 +259,15 @@ require_once __DIR__ . '/../pages/footer.php';
     <!-- Temina -->
     <!-- ACA EMPIEZA EL CONTENIDO DE LA PAGINA LO DE ARRIBA ES EL MENU -->
 
-    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Listado de usuarias</h1>
-        <div class="btn-toolbar mb-2 mb-md-0">
-          <div class="btn-group me-2">
+<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+  <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2 fw-bold" style="color: #1a73e8; text-shadow: 1px 1px 4px rgba(0,0,0,0.3);">
+      LISTADO DE USUARIOS
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+      <div class="btn-group me-2">
+
+
           
           <label for="rango_edad" class="form-label" ></label>
           <select class="form-select" class="form-control" id="rango_edad" onchange="filtrarPorEdad()">
@@ -364,9 +369,8 @@ require_once __DIR__ . '/../pages/footer.php';
                 <th>Lugar de Nacimiento</th>
                 <th>Lengua Materna</th>
                 <th>Otra Lengua</th>
-                <th>Fecha de registro</th>
-                
-               <th>Acciones</th> 
+                <th>Fecha de registro</th>              
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -447,29 +451,28 @@ try {
     echo "<td>{$usuario['FechaNacimiento']}</td>";
     echo "<td>{$usuario['Edad']} años</td>";
     echo "<td>{$usuario['Sexo']}</td>";
-    echo "<td>{$usuario['OrientacionSexual']}</td>";
+    echo "<td>{$usuario['tipoLgbt']}</td>";
     echo "<td>{$usuario['Estadocivil']}</td>";
     echo "<td>{$usuario['LugarNacimiento']}</td>";
     echo "<td>{$usuario['LenguaMaterna']}</td>";
     echo "<td>{$usuario['LenguaIndigena']}</td>";
     echo "<td>{$usuario['FechaRegistro']}</td>";
-      echo "<td>";
+    echo "<td>";
     
     echo "<div class='container p-0'>";
     echo "<div class='row g-1'>";
 
-  echo "<div class='col-6'><a href='../checkout/editar_usuaria.php?id={$usuario['id']}' class='btn btn-primary btn-sm w-100'><i class='bi bi-pencil-square'></i></a></div>";
-   // echo "<div class='col-6'><button class='btn btn-danger btn-sm w-100 eliminar-usuario' data-id='{$usuario['id']}'><i class='bi bi-trash3-fill'></i></button></div>";
+    echo "<div class='col-6'><a href='../checkout/editar_usuaria.php?id={$usuario['id']}' class='btn btn-primary btn-sm w-100'><i class='bi bi-pencil-square'></i></a></div>";
+    //echo "<div class='col-6'><button class='btn btn-danger btn-sm w-100 eliminar-usuario' data-id='{$usuario['id']}'><i class='bi bi-trash3-fill'></i></button></div>";
     echo "<div class='col-6'><button class='btn btn-success btn-sm w-100 registrar-cita' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Registrar Citas</button></div>";
     echo "<div class='col-6'><button class='btn btn-warning btn-sm w-100 registrar-atencion' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Registrar Atención</button></div>";
     echo "<div class='col-6'><button class='btn btn-secondary btn-sm w-100 registrar-proyecto' data-id='{$usuario['id']}' data-nombre='{$usuario['Nombre']} {$usuario['ApellidoPaterno']} {$usuario['ApellidoMaterno']}'>Asignar Proyecto</button></div>";
-    echo "<div class='col-6'><a href='citas.php?id={$usuario['id']}' class='btn btn-info btn-sm w-100'>Ver Plan Empoderamiento</a></div>";
+    echo "<div class='col-6'><a href='citas.php?id={$usuario['id']}' class='btn btn-info btn-sm w-100'>Ver Plan de Empoderamiento</a></div>";
 
     echo "</div>";
     echo "</div>";
 
     echo "</td>";
-    
     echo "</tr>";
 }
 
@@ -523,31 +526,95 @@ try {
 </div>
 
     </main>
-
-    
-        <footer class="my-5 pt-5 text-body-secondary text-center text-small">
-           <?php
-          require_once __DIR__ . '/../checkout/CR.php';
-          ?>
-                <ul class="list-inline">
-                </ul>
-        </footer>
   </div>
 </div>
-<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+
+
+
+<?php if (isset($_GET['msg'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['msg'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['msg'] === 'success' ? 'Usuario Eliminado correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['msg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-        // Agregar un controlador de eventos click para los botones de eliminación
-        document.querySelectorAll('.eliminar-usuario').forEach(button => {
-            button.addEventListener('click', () => {
-                // Preguntar al usuario si está seguro de eliminar
-                if (confirm('¿Estás seguro de que deseas eliminar este usuario?')) {
-                    // Obtener el ID del usuario de los datos del botón
-                    const userId = button.getAttribute('data-id');
-                    // Redirigir a la página de PHP para eliminar el usuario
-                    window.location.href = `eliminar_usuario.php?eliminar_id=${userId}`;
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll('.eliminar-usuario').forEach(button => {
+        button.addEventListener('click', () => {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                html: `
+                    <div id="emoji" style="font-size:80px; transition: all 0.3s;">😃</div>
+                    <p>Elige una opción:</p>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'No, cancelar',
+                didOpen: () => {
+                    const emoji = document.getElementById('emoji');
+                    const confirmBtn = Swal.getConfirmButton();
+                    const cancelBtn = Swal.getCancelButton();
+
+                    // Si el mouse pasa sobre "Sí, eliminar" → carita triste
+                    confirmBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😢";
+                    });
+                    confirmBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+
+                    // Si el mouse pasa sobre "No, cancelar" → carita feliz
+                    cancelBtn.addEventListener("mouseenter", () => {
+                        emoji.textContent = "😁";
+                    });
+                    cancelBtn.addEventListener("mouseleave", () => {
+                        emoji.textContent = "😃";
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    const donacionId = button.getAttribute('data-id');
+        window.location.href = `./eliminar_usuario.php?eliminar_id=${donacionId}`;
+                    Swal.fire({
+                        icon: 'success',
+                        title: '¡Eliminado!',
+                        text: 'La donación fue eliminada correctamente.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    
+                      
+                    });
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    Swal.fire({
+                        icon: 'info',
+                        title: 'Cancelado',
+                        text: 'La donación no fue eliminada 🙂',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 }
             });
         });
+    });
+});
+</script>
+
+
+
+<script src="../assets/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+        // Agregar un controlador de eventos click para los botones de eliminación
+      
 
          // Función para manejar el clic en el botón de registrar cita
     document.addEventListener('click', function(event) {
@@ -605,7 +672,7 @@ try {
             var celdas = filas[i].getElementsByTagName("td");
             if (celdas.length > 0) {
                 var id = celdas[0].innerHTML; // Obtiene el valor del ID
-                celdas[0].innerHTML = "GES-" + id; // Agrega el prefijo "GES-" al valor del ID
+                celdas[0].innerHTML = "GESM-" + id; // Agrega el prefijo "GES-" al valor del ID
             }
             }
         });

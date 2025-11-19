@@ -20,6 +20,9 @@ try {
     ";
     $countQuery = "SELECT COUNT(*) FROM asignacionponente ap";
 
+
+
+    
     $condiciones = [];
     $params = [];
 
@@ -38,6 +41,13 @@ try {
     foreach ($params as $k => $v) {
         $stmtCount->bindValue($k, $v);
     }
+
+
+
+
+
+
+
     $stmtCount->execute();
     $totalRegistros = $stmtCount->fetchColumn();
     $totalPaginas = ceil($totalRegistros / $registrosPorPagina);

@@ -1,11 +1,8 @@
 <?php
 require_once __DIR__ . '/../pages/seccion.php';
-
 ?>
-
 <?php
 require_once __DIR__ . '/../db/config.php';
-
 // Obtener el último ID de usuario registrado
 $sql_last_user_id = "SELECT MAX(id) AS ultimo_id_usuario FROM Usuario";
 $result_last_user_id = $conn->query($sql_last_user_id);

@@ -508,7 +508,7 @@ try {
     <script>
         Swal.fire({
             icon: "<?= $_GET['msg'] === 'success' ? 'success' : 'error' ?>",
-            title: "<?= $_GET['msg'] === 'success' ? 'Personal Eliminado correctamente' : 'Error al registrar' ?>",
+            title: "<?= $_GET['msg'] === 'success' ? 'Atencion Eliminado correctamente' : 'Error al registrar' ?>",
             text: "<?= $_GET['msg'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
             showConfirmButton: false,
             timer: 2000, // ⏱️ 2 segundos
@@ -584,12 +584,28 @@ document.addEventListener("DOMContentLoaded", () => {
 </script>
 
 
+<?php if (isset($_GET['statuss'])): ?>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        Swal.fire({
+            icon: "<?= $_GET['statuss'] === 'success' ? 'success' : 'error' ?>",
+            title: "<?= $_GET['statuss'] === 'success' ? 'Atencion Reguistrada correctamente' : 'Error al registrar' ?>",
+            text: "<?= $_GET['statuss'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
+            showConfirmButton: false,
+            timer: 2000, // ⏱️ 2 segundos
+            timerProgressBar: true
+        });
+    </script>
+<?php endif; ?>
+
+
+
 <?php if (isset($_GET['status'])): ?>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
         Swal.fire({
             icon: "<?= $_GET['status'] === 'updated' ? 'success' : 'error' ?>",
-            title: "<?= $_GET['status'] === 'updated' ? 'Personal Actualizado correctamente' : 'Error al registrar' ?>",
+            title: "<?= $_GET['status'] === 'updated' ? 'Atencion Actualizado correctamente' : 'Error al registrar' ?>",
             text: "<?= $_GET['status'] === 'error' ? urldecode($_GET['msg']) : '' ?>",
             showConfirmButton: false,
             timer: 2000, // ⏱️ 2 segundos
