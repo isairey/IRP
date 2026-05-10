@@ -145,7 +145,7 @@ El proyecto fue desarrollado para practicar:
 # 📂 Estructura del proyecto
 
 ```bash
-GesMujerOaxaca/
+IRP/
 │
 ├── app/              # Lógica principal
 ├── controllers/      # Controladores
@@ -164,7 +164,7 @@ GesMujerOaxaca/
 ## 1️⃣ Clonar repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/gesmujer-oaxaca.git
+git clone https://github.com/isairey/IRP.git
 ```
 
 ---
